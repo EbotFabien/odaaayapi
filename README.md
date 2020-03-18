@@ -6,7 +6,7 @@
 [![Docker](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg?maxAge=2592000)]()
 
 # News
-News application for information gathering and sahring with an API backend built with flask. This application is company material and should not be shared with any unauthorized persons.
+News application for information gathering and sharing with an API backend built with flask. This application is company material and should not be shared with any unauthorized persons.
 
 ## Rules
 
