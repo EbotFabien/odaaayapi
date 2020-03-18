@@ -1,7 +1,7 @@
 from .. import apisec
 from flask_restplus import fields
 
-appinfo = apisec.model('Info', {
+apiinfo = apisec.model('Info', {
     'name': fields.String,
     'version': fields.Integer,
     'date': fields.String,

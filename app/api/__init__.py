@@ -25,7 +25,7 @@ authorizations = {
 }
 
 api = Blueprint('api', __name__, template_folder = '../templates')
-apisec = Api( app=api, doc='/docs', version='1.0', title='Podcaster', \
+apisec = Api( app=api, doc='/docs', version='1.0', title='News', \
 description='', authorizations=authorizations)
 from . import schemas
 CORS(api, resources={r"/api/*": {"origins": "*"}})
@@ -33,6 +33,10 @@ CORS(api, resources={r"/api/*": {"origins": "*"}})
 uploader = apisec.parser()
 uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
 uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
+
+info = apisec.namespace('Information', \
+description='This namespace contains all the information about our API.', \
+path='/')
 
 core = apisec.namespace('Data access', \
 description='This contains data for the user and content belonging to the \
@@ -118,3 +122,17 @@ class Data(Resource):
                 'result': 'Invalid arguments',
                 'status': 0
             }, 401
+
+@info.doc(security='KEY')
+@info.route('/info')
+class Data(Resource):
+    @info.marshal_with(schemas.apiinfo)
+    def get(self):
+        app = {
+            'name':'News',
+            'version': 1.0,
+            'date': datetime.utcnow(),
+            'author': 'Leslie Etubo T, E. Fabien, Samuel Klein, Marc.',
+            'description': 'This is an API to serve information to clients'
+        }, 200
+        return app
