@@ -12,7 +12,7 @@ name = '''
 ░ ░░   ░ ▒░ ░ ░  ░  ▒ ░ ░  ░ ░▒  ░ ░
    ░   ░ ░    ░     ░   ░  ░  ░  ░  
          ░    ░  ░    ░          ░  
- ~ By Leslie Etubo T, Samuel Klein, Marc.
+ ~ By Leslie Etubo T, E. Fabien, Samuel Klein, Marc.
 
 '''
 if __name__ == "__main__":

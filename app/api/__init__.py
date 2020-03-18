@@ -7,7 +7,7 @@ from functools import wraps
 from flask import current_app as app
 from datetime import datetime
 from datetime import  timedelta
-from app.models import User, Profile, Setting, Album, Episode
+from app.models import User
 from app import db
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -41,32 +41,6 @@ these endpoints. Tokens will be the method of security with two tokens, a  \
 refresh token ( 30 days span ) and a normal token ( 7 days ) ', \
 path='/')
 
-setting = apisec.namespace('Setting', \
-description='User settings. This can be used to modify user settings \
-and subscriptions. To make calls from this route, you need to have data \
-access first. This require your API Key and a user token. Not forgetting \
-the user id for which you wanna access. ', \
-path='/')
-
-appdata = apisec.namespace('App Data', \
-description=' This namespace will carry all internal application routes \n and will need to consult the data access\
-api route. ', \
-path='/')
-
-userprofile = apisec.namespace('Profile', \
-description=' This namespace will carry all user profile queries and routes.\n Please do not try to send a query \
-to these routes \n without a token on the header because it will fail. It can only be queried using a valid token.', \
-path='/')
-
-useralbum = apisec.namespace('Album', \
-description=' This namespace will carry all user album queries and routes.\n Please do not try to send a query \
-to these routes \n without a token on the header because it will fail. It can only be queried using a valid token.', \
-path='/')
-
-userepisode = apisec.namespace('Episode', \
-description=' This namespace will carry all user album queries and routes.\n Please do not try to send a query \
-to these routes \n without a token on the header because it will fail. It can only be queried using a valid token.', \
-path='/')
 
 # The token decorator to protect my routes
 def token_required(f):
