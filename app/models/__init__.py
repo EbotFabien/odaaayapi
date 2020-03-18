@@ -69,3 +69,16 @@ class User (db.Model, UserMixin):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class Save (db.Model):
+    __tablename__ = "Save"
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String, nullable=False)
+    
+    def __init__(self):
+        self.name = name
+
+    def __repr__(self):
+        return '<User %r>' % self.name
+    
