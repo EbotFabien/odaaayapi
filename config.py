@@ -7,7 +7,7 @@ basedir= os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/news'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     #'mysql://root:''@localhost/news' \
     #    or 'sqlite:///' + os.path.join(basedir, 'news.sqlite')

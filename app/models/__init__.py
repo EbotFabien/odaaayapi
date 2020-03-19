@@ -13,15 +13,7 @@ import os
 import base64
 
 
-album_sub = db.Table('Albumsub',
-    db.Column('profile_id', db.Integer, db.ForeignKey('Profile.id'), primary_key=True),
-    db.Column('album_id', db.Integer, db.ForeignKey('Album.id'), primary_key=True)
-)
 
-payment_sub = db.Table('Paymentsub',
-    db.Column('user_id', db.Integer, db.ForeignKey('User.id'), primary_key=True),
-    db.Column('payment_id', db.Integer, db.ForeignKey('Payment.id'), primary_key=True)
-)
 
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
