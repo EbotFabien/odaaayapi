@@ -68,3 +68,4 @@ Updates and alerts pushed via Zoom or gmail:
 - boogiedas (zoom)
 - leslie.etubo@gmail.com
 - bakariwarday@gmail.com
+- Join [SlackGroup](https://join.slack.com/t/newsapp-global/shared_invite/zt-cq5a7tv6-1Pp1PhvxjIhS0vEQK9kuWA)
