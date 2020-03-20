@@ -34,16 +34,29 @@ uploader = apisec.parser()
 uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
 uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
 
-info = apisec.namespace('Information', \
-description='This namespace contains all the information about our API.', \
-path='/')
+info = apisec.namespace('/api/', \
+    description='This namespace contains all the information about our API.', \
+    path='/v1/')
 
-core = apisec.namespace('Data access', \
-description='This contains data for the user and content belonging to the \
-application to be shared. The android and iOS application will make calls from \
-these endpoints. Tokens will be the method of security with two tokens, a  \
-refresh token ( 30 days span ) and a normal token ( 7 days ) ', \
-path='/')
+tokens = apisec.namespace('/api/tokens', \
+    description='This contains routes for core app data access. Authorization is required for each of the calls. \
+        To get this authorization, please contact out I.T Team ', \
+    path='/v1/')
+
+login = apisec.namespace('/api/login', \
+    description='This contains routes for core app data access. Authorization is required for each of the calls. \
+        To get this authorization, please contact out I.T Team ', \
+    path='/v1/')
+
+user = apisec.namespace('/api/user', \
+    description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
+    on the application.", \
+    path = '/v1/')
+
+post = apisec.namespace('/api/post', \
+    description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
+    on the application.", \
+    path = '/private/')
 
 
 # The token decorator to protect my routes
@@ -64,10 +77,38 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-@core.doc(security='KEY')
-@core.route('/login')
+@info.deprecated
+@info.route('/')
 class Data(Resource):
-    @core.expect(schemas.logindata)
+    @info.marshal_with(schemas.apiinfo)
+    def get(self):
+        app = {
+            'name':'News',
+            'version': 1.0,
+            'date': datetime.utcnow(),
+            'author': 'Leslie Etubo T, E. Fabien, Samuel Klein, Marc.',
+            'description': 'This is an API to serve information to clients'
+        }, 200
+        return app
+
+@tokens.doc(
+    security='KEY',
+    params={ 'username': 'Specify the username associated with the person' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@tokens.route('/token')
+class Data(Resource):
+    @tokens.marshal_with(schemas.logindata)
     def post(self):
         data = request.get_json()
         if data is not None:
@@ -122,16 +163,52 @@ class Data(Resource):
                 'result': 'Invalid arguments',
                 'status': 0
             }, 401
-
-@info.route('/info')
-class Data(Resource):
-    @info.marshal_with(schemas.apiinfo)
+    
     def get(self):
-        app = {
-            'name':'News',
-            'version': 1.0,
-            'date': datetime.utcnow(),
-            'author': 'Leslie Etubo T, E. Fabien, Samuel Klein, Marc.',
-            'description': 'This is an API to serve information to clients'
-        }, 200
-        return app
+        return {}, 200
+
+    def put(self):
+        return {}, 200
+
+    def patch(self):
+        return {}, 200
+    
+    def delete(self):
+        return {}, 200
+
+@user.doc(
+    security='KEY',
+    params={ 'username': 'Specify the username associated with the person' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/<username>')
+class Data(Resource):
+    @user.marshal_with(schemas.apiinfo)
+    def get(self):
+        return {}, 200
+    @token_required
+    @tokens.expect(schemas.logindata)
+    def post(self, username):
+        return {}, 200
+    @token_required
+    @tokens.expect(schemas.logindata)
+    def put(self):
+        return {}, 200
+    @token_required
+    @tokens.expect(schemas.logindata)
+    def patch(self):
+        return {}, 200
+    @token_required
+    @user.marshal_with(schemas.apiinfo)
+    def delete(self):
+        return {}, 200
