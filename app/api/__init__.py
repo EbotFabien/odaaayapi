@@ -123,7 +123,6 @@ class Data(Resource):
                 'status': 0
             }, 401
 
-@info.doc(security='KEY')
 @info.route('/info')
 class Data(Resource):
     @info.marshal_with(schemas.apiinfo)
