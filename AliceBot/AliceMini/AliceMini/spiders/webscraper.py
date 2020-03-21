@@ -5,7 +5,7 @@ import json
 
 class WebscraperSpider(scrapy.Spider):
     name = 'webscraper'
-    #allowed_domains = ['https://punchng.com']
+    #allowed_domains = ['https://punchng.com'] good
     urls=[ 'https://www.lindaikejisblog.com/', 'https://www.nairaland.com/', 'https://guardian.ng/category/news/nigeria/', 'https://www.channelstv.com/', 'https://www.premiumtimesng.com/', 'https://www.pmnewsnigeria.com/',  'https://www.independent.ng/',  'https://www.withinnigeria.com/']
     start_urls = []
     for url in urls: 
