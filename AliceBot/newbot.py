@@ -1,3 +1,4 @@
+#I'll supress this code shortly...
 import itertools
 from multiprocessing import Process
 import sys
@@ -20,11 +21,11 @@ url="https://metro.co.uk/sport/feed/"
 for url in urls:
         if( url==urls[-1]):
             urllast=url
-            finals.append(boylast)            
+            finals.append(urllast)            
         else:
             urll = url[:-1]
             finals.append(urll)
-            
+print(finals)            
 
 
 
@@ -44,7 +45,7 @@ def Json(url):
        
 def XML(url):
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    uXML=urlopen(url)
+    uXML=urlopen(req)
     try:
         xmldoc = parse(uXML)#parse Xml file
         u="https://api.rss2json.com/v1/api.json?rss_url=" + url
@@ -69,12 +70,12 @@ def XML(url):
 #XML bot is ready ,tried testing other xml sites from  the bot file but i get a 403 response not opening.
 #Currently working on the HTML bot        
 
-if __name__=='__main__':
+#if __name__=='__main__':
     #for url in finals:
-    p1 = Process(target = XML(url))
-    p1.start()
-    p2 = Process(target = Json(url))
-    p2.start()
+   # p1 = Process(target = XML(url))
+   # p1.start()
+   # p2 = Process(target = Json(url))
+   # p2.start()
     
     
 
@@ -91,7 +92,12 @@ if __name__=='__main__':
 
 
 
-
+  #Final=['https://www.nairaland.com/', 'https://www.informationng.com/', 'https://dailypost.ng/', 'https://www.lindaikejisblog.com/', 'https://www.nairaland.com/', 'https://www.legit.ng/tag/funny-jokes.html', 'https://www.bbc.com/pidgin', 'https://guardian.ng/category/news/nigeria/', 'https://www.aljazeera.com/topics/country/nigeria.html', 'https://www.channelstv.com/', 'http://saharareporters.com/', 'https://www.premiumtimesng.com/', 'https://www.pmnewsnigeria.com/', 'https://www.thecable.ng/', 'https://www.gistmania.com/', 'https://www.sunnewsonline.com/', 'https://www.independent.ng/', 'https://buzznigeria.com/', 'https://www.pulse.ng/', 'https://www.withinnigeria.com/', 'https://punchng.com/']
+  #  start_urls=["https://api.rss2json.com/v1/api.json?rss_url=" + url +'feed']
+    #for url in Final: 
+    #    a="https://api.rss2json.com/v1/api.json?rss_url=" + url +'feed'
+    #    start_urls.append(a)
+    
 
 
 

@@ -7,7 +7,6 @@ from app import db
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from flask_login import UserMixin
 import uuid
 import os
 import base64
@@ -18,7 +17,7 @@ import base64
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
-class User (db.Model, UserMixin):
+class User (db.Model):
     __tablename__ = "User"
     id = db.Column(db.Integer, primary_key = True)
     uuid = db.Column(db.String, unique=True)
@@ -68,9 +67,9 @@ class Save (db.Model):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String, nullable=False)
     
-    def __init__(self):
+    def __init__(self, name):
         self.name = name
 
     def __repr__(self):
         return '<User %r>' % self.name
-    
+
