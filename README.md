@@ -28,6 +28,23 @@ python app.py
 
 -- Visit [http://localhost:5000](http://localhost:5000)
 
+To create models run the following command:
+
+For Windows
+```shell
+set FLASK_APP=news.py
+flask db init
+flask db migrate
+flask db upgrade
+```
+For MacOs and Linux
+```shell
+export FLASK_APP=news.py
+flask db init
+flask db migrate
+flask db upgrade
+```
+
 ## Development
 
 Create a new branch off the **master** branch for features or fixes.
