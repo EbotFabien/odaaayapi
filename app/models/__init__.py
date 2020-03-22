@@ -63,7 +63,7 @@ class User (db.Model):
 class Save (db.Model):
     __tablename__ = "Save"
     id = db.Column(db.Integer, primary_key = True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
     
     def __init__(self, user):
         self.user = user
@@ -75,7 +75,7 @@ class Setting(db.Model):
     __tablename__ = "Setting"
     id = db.Column(db.Integer, primary_key = True)
     language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
-    users_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    users_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
 
     def __init__(self, language, users, theme):
@@ -101,7 +101,7 @@ class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     settings_id = db.relationship('Setting', backref='setting', lazy=True)
     comments_id = db.relationship('Comment', backref='comment', lazy=True)
-    type = db.Column(db.String(30), nullable=False)
+    lang_type = db.Column(db.String(30), nullable=False)
     code = db.Column(db.String(16), nullable=False)
     name = db.Column(db.String(40), nullable=False)
 
@@ -120,7 +120,7 @@ class Comment(db.Model):
     language_id = db.Column(db.Integer, db.ForeignKey('Language.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
     content = db.Column(db.String(250), nullable=False)
-    type = db.Column(db.String(30), nullable=False)
+    comment_type = db.Column(db.String(30), nullable=False)
     postsw_id = db.Column(db.Integer, db.ForeignKey('Postsw.id'), nullable= False)
     postarb_id = db.Column(db.Integer, db.ForeignKey('Postarb.id'), nullable= False)
     posten_id = db.Column(db.Integer, db.ForeignKey('Posten.id'), nullable= False)
@@ -129,12 +129,11 @@ class Comment(db.Model):
     posthau_id = db.Column(db.Integer, db.ForeignKey('Posthau.id'), nullable= False) 
     
 
-    def __init__(self, subcomments, language, user,content):
+    def __init__(self, language, user, content, comment_type):
         self.content = content
         self.user = user
-        self.subcomments = subcomments
         self.language = language
-        self.type = type
+        self.type = comment_type
 
     def __repr__(self):
         return '<Comment>%r' %self.content
@@ -161,6 +160,7 @@ db.Column('channel_id', db.Integer, db.ForeignKey('Channel.id'), primary_key=Tru
 db.Column('user_id', db.Integer, db.ForeignKey('User.id'), primary_key=True))
 
 class Channel(db.Model):
+    __tablename__="Channel"
     id = db.Column(db.Integer, primary_key=True)
     users_id = db.relationship('User', secondary = UsersChannels, lazy = 'subqery', backref = db.backref('channel', lazy =True)) 
     posts_id = db.relationship('Post', backref='post', lazy = True)
@@ -168,13 +168,15 @@ class Channel(db.Model):
     description = db.Column(db.String(250))
     profile_pic = db.Column(db.String(250))
     background = db.Column(db.String(250))
+    css = db.Column(db.String(250))
 
-    def __init__(self, name, description, profile_pic, background, users, posts):
+    def __init__(self, name, description, profile_pic, background, users, posts, css):
         self.users = users
         self.name = name
         self.profile_pic = profile_pic
         self.background = background
         self.posts = posts
+        self.css = css
 
     def __repr__(self):
         return'<Channel>%r' %self.name
@@ -223,14 +225,10 @@ class Post(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
     title = db.Column(db.String(250))
     content = db.Column(db.String(250))
+    comments_id = db.relationship('Comment', backref='comment', lazy = True)
+    post_type = db.Column(db.Integer, db.ForeignKey('Posttype.id'), nullable=False)
     #uploader_date = db.Column(db.datetime) no take datetime values
     # many to many 
-    """postsws_id = 
-    postarbs_id =
-    postens_id = 
-    postpors_id = 
-    postfrs_id = 
-    posthaus_id ="""
 
     def __init__(self, ratings, uploader, title, content, uploader_date):
 
@@ -246,26 +244,42 @@ class Post(db.Model):
 
 class Postarb (Post):
     __tablename__ ="Postarb"
-    comments_id = db.relationship('Comment', backref='comment', lazy = True)
-    #posts = db.Column(db.Po)
+    id = db.Column(db.Integer, db.ForeignKey('Post.id'), primary_key=True, nullable = False)
+    arb_title = db.Column(db.String(250), nullable = False, unique=True)
+    arb_content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
 
 class Posten (Post):
     __tablename__ ="Posten"
-    comments_id = db.relationship('Comment', backref='comment', lazy = True)
-    #posts = db.Column(db.Po
+    id = db.Column(db.Integer, db.ForeignKey('Post.id'), primary_key=True, nullable = False)
+    en_title = db.Column(db.String(250), nullable = False, unique=True)
+    en_content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
 
 class Postpor (Post):
     __tablename__ ="Postpor"
-    comments_id = db.relationship('Comment', backref='comment', lazy = True)
-    #posts_id = db.Column(db.Po
+    id = db.Column(db.Integer, db.ForeignKey('Post.id'), primary_key=True, nullable = False)
+    por_title = db.Column(db.String(250), nullable = False, unique=True)
+    por_content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
 
 class Postfr (Post):
     __tablename__ ="Postfr"
-    comments_id = db.relationship('Comment', backref='comment', lazy = True)
-    #posts = db.Column(db.Po
-
+    id = db.Column(db.Integer, db.ForeignKey('Post.id'), primary_key=True, nullable = False)
+    fr_title = db.Column(db.String(250), nullable = False, unique=True)
+    fr_content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
 
 class Posthau (Post):
     __tablename__ ="Posthau"
-    comments_id = db.relationship('Comment', backref='comment', lazy = True)
-    #posts = db.Column(db.Po
+    id = db.Column(db.Integer, db.ForeignKey('Post.id'), primary_key=True, nullable = False)
+    hau_title = db.Column(db.String(250), nullable = False, unique=True)
+    hau_content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
+
+class Postsw (Post):
+    __tablename__ ="Postsw"
+    id = db.Column(db.Integer, db.ForeignKey('Post.id'), primary_key=True, nullable = False)
+    sw_title = db.Column(db.String(250), nullable = False, unique=True)
+    sw_content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('Language.id'), nullable=False) 
