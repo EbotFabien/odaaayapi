@@ -15,11 +15,11 @@ class WebscraperSpider(scrapy.Spider):
     
 
     def parse(self, response):
-       # items = AliceminiItem()
+        items = AliceminiItem()
         data = json.loads(response.text)
         Title=data['feed']['title']
         for i in range(4) :
-            Title=data['items'][i]['title']
+            Title_o_content=data['items'][i]['title']
             link=data['items'][i]['link']
             pubDate=data['items'][i]["pubDate"]
             Author=data['items'][i]["author"]
