@@ -72,3 +72,33 @@ class Save (db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
+
+class Language(db.Model):
+    __tablename__ = "Language"
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String, nullable=False)
+    lang_type = db.Column(db.String, nullable=False)
+    code = db.Column(db.String)
+    
+    def __init__(self, name, lang, code):
+        self.name = name
+        self.lang = lang
+        self.code = code
+
+    def __repr__(self):
+        return '<Language %r>' % self.name
+
+
+class Setting(db.Model):
+    __tablename__ = "Setting"
+    id = db.Column(db.Integer, primary_key = True)
+    user = db.Column(db.String, nullable=False)
+    theme = db.Column(db.String, nullable=False)
+    
+    def __init__(self, user, theme):
+        self.user = user
+        self.theme = theme
+
+    def __repr__(self):
+        return '<Setting %r>' % self.id
+

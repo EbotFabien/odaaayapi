@@ -60,6 +60,7 @@ apisec.add_namespace(token)
 apisec.add_namespace(post)
 apisec.add_namespace(search)
 
+
 login = apisec.namespace('/api/login', \
     description='This contains routes for core app data access. Authorization is required for each of the calls. \
     To get this authorization, please contact out I.T Team ', \
