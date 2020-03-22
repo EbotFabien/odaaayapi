@@ -113,4 +113,4 @@ class Home(Resource):
     @token_required
     @home.marshal_with(schema.homedata)
     def get(self):
-        return {}, 200        
+        return {}, 200       
