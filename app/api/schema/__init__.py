@@ -14,6 +14,12 @@ logindata = apisec.model('Login', {
     'password': fields.String(required=True)
 })
 
+signupdata = apisec.model('Signup', {
+    'username': fields.String(required=True),
+    'email': fields.String(required=True),
+    'password': fields.String(required=True)
+})
+
 homedata = apisec.model('Home', {
     'username': fields.String(required=True),
     'password': fields.String(required=True)
