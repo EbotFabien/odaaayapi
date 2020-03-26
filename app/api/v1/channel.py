@@ -2,9 +2,9 @@ from flask_restplus import Namespace, Resource, fields
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from flask import current_app as app
-from app.models import Users, Channel, subs, Posts
+from app.models import Users, Channel, subs
 from app import db
+from flask import current_app as app
 
 
 # The token decorator to protect my routes
@@ -25,38 +25,36 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-post = Namespace('/api/post', \
-    description='This contains routes for core app data access. Authorization is required for each of the calls. \
-        To get this authorization, please contact out I.T Team ', \
-    path='/v1/')
+channel = Namespace('/api/channel', \
+    description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
+    on the application.", \
+    path = '/v1/')
 
 
-postcreationdata = post.model('postcreationdata', {
-    'title': fields.String(required=True),
-    'channel': fields.Integer(required=True),
-    'type': fields.Integer(required=True),
-    'content': fields.String(required=True)
+
+creationdata = channel.model('Create', {
+    'username': fields.String(required=True),
+    'email': fields.String(required=True),
+    'password': fields.String(required=True),
+    'bio': fields.String(required=True)
+})
+
+okresponse = channel.model('Okresponse', {
+    'res': fields.String(required=True),
+})
+
+channelcreationdata = channel.model('ChannelCreationData', {
+    'name': fields.String(required=True),
+    'profile_pic': fields.String(required=True),
+    'description': fields.String(required=True),
+    'background': fields.String(),
+    'css': fields.String()
 })
     
-postdata = post.model('postreturndata', {
-    'id': fields.Integer(required=True),
-    'uploader_id': fields.Integer(required=True),
-    'title': fields.String(required=True),
-    'channel_id': fields.Integer(required=True),
-    'content': fields.String(required=True),
-    'uploader_date': fields.DateTime(required=True)
-})
 
-
-postreq = post.model('postreq', {
-    'arg': fields.String(required=True),
-    'all': fields.Boolean(required=True),
-    'channel': fields.Integer(required=True),
-    'arg_type': fields.String(required=True),
-})
-
-@post.doc(
+@channel.doc(
     security='KEY',
+    params={ 'username': 'Specify the username associated with the person' },
     responses={
         200: 'ok',
         201: 'created',
@@ -69,27 +67,31 @@ postreq = post.model('postreq', {
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@post.route('/post')
-class Post(Resource):
-    @token_required
-    @post.marshal_with(postdata)
+@channel.route('/channel')
+class Data(Resource):
+    @channel.marshal_with(okresponse)
     def get(self):
-        posts = Posts.query.all()
-        return posts, 200
+        return {}, 200
     @token_required
-    @post.expect(postcreationdata)
+    @channel.expect(channelcreationdata)
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
+        channels = Channel.query.filter_by(name=req_data['name']).first()
         if user:
-            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'])
-            db.session.add(new_post)
-            db.session.commit()
+            if channels is None:
+                new_channel = Channel(req_data['name'],req_data['description'], req_data['profile_pic'], \
+                req_data['background'], user.id, req_data['css'])
+                db.session.add(new_channel)
+                db.session.commit()
+            else:
+                return {'res':'Channel already exist'}, 404
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
+    
     @token_required
     def put(self):
         return {}, 200
@@ -97,5 +99,5 @@ class Post(Resource):
     def patch(self):
         return {}, 200
     @token_required
-    def delete(self, id):
+    def delete(self):
         return {}, 200

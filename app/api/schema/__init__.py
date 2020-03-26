@@ -21,6 +21,8 @@ signupdata = apisec.model('Signup', {
 })
 
 homedata = apisec.model('Home', {
-    'username': fields.String(required=True),
-    'password': fields.String(required=True)
+    'user': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'exp': fields.String(required=True),
+    'iat': fields.String(required=True)
 })
