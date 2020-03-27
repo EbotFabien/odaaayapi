@@ -37,6 +37,14 @@ postcreationdata = post.model('postcreationdata', {
     'type': fields.Integer(required=True),
     'content': fields.String(required=True)
 })
+Updatedata = post.model('Updatedata',{
+    'id':  fields.String(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True)
+})
+deletedata =post.model('deletedata',{
+    'id':fields.String(required=True)
+})
     
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
@@ -46,7 +54,7 @@ postdata = post.model('postreturndata', {
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)
 })
-
+ 
 
 postreq = post.model('postreq', {
     'arg': fields.String(required=True),
@@ -70,12 +78,62 @@ postreq = post.model('postreq', {
         500: 'internal server error, please contact admin and report issue'
     })
 @post.route('/post')
+
 class Post(Resource):
     @token_required
     @post.marshal_with(postdata)
     def get(self):
         posts = Posts.query.all()
         return posts, 200
+
+    @token_required
+    @post.expect(Updatedata)
+    def put(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post_id=Posts.query.get(req_data['id'])
+        if user and post_id:
+            post_id.title= req_data['title']
+            post_id.content=req_data['content']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+        
+        #return {}, 200
+    @token_required
+    @post.expect(deletedata)
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post_id=Posts.query.get(req_data['id'])
+        if user and post_id:
+            db.session.delete(post_id)
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+    
+    @token_required
+    @post.expect(Updatedata)
+    def patch(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post_id=Posts.query.get(req_data['id'])
+        if user and post_id:
+            post_id.title= req_data['title']
+            post_id.content=req_data['content']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+              
     @token_required
     @post.expect(postcreationdata)
     def post(self):
@@ -90,12 +148,7 @@ class Post(Resource):
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
-    @token_required
-    def put(self):
-        return {}, 200
-    @token_required
-    def patch(self):
-        return {}, 200
-    @token_required
-    def delete(self, id):
-        return {}, 200
+   
+    
+
+    

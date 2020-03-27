@@ -10,13 +10,10 @@ import uuid
 
 
 
-<<<<<<< HEAD
-=======
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channel.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
 )
->>>>>>> fba22ecaa24e74346eb25d57b9dfb7bde9e2f645
 
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
