@@ -1,4 +1,4 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields, marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
@@ -30,7 +30,6 @@ post = Namespace('/api/post', \
         To get this authorization, please contact out I.T Team ', \
     path='/v1/')
 
-
 postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
     'channel': fields.Integer(required=True),
@@ -40,9 +39,9 @@ postcreationdata = post.model('postcreationdata', {
     
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
-    'uploader_id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'channel_id': fields.Integer(required=True),
+    'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)
 })
@@ -74,6 +73,7 @@ class Post(Resource):
     @token_required
     @post.marshal_with(postdata)
     def get(self):
+        users = Users.query.all()
         posts = Posts.query.all()
         return posts, 200
     @token_required
@@ -84,7 +84,7 @@ class Post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user:
-            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'])
+            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], data['uuid'])
             db.session.add(new_post)
             db.session.commit()
             return {'res':'success'}, 200

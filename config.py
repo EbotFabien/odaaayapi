@@ -18,6 +18,7 @@ class Config(object):
     SWAGGER_UI_REQUEST_DURATION = True
     SWAGGER_UI_DOC_EXPANSION = None
     RESTPLUS_MASK_SWAGGER = True
+    RESTPLUS_VALIDATE = True
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings
     MAIL_SERVER = 'smtp.gmail.com'

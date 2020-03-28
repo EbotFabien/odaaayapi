@@ -20,9 +20,20 @@ signupdata = apisec.model('Signup', {
     'password': fields.String(required=True)
 })
 
+trendingdata = apisec.model('trending',{
+
+})
+
+feeddata = apisec.model('feed',{
+    
+})
+
+discoverdata = apisec.model('discover',{
+    
+})
+
 homedata = apisec.model('Home', {
-    'user': fields.String(required=True),
-    'uuid': fields.String(required=True),
-    'exp': fields.String(required=True),
-    'iat': fields.String(required=True)
+    'trending': fields.List(fields.Nested(trendingdata)),
+    'feed': fields.List(fields.Nested(feeddata)),
+    'discover': fields.List(fields.Nested(discoverdata))
 })
