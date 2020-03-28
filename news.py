@@ -21,5 +21,5 @@ if __name__ == "__main__":
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        ssl_context='adhoc'
+        #ssl_context='adhoc'
     )

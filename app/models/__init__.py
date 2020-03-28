@@ -153,7 +153,8 @@ class Comment(db.Model):
     content = db.Column(db.String, nullable=False)
     comment_type = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
+    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
+    language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
     
     def __init__(self, language, user, post, content, comment_type):
