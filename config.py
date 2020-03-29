@@ -35,6 +35,10 @@ class Config(object):
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
     CACHE_TYPE: "simple" # Flask-Caching related configs
     CACHE_DEFAULT_TIMEOUT: 300
+    PAGINATE_PAGE_SIZE = 4
+    PAGINATE_PAGE_PARAM = "pagenumber"
+    PAGINATE_SIZE_PARAM = "pagesize"
+    PAGINATE_RESOURCE_LINKS_ENABLED = True
 
 class Development(Config):
     DEBUG = True

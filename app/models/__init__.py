@@ -40,7 +40,7 @@ class Users(db.Model):
         self.email = email
         self.uuid = uuid.uuid4()
         self.password_hash =  generate_password_hash(password_hash)
-        self.user_number = ''
+        self.user_number = number
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -54,7 +54,7 @@ class Users(db.Model):
 
 
 class Channel(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)
@@ -142,7 +142,7 @@ class Posts(db.Model):
         self.uploader_id = uploader
         self.channel_id = channel
         self.post_type = posttype
-        self.uploader = Users.query.filter_by(uuid=uploader_id).first().username
+        self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
     
     def __repr__(self):
@@ -154,15 +154,15 @@ class Comment(db.Model):
     comment_type = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
-    language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
+    #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
     
     def __init__(self, language, user, post, content, comment_type):
         self.content = content
-        self.user = user
-        self.post = post
-        self.language = language
-        self.type = comment_type
+        self.user_id = user
+        self.post_id = post
+        #self.language_id = language
+        self.comment_type = comment_type
 
     def __repr__(self):
         return '<Comment>%r' %self.content
@@ -253,3 +253,4 @@ class Postsw(Posts):
     sw_title = db.Column(db.String(250), nullable = False, unique=True)
     sw_content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+

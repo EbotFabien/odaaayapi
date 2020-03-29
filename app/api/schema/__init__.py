@@ -10,14 +10,14 @@ apiinfo = apisec.model('Info', {
 })
 
 logindata = apisec.model('Login', {
-    'username': fields.String(required=True),
-    'password': fields.String(required=True)
+    'username': fields.String(required=True, description="Username you registered in the application"),
+    'password': fields.String(required=True, description="Password for the user above")
 })
 
 signupdata = apisec.model('Signup', {
-    'username': fields.String(required=True),
-    'email': fields.String(required=True),
-    'password': fields.String(required=True)
+    'username': fields.String(required=True, description="The username for the application"),
+    'email': fields.String(required=True, description="Users email for the application"),
+    'password': fields.String(required=True, description="Password of the user")
 })
 
 trendingdata = apisec.model('trending',{
