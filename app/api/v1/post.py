@@ -1,4 +1,4 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields, marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
@@ -30,7 +30,6 @@ post = Namespace('/api/post', \
         To get this authorization, please contact out I.T Team ', \
     path='/v1/')
 
-
 postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
     'channel': fields.Integer(required=True),
@@ -48,9 +47,9 @@ deletedata =post.model('deletedata',{
     
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
-    'uploader_id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'channel_id': fields.Integer(required=True),
+    'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)
 })
@@ -83,6 +82,7 @@ class Post(Resource):
     @token_required
     @post.marshal_with(postdata)
     def get(self):
+        users = Users.query.all()
         posts = Posts.query.all()
         return posts, 200
 

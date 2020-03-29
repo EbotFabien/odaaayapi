@@ -10,6 +10,7 @@ import uuid
 
 
 
+
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channel.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
@@ -127,6 +128,7 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     content = db.Column(db.String)
+    uploader = db.Column(db.String)
     uploader_date = db.Column(db.DateTime, nullable=False)
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'), nullable=False)
@@ -134,14 +136,14 @@ class Posts(db.Model):
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
 
-    def __init__(self, uploader, title, channel, posttype, content):
+    def __init__(self, uploader, title, channel, posttype, content, uploader_id):
         self.content = content
         self.title = title
         self.uploader_id = uploader
         self.channel_id = channel
         self.post_type = posttype
+        self.uploader = Users.query.filter_by(uuid=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
- 
     
     def __repr__(self):
         return '<Post>%r' %self.title
@@ -151,7 +153,8 @@ class Comment(db.Model):
     content = db.Column(db.String, nullable=False)
     comment_type = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
+    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
+    language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
     
     def __init__(self, language, user, post, content, comment_type):
