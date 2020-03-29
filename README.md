@@ -39,7 +39,9 @@ flask db upgrade
 ```
 For MacOs and Linux
 ```shell
+
 export FLASK_APP=news.py
+
 flask db init
 flask db migrate
 flask db upgrade

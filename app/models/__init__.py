@@ -37,7 +37,7 @@ class Users(db.Model):
     def __init__(self, username, email, password_hash, number):
         self.username = username
         self.email = email
-        self.uuid = uuid.uuid4()
+        self.uuid = str(uuid.uuid4())
         self.password_hash =  generate_password_hash(password_hash)
         self.user_number = ''
 
@@ -53,7 +53,7 @@ class Users(db.Model):
 
 
 class Channel(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key= True , nullable= False)
     name = db.Column(db.String)
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)

@@ -34,7 +34,7 @@ post = Namespace('/api/post', \
 postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
     'channel': fields.Integer(required=True),
-    'type': fields.Integer(required=True),
+    'type': fields.String(required=True),
     'content': fields.String(required=True)
 })
 Updatedata = post.model('Updatedata',{
@@ -94,7 +94,9 @@ class Post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post_id=Posts.query.get(req_data['id'])
-        if user and post_id:
+        if req_data['content'] is None:
+            return {'res':'fail'}, 404
+        elif user and post_id:
             post_id.title= req_data['title']
             post_id.content=req_data['content']
             db.session.commit()
@@ -141,7 +143,11 @@ class Post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if user:
+        if req_data['channel'] is None:
+            return {'res':'fail'}, 404
+        elif user:
+            if req_data['type'] is None:
+                req_data['type']="Text"
             new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'])
             db.session.add(new_post)
             db.session.commit()
