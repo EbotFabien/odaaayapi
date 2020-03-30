@@ -62,6 +62,7 @@ postreq = post.model('postreq', {
     'arg_type': fields.String(required=True),
 })
 
+
 @post.doc(
     security='KEY',
     responses={
