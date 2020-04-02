@@ -5,6 +5,7 @@ from flask import abort, request, session
 from flask import current_app as app
 from app.models import Users, Channel, subs, Posts
 from app import db
+import json
 
 
 # The token decorator to protect my routes
@@ -46,6 +47,15 @@ postdata = post.model('postreturndata', {
     'uploader_date': fields.DateTime(required=True)
 })
 
+multiplepost = post.model('',{
+    "start": fields.Integer(required=True),
+    "limit": fields.Integer(required=True),
+    "count": fields.Integer(required=True),
+    "next": fields.String(required=True),
+    "previous": fields.String(required=True),
+    "results": fields.List(fields.Nested(postdata))
+})
+
 
 postreq = post.model('postreq', {
     'arg': fields.String(required=True),
@@ -57,6 +67,9 @@ postreq = post.model('postreq', {
 
 @post.doc(
     security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page' },
     responses={
         200: 'ok',
         201: 'created',
@@ -72,11 +85,26 @@ postreq = post.model('postreq', {
 @post.route('/post')
 class Post(Resource):
     @token_required
-    @post.marshal_with(postdata)
     def get(self):
-        users = Users.query.all()
-        posts = Posts.query.all()
-        return posts, 200
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v2/events/page?start="+start+"&limit="+limit+""
+            previous = "/api/v2/events/page?start="+start+"&limit="+limit+""
+            posts = Posts.query.paginate(int(start), int(count), False).items
+            return {
+                "start": start,
+                "limit": limit,
+                "count": count,
+                "next": next,
+                "previous": previous,
+                "results": marshal(posts, postdata)
+            }, 200
+        else:
+            posts = Posts.query.all()
+            return marshal(posts, postdata), 200
     @token_required
     @post.expect(postcreationdata)
     def post(self):
