@@ -4,7 +4,7 @@ from functools import wraps
 from flask import abort, request, session
 from flask import current_app as app
 from app.models import Users, Channel, subs, Posts
-from app import db
+from app import db, cache
 import json
 
 
@@ -85,6 +85,7 @@ postreq = post.model('postreq', {
 @post.route('/post')
 class Post(Resource):
     @token_required
+    @cache.cached(300, key_prefix='all_posts')
     def get(self):
         if request.args:
             start  = request.args.get('start', None)

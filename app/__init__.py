@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
@@ -6,6 +7,7 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
 from flask_caching import Cache
+import flask_monitoringdashboard as dashboard
 
 
 
@@ -13,8 +15,9 @@ from flask_caching import Cache
 db = SQLAlchemy()
 mail = Mail()
 migrate = Migrate()
+basedir= os.path.abspath(os.path.dirname(__file__))
 cache = Cache(config={'CACHE_TYPE': 'simple'})
-
+dashboard.config.init_from(file=os.path.join(basedir, '../config.cfg'))
 
 
 def createapp(configname):
@@ -26,7 +29,9 @@ def createapp(configname):
     cache.init_app(app)
     migrate.init_app(app, db)
     manager = Manager(app)
+    dashboard.bind(app)
     manager.add_command('db', MigrateCommand)
+    
 
     from .api import api as api_blueprint
     from app import models
