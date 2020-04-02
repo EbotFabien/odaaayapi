@@ -54,6 +54,7 @@ if __name__ == "__main__":
     recreate_db()
     seed()
     app.run(
+        threaded=True,
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
