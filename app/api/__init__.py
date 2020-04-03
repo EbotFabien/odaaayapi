@@ -6,7 +6,7 @@ from flask_cors import CORS
 from functools import wraps
 from flask import current_app as app
 from datetime import datetime, timedelta
-from app import db
+from app import db, limiter
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.datastructures import FileStorage
@@ -25,6 +25,7 @@ authorizations = {
         'name': 'API-KEY'
     }
 }
+
 
 # The token decorator to protect my routes
 def token_required(f):
@@ -84,6 +85,7 @@ message = apisec.namespace('/api/mesage/user*', \
     on the application.", \
     path = '/v1/')
 
+
 @login.doc(
     responses={
         200: 'ok',
@@ -99,12 +101,14 @@ message = apisec.namespace('/api/mesage/user*', \
     })
 @login.route('/auth/login')
 class Login(Resource):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("1/hour")
     @login.expect(schema.logindata)
     def post(self):
         login_data = request.get_json()
         user = Users.query.filter_by(username=login_data['username']).first()
         if user is None or not user.verify_password(login_data['password']):
-            return {},404   
+            return {'res':'User not Found'},404   
         else:
             if user.verify_password(login_data['password']):
                 token = jwt.encode({
@@ -133,6 +137,8 @@ class Login(Resource):
     })
 @signup.route('/auth/signup')
 class Signup(Resource):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("10/hour")
     @signup.expect(schema.signupdata)
     def post(self):
         signup_data = request.get_json()
