@@ -4,6 +4,8 @@ from app.models import Users, Channel, subs, Language, Save, Setting, Message, C
         Postsw, Posttype, Rating, Ratingtype
 from app import db, createapp
 import random
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 app = createapp('dev')
 name = '''
@@ -33,6 +35,8 @@ def seed():
         for i in range(100):
             passwd = fake.ean8()
             user = fake.user_name()
+            f = open("users.txt","a+")
+            f.write(user +":======:"+ passwd +"\n")
             db.session.add(Users(username=user, email=fake.email(), password_hash=passwd, number=fake.zipcode_plus4()))
             db.session.commit()
         for v in range(1):
@@ -47,12 +51,17 @@ def seed():
         for y in range(200):
             db.session.add(Comment(language=1, user=random.randint(1,100), post=random.randint(1,100), content=fake.paragraph(), comment_type='text'))
             db.session.commit()
-
+        f.close()
 
 if __name__ == "__main__":
     print(name)
     recreate_db()
     seed()
+    # Error tracking and logging with sentry
+    sentry_sdk.init(
+    dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
+    integrations=[FlaskIntegration()]
+)
     app.run(
         threaded=True,
         host=app.config.get('HOST'),

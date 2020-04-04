@@ -36,8 +36,8 @@ def createapp(configname):
     manager = Manager(app)
     dashboard.bind(app)
     limiter.init_app(app)
-    #matomo = Matomo(app, matomo_url="http://localhost/matomo",
-    #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
+    matomo = Matomo(app, matomo_url="http://localhost/matomo",
+                id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     manager.add_command('db', MigrateCommand)
     
 
@@ -46,4 +46,9 @@ def createapp(configname):
 
     app.register_blueprint(api_blueprint, url_prefix='/api')
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+    @app.route('/debug-sentry')
+    def trigger_error():
+        division_by_zero = 1 / 0
+
     return app

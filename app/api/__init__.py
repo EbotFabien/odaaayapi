@@ -85,6 +85,7 @@ message = apisec.namespace('/api/mesage/user*', \
     on the application.", \
     path = '/v1/')
 
+ 
 
 @login.doc(
     responses={
