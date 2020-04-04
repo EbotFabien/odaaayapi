@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, url_for
 from app.services import Mailer
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
@@ -186,21 +186,21 @@ class Home(Resource):
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
             # Still to fix the next and previous WRT Sqlalchemy
-            next = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
-            previous = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
-            posts_trending = Posts.query.paginate(int(start), int(count), False).items
-            posts_feed = Posts.query.paginate(int(start), int(count), False).items
-            posts_discover = Posts.query.paginate(int(start), int(count), False).items
+            posts_trending = Posts.query.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
+            posts_feed = Posts.query.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
+            posts_discover = Posts.query.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
+            next_url = url_for('api./api/home_home', start=posts_trending.next_num, limit=int(limit), count=int(count)) if posts_trending.has_next else None 
+            previous = url_for('api./api/home_home', start=posts_trending.prev_num, limit=int(limit), count=int(count)) if posts_trending.has_prev else None 
             return {
                 "start": start,
                 "limit": limit,
                 "count": count,
-                "next": next,
+                "next": next_url,
                 "previous": previous,
                 "results": {
-                    'trending': marshal(posts_trending, schema.postdata),
-                    'feed': marshal(posts_feed, schema.postdata),
-                    'discover': marshal(posts_discover, schema.postdata)
+                    'trending': marshal(posts_trending.items, schema.postdata),
+                    'feed': marshal(posts_feed.items, schema.postdata),
+                    'discover': marshal(posts_discover.items, schema.postdata)
                 }
             }, 200
         else:
