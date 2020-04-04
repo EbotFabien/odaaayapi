@@ -106,6 +106,7 @@ class Login(Resource):
     @limiter.limit("1/hour")
     @login.expect(schema.logindata)
     def post(self):
+        app.logger.info('User login in')
         login_data = request.get_json()
         user = Users.query.filter_by(username=login_data['username']).first()
         if user is None or not user.verify_password(login_data['password']):

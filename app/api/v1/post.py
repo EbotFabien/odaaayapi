@@ -4,7 +4,7 @@ from functools import wraps
 from flask import abort, request, session
 from flask import current_app as app
 from app.models import Users, Channel, subs, Posts
-from app import db, cache
+from app import db, cache, logging
 import json
 
 
@@ -136,7 +136,6 @@ class Post(Resource):
         else:
               return {'res':'fail'}, 404
         
-        #return {}, 200
     @token_required
     @post.expect(deletedata)
     def delete(self):

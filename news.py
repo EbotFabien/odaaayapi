@@ -6,6 +6,9 @@ from app import db, createapp
 import random
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
+import logging
+from logging.handlers import RotatingFileHandler
+from datetime import datetime
 
 app = createapp('dev')
 name = '''
@@ -59,9 +62,15 @@ if __name__ == "__main__":
     seed()
     # Error tracking and logging with sentry
     sentry_sdk.init(
-    dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
-    integrations=[FlaskIntegration()]
-)
+        dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
+        integrations=[FlaskIntegration()]
+    )
+
+    # Initializing log
+    file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
     app.run(
         threaded=True,
         host=app.config.get('HOST'),
