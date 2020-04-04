@@ -103,8 +103,8 @@ class Post(Resource):
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
             # Still to fix the next and previous WRT Sqlalchemy
-            next = "/api/v2/events/page?start="+start+"&limit="+limit+""
-            previous = "/api/v2/events/page?start="+start+"&limit="+limit+""
+            next = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
             posts = Posts.query.paginate(int(start), int(count), False).items
             return {
                 "start": start,

@@ -6,7 +6,7 @@ from flask_cors import CORS
 from functools import wraps
 from flask import current_app as app
 from datetime import datetime, timedelta
-from app import db, limiter
+from app import db, limiter, cache
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.datastructures import FileStorage
@@ -159,6 +159,7 @@ class Signup(Resource):
 
 
 # Home still requires paginated queries for user's phone not to load forever
+@cache.cached(300, key_prefix='all_home_posts')
 @home.doc(
     security='KEY',
     responses={
@@ -180,14 +181,37 @@ class Home(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         # user getting data for their home screen
-        posts_trending = Posts.query.limit(8).all()
-        posts_feed = Posts.query.limit(8).all()
-        posts_discover = Posts.query.limit(8).all()
-        return {
-            'trending': marshal(posts_trending, schema.postdata),
-            'feed': marshal(posts_feed, schema.postdata),
-            'discover': marshal(posts_discover, schema.postdata)
-        }, 200       
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
+            posts_trending = Posts.query.paginate(int(start), int(count), False).items
+            posts_feed = Posts.query.paginate(int(start), int(count), False).items
+            posts_discover = Posts.query.paginate(int(start), int(count), False).items
+            return {
+                "start": start,
+                "limit": limit,
+                "count": count,
+                "next": next,
+                "previous": previous,
+                "results": {
+                    'trending': marshal(posts_trending, schema.postdata),
+                    'feed': marshal(posts_feed, schema.postdata),
+                    'discover': marshal(posts_discover, schema.postdata)
+                }
+            }, 200
+        else:
+            posts_trending = Posts.query.limit(10).all()
+            posts_feed = Posts.query.limit(10).all()
+            posts_discover = Posts.query.limit(10).all()
+            return {
+                'trending': marshal(posts_trending, schema.postdata),
+                'feed': marshal(posts_feed, schema.postdata),
+                'discover': marshal(posts_discover, schema.postdata)
+            }, 200       
 
 @message.doc(
     security='KEY',
