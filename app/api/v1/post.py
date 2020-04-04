@@ -34,8 +34,18 @@ post = Namespace('/api/post', \
 postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
     'channel': fields.Integer(required=True),
-    'type': fields.Integer(required=True),
+    'type': fields.String(required=True),
     'content': fields.String(required=True)
+})
+
+Updatedata = post.model('Updatedata',{
+    'id':  fields.String(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True)
+})
+
+deletedata =post.model('deletedata',{
+    'id':fields.String(required=True)
 })
     
 postdata = post.model('postreturndata', {
@@ -83,6 +93,7 @@ postreq = post.model('postreq', {
         500: 'internal server error, please contact admin and report issue'
     })
 @post.route('/post')
+
 class Post(Resource):
     @token_required
     @cache.cached(300, key_prefix='all_posts')
@@ -106,6 +117,57 @@ class Post(Resource):
         else:
             posts = Posts.query.all()
             return marshal(posts, postdata), 200
+
+    @token_required
+    @post.expect(Updatedata)
+    def put(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post_id=Posts.query.get(req_data['id'])
+        if req_data['content'] is None:
+            return {'res':'fail'}, 404
+        elif user and post_id:
+            post_id.title= req_data['title']
+            post_id.content=req_data['content']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+        
+        #return {}, 200
+    @token_required
+    @post.expect(deletedata)
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post_id=Posts.query.get(req_data['id'])
+        if user and post_id:
+            db.session.delete(post_id)
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+    
+    @token_required
+    @post.expect(Updatedata)
+    def patch(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post_id=Posts.query.get(req_data['id'])
+        if user and post_id:
+            post_id.title= req_data['title']
+            post_id.content=req_data['content']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+              
     @token_required
     @post.expect(postcreationdata)
     def post(self):
@@ -113,19 +175,18 @@ class Post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if user:
-            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], data['uuid'])
+        if req_data['channel'] is None:
+            return {'res':'fail'}, 404
+        elif user:
+            if req_data['type'] is None:
+                req_data['type']="Text"
+            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'])
             db.session.add(new_post)
             db.session.commit()
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
-    @token_required
-    def put(self):
-        return {}, 200
-    @token_required
-    def patch(self):
-        return {}, 200
-    @token_required
-    def delete(self, id):
-        return {}, 200
+   
+    
+
+    

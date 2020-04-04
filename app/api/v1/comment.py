@@ -77,6 +77,12 @@ class Data(Resource):
     @token_required
     @comment.expect(logindata)
     def post(self, username):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if user:
+            return {}, 200
         return {}, 200
     @token_required
     @comment.expect(logindata)
@@ -99,10 +105,23 @@ class Searchcomment(Resource):
     @token_required
     @comment.expect(logindata)
     def post(self, username):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if user:
+            return {}, 200
+
     @token_required
     @comment.expect(logindata)
     def put(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        #if 
+        #elif user:
+        #    return {}, 200
         return {}, 200
     @token_required
     @comment.expect(logindata)

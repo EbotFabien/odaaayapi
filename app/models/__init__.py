@@ -38,7 +38,7 @@ class Users(db.Model):
     def __init__(self, username, email, password_hash, number):
         self.username = username
         self.email = email
-        self.uuid = uuid.uuid4()
+        self.uuid = str(uuid.uuid4())
         self.password_hash =  generate_password_hash(password_hash)
         self.user_number = number
 
