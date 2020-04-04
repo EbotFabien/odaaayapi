@@ -20,17 +20,20 @@ signupdata = apisec.model('Signup', {
     'password': fields.String(required=True, description="Password of the user")
 })
 
-trendingdata = apisec.model('trending',{
-
+postdata = apisec.model('postreturndata', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'channel_id': fields.Integer(required=True),
+    'uploader': fields.String(required=True),
+    'content': fields.String(required=True),
+    'uploader_date': fields.DateTime(required=True)
 })
 
-feeddata = apisec.model('feed',{
-    
-})
+trendingdata = apisec.inherit('trending', postdata, {})
 
-discoverdata = apisec.model('discover',{
-    
-})
+feeddata = apisec.model('feed', postdata, {})
+
+discoverdata = apisec.model('discover', postdata, {})
 
 homedata = apisec.model('Home', {
     'trending': fields.List(fields.Nested(trendingdata)),

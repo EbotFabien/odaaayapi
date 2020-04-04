@@ -30,8 +30,6 @@ channel = Namespace('/api/channel', \
     on the application.", \
     path = '/v1/')
 
-
-
 creationdata = channel.model('Create', {
     'username': fields.String(required=True),
     'email': fields.String(required=True),

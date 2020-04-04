@@ -1,6 +1,6 @@
 from flask import Blueprint
 from app.services import Mailer
-from flask_restplus import Api, Resource, fields, reqparse
+from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
 from functools import wraps
@@ -157,6 +157,8 @@ class Signup(Resource):
         else:
             return {},404
 
+
+# Home still requires paginated queries for user's phone not to load forever
 @home.doc(
     security='KEY',
     responses={
@@ -174,11 +176,18 @@ class Signup(Resource):
 @home.route('/home')
 class Home(Resource):
     @token_required
-    @home.marshal_with(schema.homedata)
     def get(self):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        return data, 200       
+        # user getting data for their home screen
+        posts_trending = Posts.query.limit(8).all()
+        posts_feed = Posts.query.limit(8).all()
+        posts_discover = Posts.query.limit(8).all()
+        return {
+            'trending': marshal(posts_trending, schema.postdata),
+            'feed': marshal(posts_feed, schema.postdata),
+            'discover': marshal(posts_discover, schema.postdata)
+        }, 200       
 
 @message.doc(
     security='KEY',
