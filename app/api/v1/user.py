@@ -3,6 +3,7 @@ import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
 from app.models import Users
+from flask import current_app as app
 
 # The token decorator to protect my routes
 def token_required(f):
