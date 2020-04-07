@@ -9,6 +9,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
+from flask_migrate import upgrade
 
 app = createapp('dev')
 name = '''
@@ -55,6 +56,7 @@ def seed():
             db.session.add(Comment(language=1, user=random.randint(1,100), post=random.randint(1,100), content=fake.paragraph(), comment_type='text'))
             db.session.commit()
         f.close()
+    
 
 if __name__ == "__main__":
     print(name)

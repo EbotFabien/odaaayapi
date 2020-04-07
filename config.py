@@ -7,11 +7,12 @@ basedir= os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://test:test@db/test'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/news'
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-    #'mysql://root:''@localhost/news' \
+    # 'mysql://root:''@localhost/news' \
     #    or 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     # 'postgresql://localhost/news'
+    # 'postgresql+psycopg2://test:test@db/test'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     LANGUAGES = ['en', 'fr', 'arb', 'por']
     RESTPLUS_VALIDATE = True

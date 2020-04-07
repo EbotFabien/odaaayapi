@@ -9,14 +9,12 @@ ENV FLASK_APP "news.py"
 ENV FLASK_ENV "development"
 ENV FLASK_DEBUG True
 
-RUN mkdir /app
-WORKDIR /app
+WORKDIR /home/news
 
-COPY ./requirements.txt /app/requirements.txt
-COPY ./config.py /app/config.py
-COPY ./config.cfg /app/config.cfg
-COPY ./news.py /app/news.py
-COPY ./app /app/app
+COPY app app
+COPY migrations migrations
+COPY requirements.txt requirements.txt
+COPY news.py config.py config.cfg ./
 
 RUN pip install --upgrade pip && \
     pip install virtualenv && \

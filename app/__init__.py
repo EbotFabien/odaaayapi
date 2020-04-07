@@ -3,7 +3,7 @@ from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
-from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate, MigrateCommand, upgrade
 from flask_script import Manager
 from flask_cors import CORS
 from flask_caching import Cache
@@ -37,7 +37,7 @@ def createapp(configname):
     dashboard.bind(app)
     limiter.init_app(app)
     crontab.init_app(app)
-    matomo = Matomo(app, matomo_url="http://localhost/matomo",
+    matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
                 id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     manager.add_command('db', MigrateCommand)
     

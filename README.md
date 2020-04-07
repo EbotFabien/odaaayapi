@@ -69,6 +69,13 @@ pip install pytest pytest-cov pytest-flask
 pytest --cov=web/ --ignore=tests/integration tests
 ```
 
+Integration with docker:
+
+```shell
+docker-compose build
+docker-compose up
+```
+
 Integration and unit tests run with:
 
 ```shell
