@@ -3,3 +3,4 @@ migrations/
 logs/
 postgres-data/
 .coverage
+.vscode/
