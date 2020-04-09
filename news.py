@@ -36,26 +36,25 @@ def recreate_db():
 def seed():
     with app.app_context():
         fake = Faker()
-        for i in range(100):
+        for i in range(10):
             passwd = fake.ean8()
             user = fake.user_name()
-            f = open("users.txt","a+")
-            f.write(user +":======:"+ passwd +"\n")
+            print(user +":======:"+ passwd +"\n")
             db.session.add(Users(username=user, email=fake.email(), password_hash=passwd, number=fake.zipcode_plus4()))
             db.session.commit()
         for v in range(1):
             db.session.add(Posttype(content='text'))
             db.session.commit()
-        for j in range(40):
-            db.session.add(Channel(name=fake.company(), description=fake.paragraph(),profile_pic=fake.image_url(), background=fake.image_url(), user=random.randint(1,100), css=''))
+        for j in range(10):
+            db.session.add(Channel(name=fake.company(), description=fake.paragraph(),profile_pic=fake.image_url(), background=fake.image_url(), user=random.randint(1,10), css=''))
             db.session.commit()
-        for x in range(100):
-            db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,100)).first().id, title=fake.sentence(), channel=random.randint(1,40), posttype=1, content=fake.text(), uploader_id=random.randint(1,100)))
+        for x in range(80):
+            db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10)))
             db.session.commit()
-        for y in range(200):
-            db.session.add(Comment(language=1, user=random.randint(1,100), post=random.randint(1,100), content=fake.paragraph(), comment_type='text'))
+        for y in range(150):
+            db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(1,80), content=fake.paragraph(), comment_type='text'))
             db.session.commit()
-        f.close()
+        
     
 
 if __name__ == "__main__":
@@ -69,10 +68,10 @@ if __name__ == "__main__":
     )
 
     # Initializing log
-    file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
+   # file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
+    #file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    #file_handler.setLevel(logging.INFO)
+    #app.logger.addHandler(file_handler)
     app.run(
         threaded=True,
         host=app.config.get('HOST'),
