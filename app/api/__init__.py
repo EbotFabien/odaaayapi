@@ -162,6 +162,9 @@ class Signup(Resource):
 @cache.cached(300, key_prefix='all_home_posts')
 @home.doc(
     security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page' },
     responses={
         200: 'ok',
         201: 'created',

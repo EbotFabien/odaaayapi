@@ -11,16 +11,9 @@ ENV FLASK_DEBUG True
 
 WORKDIR /home/news
 
-COPY app app
-COPY migrations migrations
-COPY requirements.txt requirements.txt
-COPY news.py config.py config.cfg ./
+COPY . /home/news
 
-RUN pip install --upgrade pip && \
-    pip install virtualenv && \
-    pip install -r ./requirements.txt
-
-ADD . /app
+RUN pip install -r ./requirements.txt
 
 EXPOSE 5000
 
