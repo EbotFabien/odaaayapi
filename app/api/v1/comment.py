@@ -2,8 +2,9 @@ from flask_restplus import Namespace, Resource, fields
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from app.models import Users
+from app.models import Users,Posts,Comment
 from flask import current_app as app
+from app import db
 
 
 # The token decorator to protect my routes
@@ -54,11 +55,15 @@ creationdata = comment.model('Create', {
     'password': fields.String(required=True),
     'bio': fields.String(required=True)
 })
-    
+commentcreation =comment.model('Create',{
+    'post_id': fields.String(required=True),
+    'content': fields.String(required=True),
+    'comment_type': fields.String(required=True),
+})    
 
 @comment.doc(
     security='KEY',
-    params={ 'username': 'Specify the username associated with the person' },
+    params={ 'postid': 'Specify the id of the post' },
     responses={
         200: 'ok',
         201: 'created',
@@ -77,15 +82,26 @@ class Data(Resource):
     def get(self):
         return {}, 200
     @token_required
-    @comment.expect(logindata)
-    def post(self, username):
+    @comment.expect(commentcreation)
+    def post(self):
+        if request.args.get('postid'):
+            post_id=request.args.get('postid')
+        elif request.args.get('postid') is None:
+            post_id=Posts.query.get(req_data['post_id'])
+        if post_id is None:
+            return {'res':'fail'},400
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if user:
-            return {}, 200
-        return {}, 200
+        if  post_id:
+            new_comment=Comment(user,'1', post_id, req_data['content'], req_data['comment_type'])
+            db.session.add(new_comment)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return {'res':'fail'},400
+        
     @token_required
     @comment.expect(logindata)
     def put(self):

@@ -36,6 +36,8 @@ def recreate_db():
 def seed():
     with app.app_context():
         fake = Faker()
+        db.session.add(Users(username='test', email='test@gmail.com', password_hash='1234', number='123456'))
+        db.session.commit()
         for i in range(10):
             passwd = fake.ean8()
             user = fake.user_name()
