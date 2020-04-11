@@ -156,13 +156,15 @@ class Comment(db.Model):
     timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
     #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
-    
-    def __init__(self, language, user, post, content, comment_type):
+    public =db.Column(db.Boolean, nullable= False, default=True)
+
+    def __init__(self, language, user, post, content, comment_type,public):
         self.content = content
         self.user_id = user
         self.post_id = post
         #self.language_id = language
         self.comment_type = comment_type
+        self.public = public
 
     def __repr__(self):
         return '<Comment>%r' %self.content

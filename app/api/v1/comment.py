@@ -1,10 +1,10 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
 from app.models import Users,Posts,Comment
 from flask import current_app as app
-from app import db
+from app import db,cache
 
 
 # The token decorator to protect my routes
@@ -60,10 +60,29 @@ commentcreation =comment.model('Create',{
     'content': fields.String(required=True),
     'comment_type': fields.String(required=True),
 })    
+commentupdate =comment.model('Update',{
+    'Comment_id':fields.String(required=True),
+    'post_id': fields.String(required=True),
+    'content': fields.String(required=True),
+})  
+commentdelete =comment.model('Update',{
+    'Comment_id':fields.String(required=True),
+    'post_id': fields.String(required=True),
+})  
+commentdata =comment.model('commentdata',{
+    'user_id':fields.String(required=True),
+    'post_id':fields.String(required=True),
+    'content':fields.String(required=True),
+})
+
 
 @comment.doc(
     security='KEY',
-    params={ 'postid': 'Specify the id of the post' },
+    params={ 'postid': 'Specify the id of the post',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page' },
+
     responses={
         200: 'ok',
         201: 'created',
@@ -78,24 +97,43 @@ commentcreation =comment.model('Create',{
     })
 @comment.route('/comment')
 class Data(Resource):
-    @comment.marshal_with(apiinfo)
+    @token_required
+    @cache.cached(300, key_prefix='all_Comments')
+    #@comment.marshal_with(apiinfo)
     def get(self):
-        return {}, 200
+        if request.args:
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            comment = Comment.query.filter_by(public=True).paginate(int(start),int(count), False).items
+            return{
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(comment,commentdata)
+            }, 200
+        else:
+            comment =Comment.query.all()
+            return marshal(posts,postdata),200
     @token_required
     @comment.expect(commentcreation)
     def post(self):
+        req_data = request.get_json()
         if request.args.get('postid'):
             post_id=request.args.get('postid')
         elif request.args.get('postid') is None:
             post_id=Posts.query.get(req_data['post_id'])
         if post_id is None:
             return {'res':'fail'},400
-        req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if  post_id:
-            new_comment=Comment(user,'1', post_id, req_data['content'], req_data['comment_type'])
+            new_comment=Comment(user,'1', post_id, req_data['content'], req_data['comment_type'],public=True)
             db.session.add(new_comment)
             db.session.commit()
             return{'res':'success'},200
@@ -103,17 +141,77 @@ class Data(Resource):
             return {'res':'fail'},400
         
     @token_required
-    @comment.expect(logindata)
+    @comment.expect(commentupdate)
     def put(self):
-        return {}, 200
+        req_data = request.get_json()
+        if request.args.get('postid'):
+            post_id=request.args.get('postid')
+        elif request.args.get('postid') is None:
+            post_id=Posts.query.get(req_data['post_id'])
+        if post_id is None:
+            return{'res':'fail'},400
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        comment=Comment.query.get(req_data['Comment_id'])
+    
+        if req_data['content'] is None:
+            return{'res':'fail'}, 404
+        if post_id and comment:
+            if user.id  == comment.user_id:
+                comment.content = req_data['content']
+                db.session.commit()
+            return {'res':'success'}, 200
+        else:
+            return {'res':'fail'},404
+
     @token_required
-    @comment.expect(logindata)
+    @comment.expect(commentupdate)
     def patch(self):
-        return {}, 200
+        req_data = request.get_json()
+        if request.args.get('postid'):
+            post_id=request.args.get('postid')
+        elif request.args.get('postid') is None:
+            post_id=Posts.query.get(req_data['post_id'])
+        if post_id is None:
+            return{'res':'fail'},400
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        comment=Comment.query.get(req_data['Comment_id'])
+        if req_data['content'] is None:
+            return{'res':'fail'}, 404
+        if post_id and comment:
+            if user.id == comment.user_id: 
+                comment.content = req_data['content']
+                db.session.commit()
+            return {'res':'success'}, 200
+        else:
+            return {'res':'fail'},404
+        #return {}, 200
     @token_required
-    @comment.marshal_with(apiinfo)
+    @comment.expect(commentupdate)
     def delete(self):
-        return {}, 200
+        req_data = request.get_json()
+        if request.args.get('postid'):
+            post_id=request.args.get('postid')
+        elif request.args.get('postid') is None:
+            post_id=Posts.query.get(req_data['post_id'])
+        if post_id is None:
+            return{'res':'fail'},400
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        comment=Comment.query.get(req_data['Comment_id'])
+        if post_id and comment:
+            if user.id == comment.user_id:
+                comment.public = False
+                db.session.commit()
+            return {'res':'success'}, 200
+        else:
+            return {'res':'fail'},404
+        #return {}, 200
+        #return {}, 200
 
 @comment.route('/comment/<word>')
 class Searchcomment(Resource):

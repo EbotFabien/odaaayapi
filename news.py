@@ -54,7 +54,7 @@ def seed():
             db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10)))
             db.session.commit()
         for y in range(150):
-            db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(1,80), content=fake.paragraph(), comment_type='text'))
+            db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(1,80), content=fake.paragraph(), comment_type='text' , public=True))
             db.session.commit()
         
     
