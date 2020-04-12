@@ -50,4 +50,3 @@ def createapp(configname):
         division_by_zero = 1 / 0
 
     return app
-

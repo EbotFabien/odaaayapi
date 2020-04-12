@@ -10,9 +10,8 @@ import uuid
 
 
 
-
 subs = db.Table('subs',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channel.id'), primary_key=True),
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
 )
 
@@ -31,7 +30,7 @@ class Users(db.Model):
     user_messages = db.relationship('Message',backref = "message", lazy = True)
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
-    subs = db.relationship('Channel', secondary=subs, lazy='subquery',
+    subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
     
     
@@ -53,7 +52,7 @@ class Users(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
-class Channel(db.Model):
+class Channels(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
@@ -61,7 +60,7 @@ class Channel(db.Model):
     background = db.Column(db.String)
     css = db.Column(db.String) 
     moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    posts = db.relationship('Posts', backref='channelposts', lazy = True)
+
 
     def __init__(self, name, description, profile_pic, background, user, css):
         self.name = name
@@ -72,7 +71,7 @@ class Channel(db.Model):
         self.css = css
 
     def __repr__(self):
-        return'<Channel>%r' %self.name 
+        return'<Channels>%r' %self.name 
 
 class Save(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -131,7 +130,7 @@ class Posts(db.Model):
     uploader = db.Column(db.String)
     uploader_date = db.Column(db.DateTime, nullable=False)
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
-    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'), nullable=False)
+    channel_id = db.Column(db.Integer, db.ForeignKey('channels.id'), nullable=False)
     uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)

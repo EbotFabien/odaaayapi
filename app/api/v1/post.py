@@ -3,7 +3,7 @@ import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
 from flask import current_app as app
-from app.models import Users, Channel, subs, Posts
+from app.models import Users, Channels, subs, Posts
 from app import db, cache, logging
 import json
 
