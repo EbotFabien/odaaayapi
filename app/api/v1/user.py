@@ -1,4 +1,4 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
@@ -35,6 +35,11 @@ userinfo = user.model('Profile', {
     'author': fields.String,
     'description': fields.String
 })
+userdata = user.model('Profile', {
+    'username': fields.String(required=True),
+    'email': fields.String(required=True),
+    'number': fields.String(required=True),
+})
 
 @user.doc(
     security='KEY',
@@ -54,19 +59,20 @@ userinfo = user.model('Profile', {
 @user.route('/user')
 class Data(Resource):
     @token_required
-    @user.marshal_with(userinfo)
+    #@user.marshal_with(userinfo)
     def get(self):
         username = request.args.get('username', None)
-        if username:
-            user =  Users.query.filter_by(username=username).first()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if username == user.username: 
             # get list of blocked users to make sure they don't see profile information.
-            if user is None:
-                return {'res': 'User not found'}, 404
+            return{
+                "results":marshal(user,userdata)
+                }
         else:
-            token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            user = Users.query.filter_by(uuid=data['uuid']).first()
-        return user, 200
+            return {'res': 'User not found'}, 404
+       
     @token_required
     @user.expect(userinfo)
     def post(self, username):
