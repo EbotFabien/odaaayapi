@@ -1,5 +1,6 @@
 stages:
   - build
+  - tests
 build job:
   stage: build
   script:
@@ -9,3 +10,7 @@ build job:
     - apt-get install -y python3-dev python3-pip
     - pip3 install Flask gunicorn pytest pytest-cov
     - pytest tests --cov --cov-report term --cov-report html
+deploy job:
+  stage: tests
+  script:
+    - python tests/basic.py
