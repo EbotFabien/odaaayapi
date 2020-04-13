@@ -1,18 +1,18 @@
-image: rbekker87/build-tools:latest
+image: python:latest
 
 stages:
-  - ver
-  - init
+  - verification
+  - build
   - tests
 
-ver:
-  stage: ver
+verification:
+  stage: verification
   script:
     - python --version
     - whoami
 
-init:
-  stage: init
+build:
+  stage: build
   script:
     - apk add postgresql-dev --no-cache
     - pip install psycopg2-binary
