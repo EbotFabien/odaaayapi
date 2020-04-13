@@ -1,0 +1,11 @@
+stages:
+  - build
+build job:
+  stage: build
+  script:
+    - export PYTHONPATH=.
+    - export FLASK_APP=news.py
+    - apt-get update -qy
+    - apt-get install -y python3-dev python3-pip
+    - pip3 install Flask gunicorn pytest pytest-cov
+    - pytest tests --cov --cov-report term --cov-report html
