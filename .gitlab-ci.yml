@@ -1,17 +1,27 @@
+image: rbekker87/build-tools:latest
+
 stages:
-  - build
-  - test
-build job:
-  stage: build
+  - ver
+  - init
+  - tests
+
+ver:
+  stage: ver
   script:
-    - export PYTHONPATH=.
-    - export FLASK_APP=news.py
-    - apt-get update -qy
-    - apt-get install -y python3-dev python3-pip
-    - pip3 install Flask gunicorn pytest pytest-cov
-    - pytest tests --cov --cov-report term --cov-report html
-    - docker-compose up
-test job:
-  stage: test
+    - python --version
+    - whoami
+
+init:
+  stage: init
   script:
-    - python basic.py
+    - apk add postgresql-dev --no-cache
+    - pip install psycopg2-binary
+    - pip install -r requirements.txt
+
+run_tests:
+  stage: tests
+  script:
+    - apk add postgresql-dev --no-cache
+    - pip install psycopg2-binary
+    - pip install -r requirements.txt
+    - python tests/basic.py
