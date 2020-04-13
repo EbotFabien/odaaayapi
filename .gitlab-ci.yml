@@ -2,21 +2,14 @@ image: python:latest
 
 stages:
   - verification
-  - build
   - tests
+  - build
 
 verification:
   stage: verification
   script:
     - python --version
     - whoami
-
-build:
-  stage: build
-  script:
-    - apk add postgresql-dev --no-cache
-    - pip install psycopg2-binary
-    - pip install -r requirements.txt
 
 run_tests:
   stage: tests
@@ -25,3 +18,10 @@ run_tests:
     - pip install psycopg2-binary
     - pip install -r requirements.txt
     - python tests/basic.py
+
+build:
+  stage: build
+  script:
+    - apk add postgresql-dev --no-cache
+    - pip install psycopg2-binary
+    - pip install -r requirements.txt
