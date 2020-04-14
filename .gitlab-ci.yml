@@ -1,9 +1,9 @@
 image: python:latest
 
 stages:
-  - verification
-  - quality
-  - tests
+  - verification:
+    - quality
+    - tests
   - build
 
 verification:
