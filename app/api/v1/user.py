@@ -40,6 +40,15 @@ userdata = user.model('Profile', {
     'email': fields.String(required=True),
     'number': fields.String(required=True),
 })
+updateuser = user.model('Update',{
+    'user_id':fields.String(required=True),
+    'username': fields.String(required=True),
+    'email':fields.String(required=True),
+    'number':fields.String(required=True),
+})
+deleteuser = user.model('deleteuser',{
+    'user_id':fields.String(required=True)
+})
 
 @user.doc(
     security='KEY',
@@ -74,21 +83,58 @@ class Data(Resource):
             return {'res': 'User not found'}, 404
        
     @token_required
-    @user.expect(userinfo)
-    def post(self, username):
+    @user.expect(updateuser)
+    def post(self):
         return {}, 200
     @token_required
-    @user.expect(userinfo)
+    @user.expect(updateuser)
     def put(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if req_data['username'] and req_data['email'] is None:
+            return {'res':'fail'}, 404  
+
+        if req_data['user_id'] == user.id:
+            user.username = req_data['username']
+            user.email = req_data['email']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+            
     @token_required
-    @user.expect(userinfo)
+    @user.expect(updateuser)
     def patch(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if req_data['username'] and req_data['email'] is None:
+            return {'res':'fail'}, 404  
+
+        if req_data['user_id'] == user.id:
+            user.username = req_data['username']
+            user.email = req_data['email']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
     @token_required
-    @user.marshal_with(userinfo)
+    @user.expect(deleteuser)
     def delete(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if req_data['user_id'] == user.id:
+            db.session.delete(user)
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+    
 
 @user.doc(
     security='KEY',
