@@ -15,13 +15,11 @@ verification:
 run_tests:
   stage: tests
   script:
-    - docker info
     - pip install psycopg2-binary
     - pip install -r requirements.txt
     - export DATABASE_URL=postgres://postgres:@postgres:5432/python-test-app
     - apt-get update -qy
     - apt-get install -y python-dev python-pip
-    - docker build -t test .
 build:
   stage: build
   image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-build-image:v0.2.1"
