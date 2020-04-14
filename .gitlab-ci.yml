@@ -20,7 +20,6 @@ run_tests:
     - export DATABASE_URL=postgres://postgres:@postgres:5432/python-test-app
     - apt-get update -qy
     - apt-get install -y python-dev python-pip
-    - python news.py test
     - docker build -t test .
 build:
   stage: build
