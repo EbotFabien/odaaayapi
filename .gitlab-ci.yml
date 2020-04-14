@@ -16,7 +16,7 @@ run_tests:
   script:
     - pip install psycopg2-binary
     - pip install -r requirements.txt
-    - python tests/basic.py
+    - python ./tests/basic.py
 
 build:
   stage: build
