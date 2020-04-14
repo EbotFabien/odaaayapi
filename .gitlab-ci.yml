@@ -1,17 +1,15 @@
 image: python:latest
 
 stages:
-  - verification:
-    - quality
-    - tests
+  - verification
+  - quality
+  - tests
   - build
-
 verification:
   stage: verification
   script:
     - python --version
     - whoami
-
 run_tests:
   stage: tests
   script:
@@ -40,7 +38,6 @@ build:
   only:
     - branches
     - tags
-
 code_quality:
   stage: quality
   image: docker:19.03.8
