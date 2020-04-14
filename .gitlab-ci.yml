@@ -3,6 +3,7 @@ image: python:latest
 stages:
   - verification
   - quality
+  - scanning
   - tests
   - build
 verification:
@@ -10,6 +11,7 @@ verification:
   script:
     - python --version
     - whoami
+    
 run_tests:
   stage: tests
   script:
@@ -18,12 +20,14 @@ run_tests:
     - export DATABASE_URL=postgres://postgres:@postgres:5432/python-test-app
     - apt-get update -qy
     - apt-get install -y python-dev python-pip
-    
-variables:
-  CS_MAJOR_VERSION: 2
+
 
 scanning:
   stage: tests
+  image: docker:19.03.8
+  allow_failure: true
+  script:
+    - docker info
 
 
 build:
