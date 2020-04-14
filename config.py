@@ -7,8 +7,7 @@ basedir= os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    #engine = create_engine('postgresql+psycopg2://scott:1234@localhost/mydatabase')
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:1234@localhost/news'
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://test:test@db/test'
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     # 'mysql://root:''@localhost/news' \
     #postgresql+psycopg2://postgres:1234@localhost/news
@@ -46,7 +45,7 @@ class Config(object):
 
 class Development(Config):
     DEBUG = True
-    HOST = '127.0.0.1'
+    HOST = '0.0.0.0'
     PORT = 5000
 
 class Production(Config):

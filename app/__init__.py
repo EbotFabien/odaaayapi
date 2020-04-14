@@ -23,7 +23,6 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 
-
 def createapp(configname):
     app = Flask(__name__)
     app.config.from_object(config[configname])
@@ -35,11 +34,10 @@ def createapp(configname):
     manager = Manager(app)
     dashboard.bind(app)
     limiter.init_app(app)
-  #  matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
-   #             id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
+    matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
+                id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     manager.add_command('db', MigrateCommand)
     
-    # Cron job for changing log files daily and backing up db
 
     from .api import api as api_blueprint
     from app import models
@@ -52,4 +50,3 @@ def createapp(configname):
         division_by_zero = 1 / 0
 
     return app
-

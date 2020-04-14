@@ -2,7 +2,7 @@ from flask_restplus import Namespace, Resource, fields
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from app.models import Users, Channel, subs
+from app.models import Users, Channels, subs
 from app import db
 from flask import current_app as app
 
@@ -77,10 +77,10 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        channels = Channel.query.filter_by(name=req_data['name']).first()
+        channels = Channels.query.filter_by(name=req_data['name']).first()
         if user:
             if channels is None:
-                new_channel = Channel(req_data['name'],req_data['description'], req_data['profile_pic'], \
+                new_channel = Channels(req_data['name'],req_data['description'], req_data['profile_pic'], \
                 req_data['background'], user.id, req_data['css'])
                 db.session.add(new_channel)
                 db.session.commit()

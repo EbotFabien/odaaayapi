@@ -5,26 +5,24 @@ LABEL E-mail="leslie.etubo@gmail.com"
 LABEL version="0.0.1b"
 
 ENV PYTHONDONTWRITEBYTECODE 1
-ENV FLASK_APP "news.py"
-ENV FLASK_ENV "development"
+ENV FLASK_APP news.py
+ENV FLASK_ENV development
 ENV FLASK_DEBUG True
+ENV FLASK_RUN_PORT 8000
 
 WORKDIR /home/news
 
-COPY app app
-COPY migrations migrations
-COPY requirements.txt requirements.txt
-COPY news.py config.py config.cfg ./
+COPY ./requirements.txt /home/news
 
-RUN pip install --upgrade pip && \
-    pip install virtualenv && \
-    pip install -r ./requirements.txt
+RUN pip install -r ./requirements.txt
 
-ADD . /app
+COPY . /home/news 
+
 
 EXPOSE 5000
 
-CMD flask run --host=0.0.0.0
+RUN chmod u+x ./boot.sh
+ENTRYPOINT ["./boot.sh"]
 # docker sytem prune (to free all used space)
 # docker ps (to see all docker processes)
 # docker stop [container_name] (to stop a particular container)

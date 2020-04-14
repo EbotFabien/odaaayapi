@@ -1,5 +1,5 @@
 from faker import Faker
-from app.models import Users, Channel, subs, Language, Save, Setting, Message, Comment, \
+from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Subcomment,  Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
         Postsw, Posttype, Rating, Ratingtype
 from app import db, createapp
@@ -48,7 +48,7 @@ def seed():
             db.session.add(Posttype(content='text'))
             db.session.commit()
         for j in range(10):
-            db.session.add(Channel(name=fake.company(), description=fake.paragraph(),profile_pic=fake.image_url(), background=fake.image_url(), user=random.randint(1,10), css=''))
+            db.session.add(Channels(name=fake.company(), description=fake.paragraph(),profile_pic=fake.image_url(), background=fake.image_url(), user=random.randint(1,10), css=''))
             db.session.commit()
         for x in range(80):
             db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10)))
