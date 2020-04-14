@@ -14,12 +14,18 @@ verification:
 run_tests:
   stage: tests
   script:
+    - docker info
     - pip install psycopg2-binary
     - pip install -r requirements.txt
-
+    - export DATABASE_URL=postgres://postgres:@postgres:5432/python-test-app
+    - apt-get update -qy
+    - apt-get install -y python-dev python-pip
+    - python news.py test
+    - docker build -t test .
 build:
   stage: build
   script:
+    - docker info
     - pip install psycopg2-binary
     - pip install -r requirements.txt
-    - docker-compose up --build
+    - docker build -t finish .
