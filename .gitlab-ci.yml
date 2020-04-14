@@ -50,8 +50,9 @@ build:
   only:
     - branches
     - tags
-code_quality:
-  stage: test
+    
+code:
+  stage: quality
   image: docker:19.03.8
   allow_failure: true
   services:
