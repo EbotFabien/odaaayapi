@@ -14,7 +14,10 @@ subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
 )
-
+followers = db.Table('followers',
+    db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('followed_id',db.Integer,db.ForeignKey('users.id'))
+)
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -32,7 +35,11 @@ class Users(db.Model):
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
-    
+    followed = db.relationship(
+        'Users', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
     
     def __init__(self, username, email, password_hash, number):
         self.username = username
@@ -50,6 +57,7 @@ class Users(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 
 
 class Channels(db.Model):
