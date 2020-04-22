@@ -1,4 +1,4 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
@@ -35,6 +35,20 @@ userinfo = user.model('Profile', {
     'author': fields.String,
     'description': fields.String
 })
+userdata = user.model('Profile', {
+    'username': fields.String(required=True),
+    'email': fields.String(required=True),
+    'number': fields.String(required=True),
+})
+updateuser = user.model('Update',{
+    'user_id':fields.String(required=True),
+    'username': fields.String(required=True),
+    'email':fields.String(required=True),
+    'number':fields.String(required=True),
+})
+deleteuser = user.model('deleteuser',{
+    'user_id':fields.String(required=True)
+})
 
 @user.doc(
     security='KEY',
@@ -54,35 +68,73 @@ userinfo = user.model('Profile', {
 @user.route('/user')
 class Data(Resource):
     @token_required
-    @user.marshal_with(userinfo)
+    #@user.marshal_with(userinfo)
     def get(self):
         username = request.args.get('username', None)
-        if username:
-            user =  Users.query.filter_by(username=username).first()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if username == user.username: 
             # get list of blocked users to make sure they don't see profile information.
-            if user is None:
-                return {'res': 'User not found'}, 404
+            return{
+                "results":marshal(user,userdata)
+                }
         else:
-            token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            user = Users.query.filter_by(uuid=data['uuid']).first()
-        return user, 200
+            return {'res': 'User not found'}, 404
+       
     @token_required
-    @user.expect(userinfo)
-    def post(self, username):
+    @user.expect(updateuser)
+    def post(self):
         return {}, 200
     @token_required
-    @user.expect(userinfo)
+    @user.expect(updateuser)
     def put(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if req_data['username'] and req_data['email'] is None:
+            return {'res':'fail'}, 404  
+
+        if req_data['user_id'] == user.id:
+            user.username = req_data['username']
+            user.email = req_data['email']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+            
     @token_required
-    @user.expect(userinfo)
+    @user.expect(updateuser)
     def patch(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if req_data['username'] and req_data['email'] is None:
+            return {'res':'fail'}, 404  
+
+        if req_data['user_id'] == user.id:
+            user.username = req_data['username']
+            user.email = req_data['email']
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
     @token_required
-    @user.marshal_with(userinfo)
+    @user.expect(deleteuser)
     def delete(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if req_data['user_id'] == user.id:
+            db.session.delete(user)
+            db.session.commit()
+            return {'res':'success'}, 200
+        else:
+              return {'res':'fail'}, 404
+    
 
 @user.doc(
     security='KEY',

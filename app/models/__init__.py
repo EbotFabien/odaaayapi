@@ -16,7 +16,10 @@ subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
 )
-
+followers = db.Table('followers',
+    db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('followed_id',db.Integer,db.ForeignKey('users.id'))
+)
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -34,8 +37,11 @@ class Users(db.Model):
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
-    tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    
+    followed = db.relationship(
+        'Users', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
     
     def __init__(self, username, email, password_hash, number):
         self.username = username
@@ -87,6 +93,7 @@ class Task(db.Model):
     def get_progress(self):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
+
 
 
 class Channels(db.Model):
@@ -192,13 +199,15 @@ class Comment(db.Model):
     timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
     #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
-    
-    def __init__(self, language, user, post, content, comment_type):
+    public =db.Column(db.Boolean, nullable= False, default=True)
+
+    def __init__(self, language, user, post, content, comment_type,public):
         self.content = content
         self.user_id = user
         self.post_id = post
         #self.language_id = language
         self.comment_type = comment_type
+        self.public = public
 
     def __repr__(self):
         return '<Comment>%r' %self.content
