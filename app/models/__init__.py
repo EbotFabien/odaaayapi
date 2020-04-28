@@ -16,7 +16,7 @@ subs = db.Table('subs',
 )
 followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
-    db.Column('followed_id',db.Integer,db.ForeignKey('users.id')),git
+    db.Column('followed_id',db.Integer,db.ForeignKey('users.id')),
 )
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
@@ -42,7 +42,7 @@ class Users(db.Model):
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
     def is_following(self,user):
         return self.followed.filter(
-            followers.c.followed_id == users.id).count() > 0
+            followers.c.followed_id == user.id).count() > 0
     def follow(self,user):
         if not self.is_following(user):
             self.followed.append(user)
@@ -50,11 +50,11 @@ class Users(db.Model):
         if self.is_following(user):
             self.followed.remove(user)
     def followed_posts(self):
-        followed = Post.query.join(
-            followers,(followers.c.followed_id == Post.user_id)).filter(
+        followed = Posts.query.join(
+            followers,(followers.c.followed_id == Posts.uploader_id)).filter(
                 followers.c.follower_id == self.id)        
-        own= Post.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Post.timestamp.desc())
+        own= Posts.query.filter_by(uploader_id=self.id)
+        return followed.union(own).order_by(Posts.uploader_date.desc())
         
     def __init__(self, username, email, password_hash, number):
         self.username = username
