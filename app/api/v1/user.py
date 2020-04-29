@@ -56,6 +56,10 @@ Postfollowed = user.model('Postfollowed',{
     'uploader_id' : fields.Integer(required=True),
     
 })
+following_followers = user.model('following',{
+    'id':fields.Integer(required=True),
+    'username':fields.String(required=True)
+})
 fanbase =user.model('Fanbase',{
     'subject':fields.String(required=True),  
 })
@@ -174,8 +178,6 @@ class Data(Resource):
 class User_following(Resource):
     @token_required
     #@cache.cached(300, key_prefix='all_followers&following')
-    #@user.marshal_with(fanbase)
-    #@user.expect(fanbase)
     def get(self):  
         if request.args:
             fan_base =  request.args.get('fan_base')
@@ -188,6 +190,8 @@ class User_following(Resource):
         previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
         user= Users.query.filter_by(uuid=data['uuid']).first()
         posts=user.followed_posts().paginate(int(start),int(count), False).items
+        following=user.is_following().paginate(int(start),int(count), False).items
+        followers=user.followers().pqginate(int(start),int(count),False).items
         if fan_base == 'post':
             return {
                 "start":start,
@@ -197,11 +201,25 @@ class User_following(Resource):
                 "previous":previous,
                 "results":marshal(posts,Postfollowed)
             }, 200
-               # print(posts)
-        if fanbase == 'following':
-            return {'res':'success'}, 200
-        if fanbase == 'followers':
-            return {'res':'success'}, 200
+    
+        if fan_base == 'following':
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(following,following_followers)
+            }, 200
+        if fan_base == 'followers':
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(followers,following_followers)
+            }, 200
        
         
        

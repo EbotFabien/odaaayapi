@@ -55,7 +55,15 @@ class Users(db.Model):
                 followers.c.follower_id == self.id)        
         own= Posts.query.filter_by(uploader_id=self.id)
         return followed.union(own).order_by(Posts.uploader_date.desc())
-        
+    def is_following(self):
+        return Users.query.join(
+            followers,(followers.c.followed_id == Users.id)).filter(
+                followers.c.follower_id == self.id)
+    def followers(self):
+        return Users.query.join(
+            followers,(followers.c.follower_id == Users.id)).filter(
+                followers.c.followed_id == self.id)
+                
     def __init__(self, username, email, password_hash, number):
         self.username = username
         self.email = email
