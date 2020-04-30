@@ -18,6 +18,10 @@ followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('followed_id',db.Integer,db.ForeignKey('users.id')),
 )
+blocking = db.Table('Blocked',
+    db.Column('blocker_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('blocked_id',db.Integer,db.ForeignKey('users.id')),
+)
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -29,6 +33,7 @@ class Users(db.Model):
     password_hash = db.Column(db.String, nullable=False)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.String, nullable=True)
+    user_visibility= db.column(db.Boolean,nullable=False,default=True)
     user_saves = db.relationship('Save', backref="save", lazy=True )
     user_messages = db.relationship('Message',backref = "message", lazy = True)
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
@@ -40,6 +45,26 @@ class Users(db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+    blocked = db.relationship(
+        'Users', secondary=blocking,
+        primaryjoin=(blocking.c.blocker_id == id),
+        secondaryjoin=(blocking.c.blocked_id == id),
+        backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
+
+    def is_blocking(self,user):
+        return self.blocked.filter(
+            blocking.c.blocked_id == user.id).count() > 0
+    def block(self,user):
+        if not self.is_blocking(user):
+            self.blocked.append(user)
+    def unblock(self,user):
+        if self.is_blocking(user):
+            self.blocked.append(user)
+    def has_blocked(self):
+        return Users.query.join(
+            blocking,(blocking.c.blocked_id == Users.id)).filter(
+                blocking.c.blocker_id == self.id)
+                  
     def is_following(self,user):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
@@ -55,7 +80,7 @@ class Users(db.Model):
                 followers.c.follower_id == self.id)        
         own= Posts.query.filter_by(uploader_id=self.id)
         return followed.union(own).order_by(Posts.uploader_date.desc())
-    def is_following(self):
+    def has_followed(self):
         return Users.query.join(
             followers,(followers.c.followed_id == Users.id)).filter(
                 followers.c.follower_id == self.id)
@@ -64,12 +89,13 @@ class Users(db.Model):
             followers,(followers.c.follower_id == Users.id)).filter(
                 followers.c.followed_id == self.id)
                 
-    def __init__(self, username, email, password_hash, number):
+    def __init__(self, username, email, password_hash, number,user_visibility):
         self.username = username
         self.email = email
         self.uuid = str(uuid.uuid4())
         self.password_hash =  generate_password_hash(password_hash)
         self.user_number = number
+        self.user_visibility = user_visibility
 
     def __repr__(self):
         return '<User %r>' % self.username

@@ -44,8 +44,9 @@ userdata = user.model('Profile', {
 updateuser = user.model('Update',{
     'user_id':fields.String(required=True),
     'username': fields.String(required=True),
-    'email':fields.String(required=True),
-    'number':fields.String(required=True),
+    'email':fields.String(required=False),
+    'number':fields.String(required=False),
+    'user_visibility':fields.String(required=False),
 })
 deleteuser = user.model('deleteuser',{
     'user_id':fields.String(required=True)
@@ -111,12 +112,13 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if req_data['username'] and req_data['email'] is None:
+        if req_data['username']  is None:
             return {'res':'fail'}, 404  
 
         if req_data['user_id'] == user.id:
             user.username = req_data['username']
             user.email = req_data['email']
+            user.user_visibility = req_data['user_visibility']
             db.session.commit()
             return {'res':'success'}, 200
         else:
@@ -129,12 +131,13 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if req_data['username'] and req_data['email'] is None:
+        if req_data['username']  is None:
             return {'res':'fail'}, 404  
 
         if req_data['user_id'] == user.id:
             user.username = req_data['username']
             user.email = req_data['email']
+            user.user_visibility = req_data['user_visibility']
             db.session.commit()
             return {'res':'success'}, 200
         else:
@@ -190,8 +193,8 @@ class User_following(Resource):
         previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
         user= Users.query.filter_by(uuid=data['uuid']).first()
         posts=user.followed_posts().paginate(int(start),int(count), False).items
-        following=user.is_following().paginate(int(start),int(count), False).items
-        followers=user.followers().pqginate(int(start),int(count),False).items
+        following=user.has_followed().paginate(int(start),int(count), False).items
+        followers=user.followers().paginate(int(start),int(count),False).items
         if fan_base == 'post':
             return {
                 "start":start,
