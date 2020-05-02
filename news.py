@@ -43,13 +43,13 @@ def recreate_db():
 def seed():
     with app.app_context():
         fake = Faker()
-        db.session.add(Users(username='test', email='test@gmail.com', password_hash='1234', number='123456'))
+        db.session.add(Users(username='test', email='test@gmail.com', password_hash='1234', number='123456', user_visibility=True))
         db.session.commit()
         for i in range(10):
             passwd = fake.ean8()
             user = fake.user_name()
             print(user +":======:"+ passwd +"\n")
-            db.session.add(Users(username=user, email=fake.email(), password_hash=passwd, number=fake.zipcode_plus4()))
+            db.session.add(Users(username=user, email=fake.email(), password_hash=passwd, number=fake.zipcode_plus4(), user_visibility=True))
             db.session.commit()
         for v in range(1):
             db.session.add(Posttype(content='text'))

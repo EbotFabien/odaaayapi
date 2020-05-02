@@ -35,12 +35,9 @@ class Users(db.Model):
     password_hash = db.Column(db.String, nullable=False)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.String, nullable=True)
-<<<<<<< HEAD
-    phone_verification = db.Column(db.Boolean, nullable=False, default=False)
-    email_verification = db.Column(db.Boolean, nullable=False, default=False)
-=======
-    user_visibility= db.column(db.Boolean,nullable=False,default=True)
->>>>>>> e018ff087c9e9ee21ee78e54c9e5e8ef79d39216
+    phone_verification = db.Column(db.Boolean, default=False)
+    email_verification = db.Column(db.Boolean, default=False)
+    user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     user_saves = db.relationship('Save', backref="save", lazy=True )
     user_messages = db.relationship('Message',backref = "message", lazy = True)
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
