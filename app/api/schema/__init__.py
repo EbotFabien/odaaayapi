@@ -40,3 +40,8 @@ homedata = apisec.model('Home', {
     'feed': fields.List(fields.Nested(feeddata)),
     'discover': fields.List(fields.Nested(discoverdata))
 })
+
+send_verification = apisec.model('send_verification', {
+    'code': fields.String(required=True, description="code sent to user from server"),
+    'type': fields.String(required=True, description="phone, email or both")
+})

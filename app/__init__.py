@@ -3,7 +3,6 @@ from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
-from flask_migrate import Migrate, MigrateCommand, upgrade
 from flask_script import Manager
 from flask_cors import CORS
 from flask_caching import Cache
@@ -17,7 +16,6 @@ import rq
 
 db = SQLAlchemy()
 mail = Mail()
-migrate = Migrate()
 basedir= os.path.abspath(os.path.dirname(__file__))
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 dashboard.config.init_from(file=os.path.join(basedir, '../config.cfg'))
@@ -31,13 +29,10 @@ def createapp(configname):
     db.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
-    migrate.init_app(app, db)
-    manager = Manager(app)
     dashboard.bind(app)
     limiter.init_app(app)
-    matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
-                id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
-    manager.add_command('db', MigrateCommand)
+    #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
+    #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     app.redis = Redis.from_url(app.config['REDIS_URL'])
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
     

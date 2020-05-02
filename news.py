@@ -10,8 +10,15 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from flask_migrate import upgrade
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand, upgrade
+import unittest
+import os
 
-app = createapp('dev')
+app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
+manager = Manager(app)
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 name = '''
                                    (api)
  ███▄    █ ▓█████  █     █░  ██████ 
@@ -29,11 +36,7 @@ name = '''
 
 def recreate_db():
     with app.app_context():
-<<<<<<< HEAD
         #db.drop_all()
-=======
-        ##db.drop_all()
->>>>>>> 18e140f2e5c2fdf22e9afdc4077627e5514a9259
         db.create_all()
         db.session.commit()
 
@@ -60,10 +63,10 @@ def seed():
         for y in range(150):
             db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(1,80), content=fake.paragraph(), comment_type='text' , public=True))
             db.session.commit()
-        
-    
 
-if __name__ == "__main__":
+
+@manager.command
+def run():
     print(name)
     recreate_db()
     seed()
@@ -74,14 +77,27 @@ if __name__ == "__main__":
     )
 
     # Initializing log
-   # file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
-    #file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    #file_handler.setLevel(logging.INFO)
-    #app.logger.addHandler(file_handler)
+    # file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
+    # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+    # file_handler.setLevel(logging.INFO)
+    # app.logger.addHandler(file_handler)
     app.run(
         threaded=True,
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        #ssl_context='adhoc'
+        # ssl_context='adhoc'
     )
+
+
+@manager.command
+def test():
+    """Runs the unit tests."""
+    tests = unittest.TestLoader().discover('app/tests', pattern='*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        return 0
+    return 1
+
+if __name__ == "__main__":
+    manager.run()

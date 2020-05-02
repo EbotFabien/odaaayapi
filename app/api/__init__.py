@@ -1,5 +1,5 @@
 from flask import Blueprint, url_for
-from app.services import Mailer
+from app.services import Mailer, Phoner
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
@@ -47,7 +47,8 @@ def token_required(f):
 
 api = Blueprint('api', __name__, template_folder = '../templates')
 apisec = Api( app=api, doc='/docs', version='1.4', title='News API.', \
-description='', authorizations=authorizations)
+description='This documentation contains all routes to access the lirivi API. \nSome routes require authorization and can only be gotten \
+    from the lirivi company', license='../LICENSE', license_url='www.lirivi.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
@@ -77,6 +78,11 @@ signup = apisec.namespace('/api/auth', \
 
 home = apisec.namespace('/api/home', \
     description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
+    on the application.", \
+    path = '/v1/')
+
+verify = apisec.namespace('/api/verify', \
+    description= "Handles user verification by email or phone\
     on the application.", \
     path = '/v1/')
 
@@ -237,3 +243,102 @@ class Message(Resource):
     @message.marshal_with(schema.homedata)
     def get(self):
         return {}, 200       
+
+@verify.doc( 
+    security='KEY',
+    params={ 'phonenumber': 'ID of the post',
+            'auth_type': 'Method of authentication e.g phone, email, both',
+            'id':'Id of authenticator' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@verify.route('/verify')
+class verify(Resource):
+    @verify.expect(schema.send_verification)
+    def post(self):
+        verification_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data["uuid"]).first()
+        codedata =  verification_data['code']
+        if verification_data:
+            if  verification_data["type"] == "phone":
+                if str(user.code) == str(codedata):
+                    if user.code_expires_in < datetime.utcnow():
+                        return {
+                            'result': 'Code expired',
+                            'status': 0
+                        }, 401
+                    else:
+                        user.phone_verification= True
+                        db.session.commit()
+                        return {
+                            'result': 'User phone verified',
+                            'status': 1
+                        }, 200
+                else:
+                    return {
+                        'result': 'Verification Failed',
+                        'status': 0
+                    }, 500
+            elif schema.send_verification["type"] == "email":
+                pass # Classic fill email verification.
+            elif schema.send_verification["type"] == "both":
+                user.phone_verification= True
+                db.session.commit()
+                return {
+                    'result': 'User phone verified',
+                    'status': 1
+                }, 200
+            else:
+                return {
+                    'result': 'Verification Failed',
+                    'status': 0
+                }, 500
+        else:
+            return {
+                'result': 'No verification data available',
+                'status': 0
+            }, 500
+
+    def get(self):
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data["uuid"]).first()
+        if request.args:
+            if request.args.get('auth_type') == 'phone':
+                number  = request.args.get('phonenumber', None)
+                authtype = request.args.get('auth_type', None)
+                user.user_number = number
+                phone = Phoner()
+                user.code = phone.send_confirmation_code(number)
+                user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                db.session.commit()
+                if authtype == 'phone':
+                    return {
+                        'result': 'Sms sent',
+                        'status': 1
+                    }, 200
+                elif authtype == 'email':
+                    return {
+                        'result': 'Mail sent',
+                        'status': 1
+                    }, 200
+            elif request.args.get('auth_type') == 'email':
+                pass
+            else:
+                pass
+        else:
+            return {
+                'result': 'No args available in request',
+                'status': 0
+            }, 401

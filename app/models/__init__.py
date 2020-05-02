@@ -31,10 +31,14 @@ class Users(db.Model):
     password_hash = db.Column(db.String, nullable=False)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.String, nullable=True)
+    phone_verification = db.Column(db.Boolean, nullable=False, default=False)
+    email_verification = db.Column(db.Boolean, nullable=False, default=False)
     user_saves = db.relationship('Save', backref="save", lazy=True )
     user_messages = db.relationship('Message',backref = "message", lazy = True)
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
+    code = db.Column(db.Integer)
+    code_expires_in = db.Column(db.DateTime)
     subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
     followed = db.relationship(
