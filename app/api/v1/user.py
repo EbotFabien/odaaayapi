@@ -67,7 +67,7 @@ fanbase =user.model('Fanbase',{
 
 @user.doc(
     security='KEY',
-    params={ 'username': 'Specify the username associated with the person',
+    params={ 'user_id': 'Specify the user_id associated with the person',
              'fan_base':'Specify if you need followers,followed or post',
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
@@ -89,22 +89,27 @@ class Data(Resource):
     @token_required
     #@user.marshal_with(userinfo)
     def get(self):
-        username = request.args.get('username', None)
+        user_id = request.args.get('user_id', None)
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if username == user.username: 
-            # get list of blocked users to make sure they don't see profile information.
+        user_check =Users.query.get(user_id).first()
+        if user_id == user.id: 
             return{
                 "results":marshal(user,userdata)
-                }
+                }, 200
+        if user_check.is_blocking(user):
+            return {'res': 'User not found'}, 404
+        if user_check :
+             return{
+                "results":marshal(user_check,following_followers)# we use this model because it gives us the structure we need
+                }, 200
         else:
             return {'res': 'User not found'}, 404
-       
+
     @token_required
-    @user.expect(updateuser)
     def post(self):
-        return {}, 200
+               
     @token_required
     @user.expect(updateuser)
     def put(self):
@@ -159,7 +164,7 @@ class Data(Resource):
 
 @user.doc(
     security='KEY',
-    params={ 'username': 'Specify the username associated with the person',
+    params={ 'user_id': 'Specify the user_id associated with the person',
              'fan_base':'Specify if you need followers,followed or post',
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
@@ -261,6 +266,64 @@ class User_following(Resource):
             return{'res':'success'},200
         else:
             return {'res':'fail'},404
+
+@user.route('/user/Block')
+class User_Block(Resource):
+    def get(self):
+        if request.args:
+            user_id = request.args.get('user_id')
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+        previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        following=user.has_blocked().paginate(int(start),int(count), False).items
+        if user_id == user.id:
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(following,following_followers)#we are using this model because it helps though it is the following model
+            }, 200
+        else:
+            return {'res':'fail'},404
+        
+    @token_required
+    @user.expect(deleteuser)#This is the block user route but we will use the deleteuser model since we just need the user ID        
+    def post(self, username):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_to_block =Users.query.get(req_data['user_id'])
+        if user_to_block is None:
+            return {'res':'fail'},404
+        if user_to_block:
+            user.block(user_to_block)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return {'res':'fail'},404
+    def delete(self, username):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_to_unblock = Users.query.get(req_data['user_id'])
+        if user_to_unblock is None:
+            return {'res':'fail'},404
+        if user_to_unblock:
+            user.unblock(user_to_unblock)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return{'res':'fail'},404
+
 @user.route('/user/prefs')
 class Userprefs(Resource):
     @user.marshal_with(userinfo)
