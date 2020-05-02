@@ -2,8 +2,9 @@ from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from app.models import Users
+from app.models import Users,followers
 from flask import current_app as app
+from app import db, cache, logging
 
 # The token decorator to protect my routes
 def token_required(f):
@@ -43,16 +44,34 @@ userdata = user.model('Profile', {
 updateuser = user.model('Update',{
     'user_id':fields.String(required=True),
     'username': fields.String(required=True),
-    'email':fields.String(required=True),
-    'number':fields.String(required=True),
+    'email':fields.String(required=False),
+    'number':fields.String(required=False),
+    'user_visibility':fields.String(required=False),
 })
 deleteuser = user.model('deleteuser',{
     'user_id':fields.String(required=True)
 })
+Postfollowed = user.model('Postfollowed',{
+    'id': fields.Integer(required=True),
+    'title':fields.String(required=True),
+    'uploader_id' : fields.Integer(required=True),
+    
+})
+following_followers = user.model('following',{
+    'id':fields.Integer(required=True),
+    'username':fields.String(required=True)
+})
+fanbase =user.model('Fanbase',{
+    'subject':fields.String(required=True),  
+})
 
 @user.doc(
     security='KEY',
-    params={ 'username': 'Specify the username associated with the person' },
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'fan_base':'Specify if you need followers,followed or post',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page' },
     responses={
         200: 'ok',
         201: 'created',
@@ -70,22 +89,28 @@ class Data(Resource):
     @token_required
     #@user.marshal_with(userinfo)
     def get(self):
-        username = request.args.get('username', None)
+        user_id = request.args.get('user_id', None)
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if username == user.username: 
-            # get list of blocked users to make sure they don't see profile information.
+        user_check =Users.query.get(user_id).first()
+        if user_id == user.id: 
             return{
                 "results":marshal(user,userdata)
-                }
+                }, 200
+        if user_check.is_blocking(user):
+            return {'res': 'User not found'}, 404
+        if user_check :
+             return{
+                "results":marshal(user_check,following_followers)# we use this model because it gives us the structure we need
+                }, 200
         else:
             return {'res': 'User not found'}, 404
-       
+
     @token_required
-    @user.expect(updateuser)
     def post(self):
-        return {}, 200
+        pass 
+    
     @token_required
     @user.expect(updateuser)
     def put(self):
@@ -93,17 +118,18 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if req_data['username'] and req_data['email'] is None:
+        if req_data['username']  is None:
             return {'res':'fail'}, 404  
 
         if req_data['user_id'] == user.id:
             user.username = req_data['username']
             user.email = req_data['email']
+            user.user_visibility = req_data['user_visibility']
             db.session.commit()
             return {'res':'success'}, 200
         else:
               return {'res':'fail'}, 404
-            
+
     @token_required
     @user.expect(updateuser)
     def patch(self):
@@ -111,12 +137,13 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if req_data['username'] and req_data['email'] is None:
+        if req_data['username']  is None:
             return {'res':'fail'}, 404  
 
         if req_data['user_id'] == user.id:
             user.username = req_data['username']
             user.email = req_data['email']
+            user.user_visibility = req_data['user_visibility']
             db.session.commit()
             return {'res':'success'}, 200
         else:
@@ -138,7 +165,12 @@ class Data(Resource):
 
 @user.doc(
     security='KEY',
-    params={ 'username': 'Specify the username associated with the person' },
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'fan_base':'Specify if you need followers,followed or post',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page'
+     },
     responses={
         200: 'ok',
         201: 'created',
@@ -151,6 +183,148 @@ class Data(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
+@user.route('/user/following')
+class User_following(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_followers&following')
+    def get(self):  
+        if request.args:
+            fan_base =  request.args.get('fan_base')
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+        previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        posts=user.followed_posts().paginate(int(start),int(count), False).items
+        following=user.has_followed().paginate(int(start),int(count), False).items
+        followers=user.followers().paginate(int(start),int(count),False).items
+        if fan_base == 'post':
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(posts,Postfollowed)
+            }, 200
+    
+        if fan_base == 'following':
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(following,following_followers)
+            }, 200
+        if fan_base == 'followers':
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(followers,following_followers)
+            }, 200
+       
+        
+       
+
+    @token_required
+    @user.expect(deleteuser)#This is the following route but we will use the deleteuser model since we just need the user ID        
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_to_follow =Users.query.get(req_data['user_id'])
+        if user_to_follow is None :
+            return {'res':'fail'}, 404
+        if user_to_follow:
+            user.follow(user_to_follow)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return {'res':'fail'},404
+    @token_required
+    @user.expect(deleteuser)#This is the following route but we will use the deleteuser model since we just need the user ID        
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_to_unfollow =Users.query.get(req_data['user_id'])
+        if user_to_unfollow is None :
+            return {'res':'fail'}, 404
+        if user.is_following(user_to_unfollow) is None:
+            return {'res':'fail'}, 404
+        if user.is_following(user_to_unfollow):
+            user.unfollow(user_to_unfollow)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return {'res':'fail'},404
+
+@user.route('/user/Block')
+class User_Block(Resource):
+    def get(self):
+        if request.args:
+            user_id = request.args.get('user_id')
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+        previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        following=user.has_blocked().paginate(int(start),int(count), False).items
+        if user_id == user.id:
+            return {
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(following,following_followers)#we are using this model because it helps though it is the following model
+            }, 200
+        else:
+            return {'res':'fail'},404
+        
+    @token_required
+    @user.expect(deleteuser)#This is the block user route but we will use the deleteuser model since we just need the user ID        
+    def post(self, username):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_to_block =Users.query.get(req_data['user_id'])
+        if user_to_block is None:
+            return {'res':'fail'},404
+        if user_to_block:
+            user.block(user_to_block)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return {'res':'fail'},404
+    def delete(self, username):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_to_unblock = Users.query.get(req_data['user_id'])
+        if user_to_unblock is None:
+            return {'res':'fail'},404
+        if user_to_unblock:
+            user.unblock(user_to_unblock)
+            db.session.commit()
+            return{'res':'success'},200
+        else:
+            return{'res':'fail'},404
+
 @user.route('/user/prefs')
 class Userprefs(Resource):
     @user.marshal_with(userinfo)
