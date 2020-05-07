@@ -18,7 +18,8 @@ def _set_task_progress(progress):
         job.meta['progress'] = progress
         job.save_meta()
         task = Task.query.get(job.get_id())
-        task.user.add_notification('task_progress', {'task_id': job.get_id(),
+        user = Users.query.get(task.user_id)
+        user.add_notification('task_progress', {'task_id': job.get_id(),
                                                      'progress': progress})
         if progress >= 100:
             task.complete = True
@@ -52,15 +53,15 @@ def export_posts(user_id):
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 def translate_posts(post_id, user_id):
-    languages = 'es'
+    languages = ['es']
     post = Posts.query.get(post_id)
     user = Users.query.get(user_id)
     try:
-        translation = app.ts.translate(text=post.content, src='en', dest=[languages])
-        for i in languages:
-            time.sleep(10)
-            #_set_task_progress(100 * i)
+        translation = app.ts.translate(text=post.content, src='en', dest=languages)
+        for i in range(10):
+            time.sleep(1)
+            _set_task_progress(100 * i)
         print(translation)
     except:
-       # _set_task_progress(100)
+        _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
