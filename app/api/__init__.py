@@ -1,5 +1,5 @@
 from flask import Blueprint, url_for
-from app.services import Mailer, Phoner
+from app.services import mail, phone
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
@@ -8,7 +8,6 @@ from flask import current_app as app
 from datetime import datetime, timedelta
 from app import db, limiter, cache
 from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.datastructures import FileStorage
 import jwt, uuid, os
 from flask import current_app as app
@@ -47,7 +46,7 @@ def token_required(f):
 
 api = Blueprint('api', __name__, template_folder = '../templates')
 apisec = Api( app=api, doc='/docs', version='1.4', title='News API.', \
-description='This documentation contains all routes to access the lirivi API. \nSome routes require authorization and can only be gotten \
+    description='This documentation contains all routes to access the lirivi API. \npip install googletransSome routes require authorization and can only be gotten \
     from the lirivi company', license='../LICENSE', license_url='www.lirivi.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
@@ -81,11 +80,6 @@ home = apisec.namespace('/api/home', \
     on the application.", \
     path = '/v1/')
 
-verify = apisec.namespace('/api/verify', \
-    description= "Handles user verification by email or phone\
-    on the application.", \
-    path = '/v1/')
-
 message = apisec.namespace('/api/mesage/user*', \
     description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
     on the application.", \
@@ -94,6 +88,9 @@ message = apisec.namespace('/api/mesage/user*', \
  
 
 @login.doc(
+    params={ 
+            'phone': 'User phone number',
+            'code': 'verification code' },
     responses={
         200: 'ok',
         201: 'created',
@@ -110,25 +107,37 @@ message = apisec.namespace('/api/mesage/user*', \
 class Login(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("1/hour")
-    @login.expect(schema.logindata)
     def post(self):
         app.logger.info('User login in')
-        login_data = request.get_json()
-        user = Users.query.filter_by(username=login_data['username']).first()
-        if user is None or not user.verify_password(login_data['password']):
-            return {'res':'User not Found'},404   
+        if request.args:
+            number = request.args.get('phone', None)
+            code = request.args.get('code', None)
+            user = Users.query.filter_by(user_number=number).first()
+            if user is not None:
+                if code:
+                    if (str(user.code) == str(code)) and not (datetime.utcnow() > user.code_expires_in):
+                        token = jwt.encode({
+                            'user': user.username,
+                            'uuid': user.uuid,
+                            'exp': datetime.utcnow() + timedelta(days=30),
+                            'iat': datetime.utcnow()
+                        },
+                        app.config.get('SECRET_KEY'),
+                        algorithm='HS256')
+                        return {
+                            'res': 'success',
+                            'token': str(token)
+                        }, 200
+                    else:
+                        return {'res': 'verification fail make sure code is not more than 5 mins old'}, 401
+                else:
+                    verification_code = '123456'
+                    # phone.send_confirmation_code(request.args.get('phone', None))
+                    return {'res': 'verification sms sent'}, 301
+            else:
+                return {'res': 'user does not exist sign up'},404
         else:
-            if user.verify_password(login_data['password']):
-                token = jwt.encode({
-                    'user': user.username,
-                    'uuid': user.uuid,
-                    'exp': datetime.utcnow() + timedelta(days=30),
-                    'iat': datetime.utcnow()
-                },
-                app.config.get('SECRET_KEY'),
-                algorithm='HS256')
-                return {'token': str(token)}, 200
-            return {},404 
+           return {'res': 'Invalid request'}, 500
 
 @signup.doc(
     responses={
@@ -150,19 +159,34 @@ class Signup(Resource):
     @signup.expect(schema.signupdata)
     def post(self):
         signup_data = request.get_json()
-        exuser = Users.query.filter_by(username=signup_data['username']).first()
+        number = signup_data['phonenumber']
+        exuser = Users.query.filter_by(user_number=number).first()
         if signup_data:
             if exuser:
-                return {'res':'user already exist'}, 200
+                return { 
+                    'res':'failed',
+                    'status':'user already exist'
+                }, 200
             else:
-                user = Users(signup_data['username'], signup_data['email'], signup_data['password'], '')
-                db.session.add(user)
-                db.session.commit()
-                return {}, 201
-            return {}, 200
+                number = signup_data['phonenumber']
+                verification_code = '123456'
+                # phone.send_confirmation_code(number)
+                if verification_code:
+                    newuser = Users(signup_data['username'], signup_data['phonenumber'], True)
+                    newuser.code = verification_code
+                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    db.session.add(newuser)
+                    db.session.commit()
+                    return {
+                        'res': 'success',
+                        'phone': signup_data['phonenumber']
+                    }, 200
+                else:
+                    return {
+                        'results':'error'
+                    }, 401
         else:
             return {},404
-
 
 # Home still requires paginated queries for user's phone not to load forever
 @cache.cached(300, key_prefix='all_home_posts')
@@ -243,102 +267,3 @@ class Message(Resource):
     @message.marshal_with(schema.homedata)
     def get(self):
         return {}, 200       
-
-@verify.doc( 
-    security='KEY',
-    params={ 'phonenumber': 'ID of the post',
-            'auth_type': 'Method of authentication e.g phone, email, both',
-            'id':'Id of authenticator' },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@verify.route('/verify')
-class verify(Resource):
-    @verify.expect(schema.send_verification)
-    def post(self):
-        verification_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data["uuid"]).first()
-        codedata =  verification_data['code']
-        if verification_data:
-            if  verification_data["type"] == "phone":
-                if str(user.code) == str(codedata):
-                    if user.code_expires_in < datetime.utcnow():
-                        return {
-                            'result': 'Code expired',
-                            'status': 0
-                        }, 401
-                    else:
-                        user.phone_verification= True
-                        db.session.commit()
-                        return {
-                            'result': 'User phone verified',
-                            'status': 1
-                        }, 200
-                else:
-                    return {
-                        'result': 'Verification Failed',
-                        'status': 0
-                    }, 500
-            elif schema.send_verification["type"] == "email":
-                pass # Classic fill email verification.
-            elif schema.send_verification["type"] == "both":
-                user.phone_verification= True
-                db.session.commit()
-                return {
-                    'result': 'User phone verified',
-                    'status': 1
-                }, 200
-            else:
-                return {
-                    'result': 'Verification Failed',
-                    'status': 0
-                }, 500
-        else:
-            return {
-                'result': 'No verification data available',
-                'status': 0
-            }, 500
-
-    def get(self):
-        token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data["uuid"]).first()
-        if request.args:
-            if request.args.get('auth_type') == 'phone':
-                number  = request.args.get('phonenumber', None)
-                authtype = request.args.get('auth_type', None)
-                user.user_number = number
-                phone = Phoner()
-                user.code = phone.send_confirmation_code(number)
-                user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                db.session.commit()
-                if authtype == 'phone':
-                    return {
-                        'result': 'Sms sent',
-                        'status': 1
-                    }, 200
-                elif authtype == 'email':
-                    return {
-                        'result': 'Mail sent',
-                        'status': 1
-                    }, 200
-            elif request.args.get('auth_type') == 'email':
-                pass
-            else:
-                pass
-        else:
-            return {
-                'result': 'No args available in request',
-                'status': 0
-            }, 401

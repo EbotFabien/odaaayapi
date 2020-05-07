@@ -42,7 +42,8 @@ class Config(object):
     PAGINATE_PAGE_PARAM = "pagenumber"
     PAGINATE_SIZE_PARAM = "pagesize"
     PAGINATE_RESOURCE_LINKS_ENABLED = True
-    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
+    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://redis:6379/0'
+    QUEUES = ['default']
     TWILIO_ACCOUNT_SID = 'AC5e5097c08f1957d7e590079ca378a298'
     TWILIO_AUTH_TOKEN = 'e23b6c3db552b6da832b2441d6d5e8e7'
     TWILIO_NUMBER = 'MG6cc4fd3b321ad1b75c7f66f39e4cea06'

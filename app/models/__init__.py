@@ -9,8 +9,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import redis
 import rq
-from flask import current_app
-
+from flask import current_app as app
+from time import time
+import json
 
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
@@ -27,23 +28,27 @@ blocking = db.Table('Blocked',
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
-# ****** channel.subsciber.append(user), then commit()
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable=False)
-    email = db.Column(db.String, nullable=True)
-    password_hash = db.Column(db.String, nullable=False)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.String, nullable=True)
-    phone_verification = db.Column(db.Boolean, default=False)
-    email_verification = db.Column(db.Boolean, default=False)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     user_saves = db.relationship('Save', backref="save", lazy=True )
-    user_messages = db.relationship('Message',backref = "message", lazy = True)
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)
     code_expires_in = db.Column(db.DateTime)
+    messages_sent = db.relationship('Message',
+                                    foreign_keys='Message.sender_id',
+                                    backref='author', lazy='dynamic')
+    messages_received = db.relationship('Message',
+                                        foreign_keys='Message.recipient_id',
+                                        backref='recipient', lazy='dynamic')
+    last_message_read_time = db.Column(db.DateTime)
+    notifications = db.relationship('Notification', backref='user',
+                                    lazy='dynamic')
+    tasks = db.relationship('Task', backref='user', lazy='dynamic')
     subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
     followed = db.relationship(
@@ -56,16 +61,28 @@ class Users(db.Model):
         primaryjoin=(blocking.c.blocker_id == id),
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
+                
+    def __init__(self, username, number, user_visibility):
+        self.username = username
+        self.uuid = str(uuid.uuid4())
+        self.user_number = number
+        self.user_visibility = user_visibility
+
+    def __repr__(self):
+        return '<User %r>' % self.username
 
     def is_blocking(self,user):
         return self.blocked.filter(
             blocking.c.blocked_id == user.id).count() > 0
+
     def block(self,user):
         if not self.is_blocking(user):
             self.blocked.append(user)
+
     def unblock(self,user):
         if self.is_blocking(user):
             self.blocked.append(user)
+
     def has_blocked(self):
         return Users.query.join(
             blocking,(blocking.c.blocked_id == Users.id)).filter(
@@ -74,44 +91,38 @@ class Users(db.Model):
     def is_following(self,user):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
+
     def follow(self,user):
         if not self.is_following(user):
             self.followed.append(user)
+
     def unfollow(self,user):
         if self.is_following(user):
             self.followed.remove(user)
+
     def followed_posts(self):
         followed = Posts.query.join(
             followers,(followers.c.followed_id == Posts.uploader_id)).filter(
                 followers.c.follower_id == self.id)        
         own= Posts.query.filter_by(uploader_id=self.id)
         return followed.union(own).order_by(Posts.uploader_date.desc())
+
     def has_followed(self):
         return Users.query.join(
             followers,(followers.c.followed_id == Users.id)).filter(
                 followers.c.follower_id == self.id)
+
     def followers(self):
         return Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
                 followers.c.followed_id == self.id)
-                
-    def __init__(self, username, email, password_hash, number,user_visibility):
-        self.username = username
-        self.email = email
-        self.uuid = str(uuid.uuid4())
-        self.password_hash =  generate_password_hash(password_hash)
-        self.user_number = number
-        self.user_visibility = user_visibility
 
-    def __repr__(self):
-        return '<User %r>' % self.username
-    
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
 
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    def verify_phone(self, phone):
+        return check_password_hash(self.user_number, phone)
 
     def launch_task(self, name, description, *args, **kwargs):
         rq_job = current_app.task_queue.enqueue('app.tasks.' + name, self.id,
@@ -147,7 +158,26 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    body = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
+    def __repr__(self):
+        return '<Message {}>'.format(self.body)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    timestamp = db.Column(db.Float, index=True, default=time)
+    payload_json = db.Column(db.Text)
+
+    def get_data(self):
+        return json.loads(str(self.payload_json))
 
 class Channels(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
@@ -157,7 +187,6 @@ class Channels(db.Model):
     background = db.Column(db.String)
     css = db.Column(db.String) 
     moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-
 
     def __init__(self, name, description, profile_pic, background, user, css):
         self.name = name
@@ -194,16 +223,6 @@ class Setting(db.Model):
         self.users = users
     def __repr__(self):
         return '<Setting %r>' % self.id
-
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer,db.ForeignKey('users.id'), nullable=False)
-
-    def __init__(self, user):
-        self.user = user
-
-    def __repr__(self):
-        return '<Message %r>' %self.id
 
 class Rating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
