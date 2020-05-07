@@ -38,6 +38,7 @@ class Users(db.Model):
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)
+    posts = db.relationship('Posts', backref='author', lazy='dynamic')
     code_expires_in = db.Column(db.DateTime)
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
@@ -124,8 +125,14 @@ class Users(db.Model):
     def verify_phone(self, phone):
         return check_password_hash(self.user_number, phone)
 
+    def add_notification(self, name, data):
+        self.notifications.filter_by(name=name).delete()
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        db.session.add(n)
+        return n
+
     def launch_task(self, name, description, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue('app.tasks.' + name, self.id,
+        rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id,
                                                 *args, **kwargs)
         task = Task(id=rq_job.get_id(), name=name, description=description,
                     user=self)
@@ -149,7 +156,7 @@ class Task(db.Model):
 
     def get_rq_job(self):
         try:
-            rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
+            rq_job = rq.job.Job.fetch(self.id, connection=app.redis)
         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
             return None
         return rq_job
@@ -260,6 +267,19 @@ class Posts(db.Model):
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
     
+    def launch_translation_task(self, name, userid, descr):
+        rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
+        task = Task(id=rq_job.get_id(), name=name, user_id=userid, description=descr)
+        db.session.add(task)
+        return task
+
+    def get_tasks_in_progress(self):
+        return Task.query.filter_by(user=self, complete=False).all()
+
+    def get_task_in_progress(self, name):
+        return Task.query.filter_by(name=name, user=self,
+                                    complete=False).first()
+
     def __repr__(self):
         return '<Post>%r' %self.title
 

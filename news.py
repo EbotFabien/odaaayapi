@@ -14,8 +14,8 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand, upgrade
 import unittest
 import os
+from app.services.task import app
 
-app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
