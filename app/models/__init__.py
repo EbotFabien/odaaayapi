@@ -24,6 +24,10 @@ blocking = db.Table('Blocked',
     db.Column('blocker_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('blocked_id',db.Integer,db.ForeignKey('users.id')),
 )
+sub_moderator = db.Table('sub_moderator',
+    db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('channel_id',db.Integer,db.ForeignKey('channels.id'))
+)
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -46,6 +50,8 @@ class Users(db.Model):
     code_expires_in = db.Column(db.DateTime)
     subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
+    sub_moderator = db.relationship('Channels', secondary=sub_moderator, lazy=True,
+        backref=db.backref('sub_mod', lazy=True))
     followed = db.relationship(
         'Users', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
