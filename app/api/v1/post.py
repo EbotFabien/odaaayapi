@@ -179,13 +179,13 @@ class Post(Resource):
         elif user:
             if req_data['type'] is None:
                 req_data['type']="Text"
-            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'])
+            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], user.id)
             db.session.add(new_post)
+            db.session.commit()
+            new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
             db.session.commit()
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
    
-    
-
     

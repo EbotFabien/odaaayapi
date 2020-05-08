@@ -12,6 +12,8 @@ from flask_limiter.util import get_remote_address
 from flask_matomo import *
 from redis import Redis
 import rq
+import rq_dashboard
+from flask_googletrans import translator
 
 
 db = SQLAlchemy()
@@ -31,6 +33,7 @@ def createapp(configname):
     cache.init_app(app)
     dashboard.bind(app)
     limiter.init_app(app)
+    app.ts = translator(app)
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     app.redis = Redis.from_url(app.config['REDIS_URL'])
@@ -41,6 +44,7 @@ def createapp(configname):
     from app import models
 
     app.register_blueprint(api_blueprint, url_prefix='/api')
+    app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     @app.route('/debug-sentry')
