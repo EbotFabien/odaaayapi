@@ -47,6 +47,9 @@ class Config(object):
     TWILIO_ACCOUNT_SID = 'AC5e5097c08f1957d7e590079ca378a298'
     TWILIO_AUTH_TOKEN = 'e23b6c3db552b6da832b2441d6d5e8e7'
     TWILIO_NUMBER = 'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
+    RQ_DASHBOARD_USERNAME = 'rq'
+    RQ_DASHBOARD_PASSWORD =  'password'
+    RQ_DASHBOARD_REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
 
 class Development(Config):
     DEBUG = True

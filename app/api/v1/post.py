@@ -3,9 +3,11 @@ import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
 from flask import current_app as app
-from app.models import Users, Channels, subs, Posts
+from app.models import Users, Channels, subs, Posts, Language, Postarb, Posten, Postes, Postfr, \
+    Posthau, Postpor, Postsw
 from app import db, cache, logging
 import json
+from tqdm import tqdm
 
 
 # The token decorator to protect my routes
@@ -57,6 +59,12 @@ postdata = post.model('postreturndata', {
     'uploader_date': fields.DateTime(required=True)
 })
 
+langpostdata = post.model('langpostreturndata', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True),
+})
+
 multiplepost = post.model('',{
     "start": fields.Integer(required=True),
     "limit": fields.Integer(required=True),
@@ -79,7 +87,8 @@ postreq = post.model('postreq', {
     security='KEY',
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
-            'count': 'Number results per page' },
+            'count': 'Number results per page',
+            'lang' : 'Language'},
     responses={
         200: 'ok',
         201: 'created',
@@ -96,24 +105,40 @@ postreq = post.model('postreq', {
 
 class Post(Resource):
     @token_required
-    @cache.cached(300, key_prefix='all_posts')
+    #@cache.cached(300, key_prefix='all_posts')
     def get(self):
         if request.args:
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
+            lang = request.args.get('lang', '') 
             # Still to fix the next and previous WRT Sqlalchemy
-            next = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
-            previous = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
-            posts = Posts.query.paginate(int(start), int(count), False).items
-            return {
-                "start": start,
-                "limit": limit,
-                "count": count,
-                "next": next,
-                "previous": previous,
-                "results": marshal(posts, postdata)
-            }, 200
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count+"&lang="+lang
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count+"&lang="+lang
+            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            if lang:
+                for i in tqdm(language_dict):
+                    if i == lang:
+                        table = language_dict.get(i)
+                        results = table.query.paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(results, langpostdata)
+                }, 200
+            else:
+                posts = Posts.query.paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(posts, postdata)
+                }, 200
         else:
             posts = Posts.query.all()
             return marshal(posts, postdata), 200
@@ -182,7 +207,8 @@ class Post(Resource):
             new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], user.id)
             db.session.add(new_post)
             db.session.commit()
-            new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            # channel = Channels.query.filter_by(id=req_data['channel']).first().langs
+            new_post.launch_translation_task('translate_posts', user.id,'Translating  post ...')
             db.session.commit()
             return {'res':'success'}, 200
         else:

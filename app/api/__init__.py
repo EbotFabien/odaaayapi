@@ -132,6 +132,9 @@ class Login(Resource):
                         return {'res': 'verification fail make sure code is not more than 5 mins old'}, 401
                 else:
                     verification_code = '123456'
+                    user.code = verification_code
+                    user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    db.session.commit()
                     # phone.send_confirmation_code(request.args.get('phone', None))
                     return {'res': 'verification sms sent'}, 301
             else:
