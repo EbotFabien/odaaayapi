@@ -199,17 +199,25 @@ class Post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
+        channel = Channels.query.filter_by(id=req_data['channel']).first()
+        if user.subscribed(channel) is None:
+            return {'res':'You are not subscribed to this channel'}, 404
         if req_data['channel'] is None:
             return {'res':'fail'}, 404
-        elif user:
+        elif user.subscribed(channel) and user:
             if req_data['type'] is None:
                 req_data['type']="Text"
             new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], user.id)
             db.session.add(new_post)
             db.session.commit()
+<<<<<<< HEAD
             # channel = Channels.query.filter_by(id=req_data['channel']).first().langs
             new_post.launch_translation_task('translate_posts', user.id,'Translating  post ...')
             db.session.commit()
+=======
+           # new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            #db.session.commit()
+>>>>>>> 1ceb52cd838e5493c012fc3f2caa9ddb01168841
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
