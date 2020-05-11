@@ -48,6 +48,10 @@ channelcreationdata = channel.model('ChannelCreationData', {
     'background': fields.String(),
     'css': fields.String()
 })
+channel_sub_moderator = channel.model('channel_sub_moderator',{
+    'channel_id': fields.String(required=True),
+    'user_id': fields.Integer(required=True),
+})
     
 
 @channel.doc(
@@ -89,7 +93,6 @@ class Data(Resource):
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
-    
     @token_required
     def put(self):
         return {}, 200
@@ -99,3 +102,69 @@ class Data(Resource):
     @token_required
     def delete(self):
         return {}, 200
+
+
+@channel.doc(
+    security='KEY',
+    params={ 'username': 'Specify the username associated with the person' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })        
+@channel.route('/channel/add_sub_moderator')
+class sub(Resource):
+    @channel.marshal_with(okresponse)
+    def get(self):
+        return {}, 200
+    @token_required
+    @channel.expect(channel_sub_moderator)
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        sub_Mod=Users.query.filter_by(id=req_data['user_id']).first()
+        #user_admin = user.is_moderator()
+        #if user_admin is None:
+        #    return {'res':user.id}, 200
+        #else:
+        moderator_check = Channels.query.filter_by(moderator=user.id).first()
+        channel = Channels.query.filter_by(id=req_data['channel_id']).first()
+        if moderator_check.id == channel.id :
+            channel.add_sub_mod(sub_Mod)
+            db.session.commit()
+            return {'res':'You are now a sub moderator '}, 200
+        else:
+            return {'res':'You are not a sub moderator of this channel'}, 404
+    @token_required
+    @channel.expect(channel_sub_moderator)
+    def put(self):
+        return {}, 200
+    @token_required
+    def patch(self):
+        return {}, 200
+    @token_required
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        sub_Mod=Users.query.filter_by(id=req_data['user_id']).first()
+        moderator_check = Channels.query.filter_by(moderator=user.id).first()
+        channel = Channels.query.filter_by(id=req_data['channel_id']).first()
+        if moderator_check.id == channel.id :
+            channel.remove_sub_mod(sub_Mod)
+            db.session.commit()
+            return {'res':'You are now a sub moderator '}, 200
+        else:
+            return {'res':'you are not a moderator of this channel'}, 404
+        
+       

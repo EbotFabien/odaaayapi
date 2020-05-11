@@ -26,8 +26,9 @@ blocking = db.Table('Blocked',
     db.Column('blocked_id',db.Integer,db.ForeignKey('users.id')),
 )
 sub_moderator = db.Table('sub_moderator',
+    db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id')),
-    db.Column('channel_id',db.Integer,db.ForeignKey('channels.id'))
+    
 )
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
@@ -56,8 +57,7 @@ class Users(db.Model):
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
     subs = db.relationship('Channels', secondary=subs, lazy='subquery',
         backref=db.backref('subscribers', lazy=True))
-    sub_moderator = db.relationship('Channels', secondary=sub_moderator, lazy=True,
-        backref=db.backref('sub_mod', lazy=True))
+    
     followed = db.relationship(
         'Users', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
@@ -123,6 +123,17 @@ class Users(db.Model):
         return Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
                 followers.c.followed_id == self.id)
+
+    def subscribed(self,channel):
+        return  Channels.query.join(
+            subs,(subs.c.channel_id == channel.id )).filter(
+                subs.c.users_id == self.id).first()
+    
+        
+    def is_moderator(self):
+        return Users.query.join(
+            Channels,(Channels.moderator == Users.id)).filter(
+                Channels.moderator == self.id).first()
 
     @property
     def password(self):
@@ -200,6 +211,22 @@ class Channels(db.Model):
     background = db.Column(db.String)
     css = db.Column(db.String) 
     moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    sub_moderator = db.relationship('Users', secondary=sub_moderator,
+        primaryjoin=(sub_moderator.c.channel_id == id),
+        secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
+        backref=db.backref('sub_mod', lazy='dynamic'),lazy='dynamic')
+    def is_sub_mod(self,user):
+        return self.sub_moderator.filter(
+            sub_moderator.c.sub_moderator_id == user.id).count() > 0
+    def add_sub_mod(self,user):
+        if not self.is_sub_mod(user):
+            self.sub_moderator.append(user)
+    def remove_sub_mod(self,user):
+        if not self.is_sub_mod(user):
+            self.sub_moderator.remove(user)
+   # def modify_sub(self,user):
+    #    return self.sub_moderator.filter(
+    #        sub_moderator.c.sub_moderator_id == user.id).first()# == new_id
 
     def __init__(self, name, description, profile_pic, background, user, css):
         self.name = name

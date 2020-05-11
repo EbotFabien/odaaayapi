@@ -51,7 +51,7 @@ apisec = Api( app=api, doc='/docs', version='1.4', title='News API.', \
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
-
+from app.errors import errors
 uploader = apisec.parser()
 uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
 uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
@@ -63,7 +63,7 @@ apisec.add_namespace(post)
 apisec.add_namespace(channel)
 apisec.add_namespace(search)
 apisec.add_namespace(comment)
-
+#app.register_blueprint(errors)
 
 login = apisec.namespace('/api/auth', \
     description='This contains routes for core app data access. Authorization is required for each of the calls. \
@@ -132,6 +132,10 @@ class Login(Resource):
                         return {'res': 'verification fail make sure code is not more than 5 mins old'}, 401
                 else:
                     verification_code = '123456'
+                    user.code = verification_code
+                    user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    #db.session.add(newuser)
+                    db.session.commit()
                     # phone.send_confirmation_code(request.args.get('phone', None))
                     return {'res': 'verification sms sent'}, 301
             else:
