@@ -37,6 +37,7 @@ postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
     'channel': fields.Integer(required=True),
     'type': fields.String(required=True),
+    'post_url': fields.String(required=False),
     'content': fields.String(required=True)
 })
 
@@ -54,6 +55,7 @@ postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'channel_id': fields.Integer(required=True),
+    'post_url': fields.String(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)
@@ -207,17 +209,12 @@ class Post(Resource):
         elif user.subscribed(channel) and user:
             if req_data['type'] is None:
                 req_data['type']="Text"
-            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], user.id)
+            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], user.id, req_data['post_url'])
             db.session.add(new_post)
             db.session.commit()
-<<<<<<< HEAD
             # channel = Channels.query.filter_by(id=req_data['channel']).first().langs
             new_post.launch_translation_task('translate_posts', user.id,'Translating  post ...')
             db.session.commit()
-=======
-           # new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-            #db.session.commit()
->>>>>>> 1ceb52cd838e5493c012fc3f2caa9ddb01168841
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404

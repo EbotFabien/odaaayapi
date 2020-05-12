@@ -9,6 +9,7 @@ import jwt, uuid, os
 from functools import wraps 
 from flask import abort, request, session
 from datetime import datetime
+from app.models import Posts
 
 
 # Preparing the Namespace of the search routes to add to main api file
@@ -17,8 +18,41 @@ search = Namespace('/api/search', \
         and other entities.', \
     path='/v1/')
 
+postdata = search.model('postreturndata', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'channel_id': fields.Integer(required=True),
+    'post_url': fields.String(required=True),
+    'uploader': fields.String(required=True),
+    'content': fields.String(required=True),
+    'uploader_date': fields.DateTime(required=True)
+})
 
+@search.doc(
+    security='KEY',
+    params={ 'keyword': 'search keyword'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @search.route('/search')
 class Searchlist(Resource):
+    @search.marshal_with(postdata)
     def get(self):
-        return {}, 200
+        keyword = request.args.get('keyword')
+        # results = Posts.query.msearch(keyword,fields=['title'],limit=20).filter(...)
+        # or
+        # results = Posts.query.filter(...).msearch(keyword,fields=['title'],limit=20).filter(...)
+        # elasticsearch
+        # keyword = "title:book AND content:read"
+        # more syntax please visit https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+        results = Posts.query.msearch(keyword,limit=20).all()
+        return results, 200

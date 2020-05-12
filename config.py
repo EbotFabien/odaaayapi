@@ -14,7 +14,7 @@ class Config(object):
     #    or 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     # 'postgresql://localhost/news'
     # 'postgresql+psycopg2://test:test@db/test'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     LANGUAGES = ['en', 'fr', 'arb', 'por']
     RESTPLUS_VALIDATE = True
     SWAGGER_UI_OPERATION_ID = True
@@ -50,6 +50,11 @@ class Config(object):
     RQ_DASHBOARD_USERNAME = 'rq'
     RQ_DASHBOARD_PASSWORD =  'password'
     RQ_DASHBOARD_REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
+    MSEARCH_INDEX_NAME = 'msearch'
+    MSEARCH_BACKEND = 'elasticsearch'
+    MSEARCH_PRIMARY_KEY = 'id'
+    MSEARCH_ENABLE = True
+    ELASTICSEARCH = {"hosts": ["127.0.0.1:9200"]}
 
 class Development(Config):
     DEBUG = True

@@ -14,9 +14,11 @@ from redis import Redis
 import rq
 import rq_dashboard
 from flask_googletrans import translator
+from flask_msearch import Search
 
 
 db = SQLAlchemy()
+search = Search()
 mail = Mail()
 basedir= os.path.abspath(os.path.dirname(__file__))
 cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -34,6 +36,7 @@ def createapp(configname):
     dashboard.bind(app)
     limiter.init_app(app)
     app.ts = translator(app)
+    search.init_app(app)
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     app.redis = Redis.from_url(app.config['REDIS_URL'])

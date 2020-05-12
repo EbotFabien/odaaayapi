@@ -1,3 +1,12 @@
+from __future__ import absolute_import
+from __future__ import division, print_function, unicode_literals
+
+from sumy.parsers.html import HtmlParser
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer as Summarizer
+from sumy.nlp.stemmers import Stemmer
+from sumy.utils import get_stop_words
 import json
 import sys
 import time
@@ -20,8 +29,7 @@ def _set_task_progress(progress):
         job.save_meta()
         task = Task.query.get(job.get_id())
         user = Users.query.get(task.user_id)
-        user.add_notification('task_progress', {'task_id': job.get_id(),
-                                                     'progress': progress})
+        user.add_notification('task_progress', {'task_id': job.get_id(), 'progress': progress})
         if progress >= 100:
             task.complete = True
         db.session.commit()
@@ -35,18 +43,15 @@ def export_posts(user_id):
         i = 0
         total_posts = user.posts.count()
         for post in user.posts.order_by(Posts.uploader_date.asc()):
-            data.append({'body': post.content,
-                         'timestamp': post.uploader_date.isoformat() + 'Z'})
+            data.append({'body': post.content,'timestamp': post.uploader_date.isoformat() + 'Z'})
             i += 1
             _set_task_progress(100 * i )
 
         send_email('News app your posts',
                 sender=app.config['ADMINS'][0], recipients=[user.email],
                 text_body=render_template('mail/export_posts.txt', user=user),
-                html_body=render_template('mail/export_posts.html',
-                                          user=user),
-                attachments=[('posts.json', 'application/json',
-                              json.dumps({'posts': data}, indent=4))],
+                html_body=render_template('mail/export_posts.html', user=user),
+                attachments=[('posts.json', 'application/json', json.dumps({'posts': data}, indent=4))],
                 sync=True)
     except:
         _set_task_progress(100)
@@ -57,10 +62,24 @@ def translate_posts(post_id, user_id):
     language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
     post = Posts.query.get(post_id)
     user = Users.query.get(user_id)
-    user_default_lang = 'en'
+    user_default_lang = 'fr'
+    post_language = Language.query.filter_by(code=user_default_lang).first()
+    sum_content = ''
+    if post.post_url is not None:
+        parser = HtmlParser.from_url(post.post_url, Tokenizer(post_language.name))
+        stemmer = Stemmer(post_language.name)
+
+        summarizer = Summarizer(stemmer)
+        summarizer.stop_words = get_stop_words(post_language.name)
+
+        for sentence in summarizer(parser.document, 8):
+            sum_content += '\n'+str(sentence)
+        print(sum_content)
+    else:
+        sum_content = post.content
     try:
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
-        content_translation = app.ts.translate(text=post.content, src=user_default_lang, dest=languages)
+        content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         p = 1
         for i in tqdm(languages):
             _set_task_progress(p/len(languages) * 100)
