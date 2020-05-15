@@ -69,6 +69,7 @@ channel_sub_moderator = channel.model('channel_sub_moderator',{
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
+
 @channel.route('/channel')
 class Data(Resource):
     @channel.marshal_with(okresponse)
@@ -138,12 +139,16 @@ class sub(Resource):
         #else:
         moderator_check = Channels.query.filter_by(moderator=user.id).first()
         channel = Channels.query.filter_by(id=req_data['channel_id']).first()
-        if moderator_check.id == channel.id :
+        if sub_Mod.subscribed(channel) is None:
+            return {'res':'The user is not  subscribed to this channel'}, 404
+        if  moderator_check.moderator == sub_Mod.id :
+            return{'res':'Moderator cannot be sub Moderator'}
+        if moderator_check.id == channel.id  :
             channel.add_sub_mod(sub_Mod)
             db.session.commit()
-            return {'res':'You are now a sub moderator '}, 200
+            return {'res':'You have created a sub moderator '}, 200
         else:
-            return {'res':'You are not a sub moderator of this channel'}, 404
+            return {'res':'You have not a sub moderator of this channel'}, 404
     @token_required
     @channel.expect(channel_sub_moderator)
     def put(self):

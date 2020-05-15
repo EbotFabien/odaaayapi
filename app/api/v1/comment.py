@@ -1,12 +1,20 @@
-from flask_restplus import Namespace, Resource, fields,marshal
+from flask_restplus import Namespace, Resource, fields,marshal,Api
 import jwt, uuid, os
+from flask_cors import CORS
 from functools import wraps
-from flask import abort, request, session
-from app.models import Users,Posts,Comment
+from flask import abort, request, session,Blueprint
+from app.models import Users,Posts,Comment,Channels, subs
 from flask import current_app as app
 from app import db,cache
+from werkzeug.datastructures import FileStorage
 
-
+authorizations = {
+    'KEY': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'API-KEY'
+    }
+}
 # The token decorator to protect my routes
 def token_required(f):
     @wraps(f)
@@ -25,12 +33,23 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-comment = Namespace('/api/comment', \
+
+
+api = Blueprint('api',__name__, template_folder='../templates')
+comment1=Api( app=api, doc='/docs',version='1.4',title='News API.',\
+description='', authorizations=authorizations)
+#from app.api import schema
+CORS(api, resources={r"/api/*": {"origins": "*"}})
+
+uploader = comment1.parser()
+uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
+uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
+
+comment = comment1.namespace('/api/comment', \
     description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
     on the application.", \
     path = '/v1/')
-
-
+    
 apiinfo = comment.model('Info', {
     'name': fields.String,
     'version': fields.Integer,
@@ -81,7 +100,11 @@ commentdata =comment.model('commentdata',{
     params={ 'postid': 'Specify the id of the post',
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
-             'count': 'Number results per page' },
+             'count': 'Number results per page',
+             'file':'The file is an mp3',
+             'content':'Specify if it is text or audio',
+             'comment_type':'Specify the type of comment'
+             },
 
     responses={
         200: 'ok',
@@ -120,20 +143,46 @@ class Data(Resource):
             comment =Comment.query.all()
             return marshal(posts,postdata),200
     @token_required
-    @comment.expect(commentcreation)
+    #@comment.expect(commentcreation)
+    @comment.expect(uploader)
     def post(self):
         req_data = request.get_json()
-        if request.args.get('postid'):
-            post_id=request.args.get('postid')
-        elif request.args.get('postid') is None:
-            post_id=Posts.query.get(req_data['post_id'])
+        post_id=request.args.get('postid')
+        comment_type=request.args.get('comment_type')
+        content =request.args.get('content')
         if post_id is None:
             return {'res':'fail'},400
         token = request.headers['API-KEY']
+        args = uploader.parse_args()
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        if  post_id:
-            new_comment=Comment(user,'1', post_id, req_data['content'], req_data['comment_type'],public=True)
+        post_id_real=Posts.query.get(int(post_id))
+        channel = Channels.query.filter_by(id=post_id_real.channel_id).first()
+        if user.subscribed(channel) is None:
+           return {'res':'You are not subscribed to this channel'}, 404
+       
+        if post_id and  args['file'] is not None: #comment_type == 'audio' and   post_id:
+             if args['file'].mimetype == 'audio/mpeg':
+                comment_type == 'audio'
+                name = args['name']
+                orig_name = args['file'].filename
+                file = args['file']
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'comments/' +user.uuid+'_comments/')
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
+                audiofile = '%s%s' % (destination, orig_name)
+                file.save(audiofile)
+                new_comment=Comment(user,'1', post_id, user.uuid+'_comments/'+orig_name, comment_type,public=True)
+                db.session.add(new_comment)
+                db.session.commit()
+                return{'res':'it worked'},200
+             if args['file'].mimetype == 'picture/jpeg':
+                 return {'res':'This is a picture'}
+        else:
+            return {'res':'fail'},400
+                
+        if  content and post_id:
+            new_comment=Comment(user,'1', post_id, content, comment_type,public=True)
             db.session.add(new_comment)
             db.session.commit()
             return{'res':'success'},200

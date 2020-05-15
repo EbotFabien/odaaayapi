@@ -105,7 +105,7 @@ class Post(Resource):
             # Still to fix the next and previous WRT Sqlalchemy
             next = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
             previous = "/api/v1/post?start="+start+"&limit="+limit+"&count="+count
-            posts = Posts.query.paginate(int(start), int(count), False).items
+            posts = Posts.query.order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
             return {
                 "start": start,
                 "limit": limit,
@@ -115,7 +115,7 @@ class Post(Resource):
                 "results": marshal(posts, postdata)
             }, 200
         else:
-            posts = Posts.query.all()
+            posts = Posts.query.order_by(Posts.uploader_date.desc()).all()
             return marshal(posts, postdata), 200
 
     @token_required
