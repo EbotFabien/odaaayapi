@@ -47,6 +47,10 @@ def createapp(configname):
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+    @app.route('/')
+    def index():
+        return "Hello from News-app"
+
     @app.route('/debug-sentry')
     def trigger_error():
         division_by_zero = 1 / 0

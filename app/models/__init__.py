@@ -13,6 +13,10 @@ from flask import current_app as app
 from time import time
 import json
 
+channel_langs = db.Table('channel_langs',
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
+    db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True)
+)
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
@@ -149,10 +153,8 @@ class Users(db.Model):
         return n
 
     def launch_task(self, name, description, *args, **kwargs):
-        rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id,
-                                                *args, **kwargs)
-        task = Task(id=rq_job.get_id(), name=name, description=description,
-                    user=self)
+        rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, *args, **kwargs)
+        task = Task(id=rq_job.get_id(), name=name, description=description, user=self)
         db.session.add(task)
         return task
 
@@ -209,8 +211,19 @@ class Channels(db.Model):
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)
     background = db.Column(db.String)
-    css = db.Column(db.String) 
+    css = db.Column(db.String)
+    desc_en = db.Column(db.String)
+    desc_es = db.Column(db.String)
+    desc_ar = db.Column(db.String)
+    desc_pt = db.Column(db.String)
+    desc_fr = db.Column(db.String)
+    desc_sw = db.Column(db.String)
+    desc_ha = db.Column(db.String)
     moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+<<<<<<< HEAD
+    langs = db.relationship('Language', secondary=channel_langs, lazy='subquery',
+        backref=db.backref('channel_langs', lazy=True))
+=======
     sub_moderator = db.relationship('Users', secondary=sub_moderator,
         primaryjoin=(sub_moderator.c.channel_id == id),
         secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
@@ -227,6 +240,7 @@ class Channels(db.Model):
    # def modify_sub(self,user):
     #    return self.sub_moderator.filter(
     #        sub_moderator.c.sub_moderator_id == user.id).first()# == new_id
+>>>>>>> 1ceb52cd838e5493c012fc3f2caa9ddb01168841
 
     def __init__(self, name, description, profile_pic, background, user, css):
         self.name = name
@@ -290,6 +304,13 @@ class Posts(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
+    esposts = db.relationship('Postes', backref='spanish_posts', lazy='dynamic')
+    enposts = db.relationship('Posten', backref='english_posts', lazy='dynamic')
+    ptposts = db.relationship('Postpor', backref='portuguese_posts', lazy='dynamic')
+    swposts = db.relationship('Postsw', backref='swahili_posts', lazy='dynamic')
+    haposts = db.relationship('Posthau', backref='hausa_posts', lazy='dynamic')
+    arposts = db.relationship('Postarb', backref='arabic_posts', lazy='dynamic')
+    frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
 
     def __init__(self, uploader, title, channel, posttype, content, uploader_id):
         self.content = content
@@ -388,39 +409,87 @@ class Ratingtype(db.Model):
     def __repr__(self):
         return '<Ratingtype>%r' %self.id
 
-class Postarb(Posts):
+class Postarb(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    arb_title = db.Column(db.String(250), nullable = False, unique=True)
-    arb_content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
 
-class Posten(Posts):
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    en_title = db.Column(db.String(250), nullable = False, unique=True)
-    en_content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang
 
-class Postpor(Posts):
+class Posten(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    por_title = db.Column(db.String(250), nullable = False, unique=True)
-    por_content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
 
-class Postfr(Posts):
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    fr_title = db.Column(db.String(250), nullable = False, unique=True)
-    fr_content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang
 
-class Posthau(Posts):
+class Postpor(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    hau_title = db.Column(db.String(250), nullable = False, unique=True)
-    hau_content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
 
-class Postsw(Posts):
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang
+
+class Postfr(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    sw_title = db.Column(db.String(250), nullable = False, unique=True)
-    sw_content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang
+
+class Posthau(db.Model):
+    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang 
+
+class Postsw(db.Model):
+    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang 
+
+class Postes(db.Model):
+    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+
+    def __init__(self, id, title, content, lang):
+        self.id = id
+        self.title = title
+        self.content= content
+        self.language_id = lang
 

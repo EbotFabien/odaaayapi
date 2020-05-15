@@ -134,7 +134,10 @@ class Login(Resource):
                     verification_code = '123456'
                     user.code = verification_code
                     user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+<<<<<<< HEAD
+=======
                     #db.session.add(newuser)
+>>>>>>> 1ceb52cd838e5493c012fc3f2caa9ddb01168841
                     db.session.commit()
                     # phone.send_confirmation_code(request.args.get('phone', None))
                     return {'res': 'verification sms sent'}, 301
