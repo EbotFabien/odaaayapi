@@ -146,7 +146,6 @@ class Data(Resource):
     #@comment.expect(commentcreation)
     @comment.expect(uploader)
     def post(self):
-        req_data = request.get_json()
         post_id=request.args.get('postid')
         comment_type=request.args.get('comment_type')
         content =request.args.get('content')
@@ -161,13 +160,13 @@ class Data(Resource):
         if user.subscribed(channel) is None:
            return {'res':'You are not subscribed to this channel'}, 404
        
-        if post_id and  args['file'] is not None: #comment_type == 'audio' and   post_id:
+        if post_id and  args['file'] is not None: 
              if args['file'].mimetype == 'audio/mpeg':
                 comment_type == 'audio'
                 name = args['name']
                 orig_name = args['file'].filename
                 file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'comments/' +user.uuid+'_comments/')
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'comments/' ,user.uuid)
                 if not os.path.exists(destination):
                     os.makedirs(destination)
                 audiofile = '%s%s' % (destination, orig_name)

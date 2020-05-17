@@ -220,10 +220,6 @@ class Channels(db.Model):
     desc_sw = db.Column(db.String)
     desc_ha = db.Column(db.String)
     moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-<<<<<<< HEAD
-    langs = db.relationship('Language', secondary=channel_langs, lazy='subquery',
-        backref=db.backref('channel_langs', lazy=True))
-=======
     sub_moderator = db.relationship('Users', secondary=sub_moderator,
         primaryjoin=(sub_moderator.c.channel_id == id),
         secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
@@ -240,7 +236,6 @@ class Channels(db.Model):
    # def modify_sub(self,user):
     #    return self.sub_moderator.filter(
     #        sub_moderator.c.sub_moderator_id == user.id).first()# == new_id
->>>>>>> 1ceb52cd838e5493c012fc3f2caa9ddb01168841
 
     def __init__(self, name, description, profile_pic, background, user, css):
         self.name = name
