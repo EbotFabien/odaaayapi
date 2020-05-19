@@ -190,7 +190,7 @@ class sub(Resource):
         500: 'internal server error, please contact admin and report issue'
     })        
 @channel.route('/channel/subscribe')
-class sub(Resource):
+class sub_channel(Resource):
     @channel.marshal_with(okresponse)
     def get(self):
         return {}, 200
