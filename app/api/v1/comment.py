@@ -7,6 +7,7 @@ from app.models import Users,Posts,Comment,Channels, subs
 from flask import current_app as app
 from app import db,cache
 from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 
 authorizations = {
     'KEY': {
@@ -157,21 +158,20 @@ class Data(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post_id_real=Posts.query.get(int(post_id))
         channel = Channels.query.filter_by(id=post_id_real.channel_id).first()
-        if user.subscribed(channel) is None:
+        if channel.subscribed(user) is None:
            return {'res':'You are not subscribed to this channel'}, 404
        
         if post_id and  args['file'] is not None: 
              if args['file'].mimetype == 'audio/mpeg':
-                comment_type == 'audio'
                 name = args['name']
-                orig_name = args['file'].filename
+                orig_name = secure_filename(args['file'].filename)
                 file = args['file']
                 destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'comments/' ,user.uuid)
                 if not os.path.exists(destination):
                     os.makedirs(destination)
-                audiofile = '%s%s' % (destination, orig_name)
+                audiofile = '%s%s' % (destination+'/', orig_name)
                 file.save(audiofile)
-                new_comment=Comment(user,'1', post_id, user.uuid+'_comments/'+orig_name, comment_type,public=True)
+                new_comment=Comment(user,'1', post_id,'/comments/'+user.uuid+'/'+orig_name, comment_type ='audio',public=True)
                 db.session.add(new_comment)
                 db.session.commit()
                 return{'res':'it worked'},200

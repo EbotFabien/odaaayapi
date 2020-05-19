@@ -110,7 +110,6 @@ postreq = post.model('postreq', {
             'lang' : 'Language',
             'title': 'Title of the post',
             'channel':'channel id of the post',
-            'type':'format type',
             'content':'This is the content of the post'
             },
     responses={
@@ -222,38 +221,48 @@ class Post(Resource):
         args = uploader.parse_args()
         title=request.args.get('title')
         content=request.args.get('content')
-        channel_id =request.args.get('channel')
+        channel_id =int(request.args.get('channel'))
         Type =request.args.get('type')
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        channel = Channels.query.filter_by(int(channel_id)).first()
-        if user.subscribed(channel) is None:
+        channel = Channels.query.filter_by(id=channel_id).first()
+        if channel.subscribed(user) is None:
             return {'res':'You are not subscribed to this channel'}, 404
         if channel_id is None:
             return {'res':'fail'}, 404
-        if args['file'] is not None:
+        if args['file'] is not  None:
             if args['file'].mimetype == 'video/mp4':
-                Type ='video'
                 name = args['name']
                 orig_name = args['file'].filename
                 file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/', user.uuid)
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/video/', user.uuid)
                 if not os.path.exists(destination):
                     os.makedirs(destination)
-                videofile = '%s%s' % (destination, orig_name)
+                videofile = '%s%s' % (destination+'/', orig_name)
                 file.save(videofile)
-            if args['file'].mimetype == 'picture/jpg':
-                Type ='picture'
+                Type=int('1')
+                new_post = Posts(user.id,title, channel.id, Type, content, user.id,video_url='/posts/'+'/video/'+user.uuid+'/'+orig_name)
+                db.session.add(new_post)
+                db.session.commit()
+                return {'res':'success'}, 200
+            if args['file'].mimetype == 'image/*':
                 name = args['name']
                 orig_name = args['file'].filename
                 file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/', user.uuid)
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/picture/', user.uuid)
                 if not os.path.exists(destination):
                     os.makedirs(destination)
-                picturefile = '%s%s' % (destination, orig_name)
+                picturefile = '%s%s' % (destination+'/', orig_name)
                 file.save(videofile)
+                Type=int('2')
+                new_post = Posts(user.id,title, channel, Type, content, user.id,picture_url='/posts/'+'/picture/'+user.uuid+'/'+orig_name)
+                db.session.add(new_post)
+                db.session.commit()
+                return {'res':'success'}, 200
         if user.subscribed(channel) and user:
+            if content is None: 
+                return{'res':'put content'},404
             if Type is None:
                 Type="Text"
             new_post = Posts(user.id,title, channel, Type, content, user.id)

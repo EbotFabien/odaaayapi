@@ -59,20 +59,25 @@ class Users(db.Model):
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    subs = db.relationship('Channels', secondary=subs, lazy='subquery',
-        backref=db.backref('subscribers', lazy=True))
+    #subs = db.relationship('Channels', secondary=subs, lazy='subquery',
+    #    backref=db.backref('subscribers', lazy=True))
     
     followed = db.relationship(
         'Users', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+    #subs = db.relationship(
+    #    'Users', secondary=subs,
+    #    primaryjoin=(subs.c.channel_id == Channels.id),
+    #    secondaryjoin=(subs.c.users_id == id),
+    #    backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')    
     blocked = db.relationship(
         'Users', secondary=blocking,
         primaryjoin=(blocking.c.blocker_id == id),
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
-                
+        
     def __init__(self, username, number, user_visibility):
         self.username = username
         self.uuid = str(uuid.uuid4())
@@ -128,11 +133,6 @@ class Users(db.Model):
             followers,(followers.c.follower_id == Users.id)).filter(
                 followers.c.followed_id == self.id)
 
-    def subscribed(self,channel):
-        return  Channels.query.join(
-            subs,(subs.c.channel_id == channel.id )).filter(
-                subs.c.users_id == self.id).first()
-    
         
     def is_moderator(self):
         return Users.query.join(
@@ -224,6 +224,23 @@ class Channels(db.Model):
         primaryjoin=(sub_moderator.c.channel_id == id),
         secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
         backref=db.backref('sub_mod', lazy='dynamic'),lazy='dynamic')
+    subs = db.relationship(
+        'Users', secondary=subs,
+        primaryjoin=(subs.c.channel_id == id),
+        secondaryjoin=(subs.c.users_id == Users.id),
+        backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic') 
+    def subscribed(self,user):
+        return  self.query.join(
+            subs,(subs.c.channel_id == self.id )).filter(
+                subs.c.users_id == user.id).first()
+    def add_sub(self,user):
+        if not self.subscribed(user):
+            self.subs.append(user)
+            
+    def remove_sub(self,user):
+        if  self.subscribed(user):
+            self.subs.remove(user)
+
     def is_sub_mod(self,user):
         return self.sub_moderator.filter(
             sub_moderator.c.sub_moderator_id == user.id).count() > 0
@@ -306,8 +323,10 @@ class Posts(db.Model):
     haposts = db.relationship('Posthau', backref='hausa_posts', lazy='dynamic')
     arposts = db.relationship('Postarb', backref='arabic_posts', lazy='dynamic')
     frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
+    picture_url =db.Column(db.String)
+    video_url =db.Column(db.String)
 
-    def __init__(self, uploader, title, channel, posttype, content, uploader_id):
+    def __init__(self, uploader, title, channel, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
         self.title = title
         self.uploader_id = uploader
@@ -315,6 +334,8 @@ class Posts(db.Model):
         self.post_type = posttype
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
+        self.picture_url = picture_url
+        self.video_url = video_url
     
     def launch_translation_task(self, name, userid, descr):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
