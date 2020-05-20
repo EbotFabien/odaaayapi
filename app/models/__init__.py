@@ -381,13 +381,15 @@ class Subcomment(db.Model):
     subcomment_type = db.Column(db.String, nullable=False)
     comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'),nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    public =db.Column(db.Boolean, nullable= False, default=True)
 
-    def __init__(self, content, user, comment,comtype):
+    def __init__(self, content, user, comment,comtype,public=True):
         self.content = content
         self.user = user
         self.comment = comment
         self.subcomment_type = comtype
-
+        self.public = public
+        
     def __repr__(self):
         return '<Subcomment>%r' %self.content
 
