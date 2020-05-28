@@ -373,7 +373,7 @@ class Comment(db.Model):
         'Comment', backref=db.backref('parent', remote_side=[id]),
         lazy='dynamic')
 
-    def __init__(self, language, user, post, content, comment_type,public):
+    def __init__(self, language, user, post, content, comment_type, public):
         self.content = content
         self.user_id = user
         self.post_id = post
