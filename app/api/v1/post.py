@@ -1,14 +1,23 @@
-from flask_restplus import Namespace, Resource, fields, marshal
+from flask_restplus import Namespace, Resource, fields, marshal,Api
 import jwt, uuid, os
+from flask_cors import CORS
 from functools import wraps
-from flask import abort, request, session
+from flask import abort, request, session,Blueprint
 from flask import current_app as app
 from app.models import Users, Channels, subs, Posts, Language, Postarb, Posten, Postes, Postfr, \
     Posthau, Postpor, Postsw
 from app import db, cache, logging
 import json
 from tqdm import tqdm
+from werkzeug.datastructures import FileStorage
 
+authorizations = {
+    'KEY': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'API-KEY'
+    }
+}
 
 # The token decorator to protect my routes
 def token_required(f):
@@ -28,7 +37,17 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-post = Namespace('/api/post', \
+api = Blueprint('api',__name__, template_folder='../templates')
+post1=Api( app=api, doc='/docs',version='1.4',title='News API.',\
+description='', authorizations=authorizations)
+#from app.api import schema
+CORS(api, resources={r"/api/*": {"origins": "*"}})
+
+uploader = post1.parser()
+uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
+uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
+
+post = post1.namespace('/api/post', \
     description='This contains routes for core app data access. Authorization is required for each of the calls. \
         To get this authorization, please contact out I.T Team ', \
     path='/v1/')
@@ -90,7 +109,11 @@ postreq = post.model('postreq', {
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'count': 'Number results per page',
-            'lang' : 'Language'},
+            'lang' : 'Language',
+            'title': 'Title of the post',
+            'channel':'channel id of the post',
+            'content':'This is the content of the post'
+            },
     responses={
         200: 'ok',
         201: 'created',
@@ -132,7 +155,7 @@ class Post(Resource):
                     "results": marshal(results, langpostdata)
                 }, 200
             else:
-                posts = Posts.query.paginate(int(start), int(count), False).items
+                posts = Posts.query.order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
                 return {
                     "start": start,
                     "limit": limit,
@@ -142,7 +165,7 @@ class Post(Resource):
                     "results": marshal(posts, postdata)
                 }, 200
         else:
-            posts = Posts.query.all()
+            posts = Posts.query.order_by(Posts.uploader_date.desc()).all()
             return marshal(posts, postdata), 200
 
     @token_required
@@ -195,15 +218,20 @@ class Post(Resource):
               return {'res':'fail'}, 404
               
     @token_required
-    @post.expect(postcreationdata)
+    @post.expect(uploader)
     def post(self):
-        req_data = request.get_json()
+        args = uploader.parse_args()
+        title=request.args.get('title')
+        content=request.args.get('content')
+        channel_id =int(request.args.get('channel'))
+        Type =request.args.get('type')
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        channel = Channels.query.filter_by(id=req_data['channel']).first()
-        if user.subscribed(channel) is None:
+        channel = Channels.query.filter_by(id=channel_id).first()
+        if channel.subscribed(user) is None:
             return {'res':'You are not subscribed to this channel'}, 404
+<<<<<<< HEAD
         if req_data['channel'] is None:
             return {'res':'fail'}, 404 
         elif user.subscribed(channel) and user:
@@ -215,6 +243,49 @@ class Post(Resource):
             # channel = Channels.query.filter_by(id=req_data['channel']).first().langs
             new_post.launch_translation_task('translate_posts', user.id,'Translating  post ...')
             db.session.commit()
+=======
+        if channel_id is None:
+            return {'res':'fail'}, 404
+        if args['file'] is not  None:
+            if args['file'].mimetype == 'video/mp4':
+                name = args['name']
+                orig_name = args['file'].filename
+                file = args['file']
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/video/', user.uuid)
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
+                videofile = '%s%s' % (destination+'/', orig_name)
+                file.save(videofile)
+                Type=int('1')
+                new_post = Posts(user.id,title, channel.id, Type, content, user.id,video_url='/posts/'+'/video/'+user.uuid+'/'+orig_name)
+                db.session.add(new_post)
+                db.session.commit()
+                return {'res':'success'}, 200
+            if args['file'].mimetype == 'image/*':
+                name = args['name']
+                orig_name = args['file'].filename
+                file = args['file']
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/picture/', user.uuid)
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
+                picturefile = '%s%s' % (destination+'/', orig_name)
+                file.save(videofile)
+                Type=int('2')
+                new_post = Posts(user.id,title, channel, Type, content, user.id,picture_url='/posts/'+'/picture/'+user.uuid+'/'+orig_name)
+                db.session.add(new_post)
+                db.session.commit()
+                return {'res':'success'}, 200
+        if user.subscribed(channel) and user:
+            if content is None: 
+                return{'res':'put content'},404
+            if Type is None:
+                Type="Text"
+            new_post = Posts(user.id,title, channel, Type, content, user.id)
+            db.session.add(new_post)
+            db.session.commit()
+           #new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            #db.session.commit()
+>>>>>>> 8382b9ea01bb2fd2a0256a6dec8b9f507eab03ab
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
