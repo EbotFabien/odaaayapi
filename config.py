@@ -14,7 +14,7 @@ class Config(object):
     #    or 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     # 'postgresql://localhost/news'
     # 'postgresql+psycopg2://test:test@db/test'
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True 
     LANGUAGES = ['en', 'fr', 'arb', 'por']
     RESTPLUS_VALIDATE = True
     SWAGGER_UI_OPERATION_ID = True
@@ -53,13 +53,13 @@ class Config(object):
     MSEARCH_INDEX_NAME = 'msearch'
     MSEARCH_BACKEND = 'elasticsearch'
     MSEARCH_PRIMARY_KEY = 'id'
-    MSEARCH_ENABLE = True
+    MSEARCH_ENABLE = False
     ELASTICSEARCH = {"hosts": ["127.0.0.1:9200"]}
 
 class Development(Config):
     DEBUG = True
     HOST = '0.0.0.0'
-    PORT = 5000
+    PORT = 3000
 
 class Production(Config):
     DEBUG = False

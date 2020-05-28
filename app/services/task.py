@@ -17,10 +17,12 @@ from app.models import Users, Posts, Task, Postarb, Posten, Postfr, Posthau, Pos
 from app.services.mail import send_email
 import os
 from tqdm import tqdm
+from googletrans import Translator
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 app.app_context().push()
+translator = Translator()
 
 def _set_task_progress(progress):
     job = get_current_job()
@@ -62,7 +64,8 @@ def translate_posts(post_id, user_id):
     language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
     post = Posts.query.get(post_id)
     user = Users.query.get(user_id)
-    user_default_lang = 'fr'
+    post_auto_lang = translator.detect(post.content)
+    user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
     if post.post_url is not None:

@@ -1,7 +1,6 @@
 from faker import Faker
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
-    Subcomment,  Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
-        Postsw, Posttype, Rating, Ratingtype
+    Posts, Postarb, Posten, Postfr, Posthau, Postpor, Postsw, Posttype, Rating, Ratingtype
 from app import db, createapp
 import random
 import sentry_sdk

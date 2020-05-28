@@ -205,7 +205,7 @@ class Post(Resource):
         if user.subscribed(channel) is None:
             return {'res':'You are not subscribed to this channel'}, 404
         if req_data['channel'] is None:
-            return {'res':'fail'}, 404
+            return {'res':'fail'}, 404 
         elif user.subscribed(channel) and user:
             if req_data['type'] is None:
                 req_data['type']="Text"

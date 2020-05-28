@@ -339,43 +339,6 @@ class Posts(db.Model):
     def __repr__(self):
         return '<Post>%r' %self.title
 
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    comment_type = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
-    #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
-    public =db.Column(db.Boolean, nullable= False, default=True)
-
-    def __init__(self, language, user, post, content, comment_type,public):
-        self.content = content
-        self.user_id = user
-        self.post_id = post
-        #self.language_id = language
-        self.comment_type = comment_type
-        self.public = public
-
-    def __repr__(self):
-        return '<Comment>%r' %self.content
-
-
-class Subcomment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    subcomment_type = db.Column(db.String, nullable=False)
-    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'),nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    def __init__(self, content, user, comment,comtype):
-        self.content = content
-        self.user = user
-        self.comment = comment
-        self.subcomment_type = comtype
-
-    def __repr__(self):
-        return '<Subcomment>%r' %self.content
 
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -390,6 +353,46 @@ class Language(db.Model):
         self.name = name
     def __repr__(self):
         return '<Language>%r' %self.name
+
+
+class Comment(db.Model):
+
+    _N = 6
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String, nullable=False)
+    comment_type = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
+    language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
+    public =db.Column(db.Boolean, nullable= False, default=True)
+    path = db.Column(db.Text, index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    replies = db.relationship(
+        'Comment', backref=db.backref('parent', remote_side=[id]),
+        lazy='dynamic')
+
+    def __init__(self, language, user, post, content, comment_type,public):
+        self.content = content
+        self.user_id = user
+        self.post_id = post
+        self.language_id = language
+        self.comment_type = comment_type
+        self.public = public
+
+    def __repr__(self):
+        return '<Comment>%r' %self.content
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+        prefix = self.parent.path + '.' if self.parent else ''
+        self.path = prefix + '{:0{}d}'.format(self.id, self._N)
+        db.session.commit()
+
+    def level(self):
+        return len(self.path) // self._N - 1
 
 class Posttype(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -13,7 +13,7 @@ import jwt, uuid, os
 from flask import current_app as app
 from .v1 import user, info, token, search, post, comment, channel
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
-    Subcomment,  Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
+    Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
         Postsw, Posttype, Rating, Ratingtype
 
 # API security
