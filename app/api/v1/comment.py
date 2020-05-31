@@ -94,11 +94,7 @@ commentdata =comment.model('commentdata',{
     'post_id':fields.String(required=True),
     'content':fields.String(required=True),
 })
-subcommentdata =comment.model('sub_commentdata',{
-    'user_id':fields.String(required=True),
-    'channel_id':fields.String(required=True),
-    'content':fields.String(required=True),
-})
+
 
 
 
@@ -178,8 +174,7 @@ class Data(Resource):
                 audiofile = '%s%s' % (destination+'/', orig_name)
                 file.save(audiofile)
                 new_comment=Comment(user,'1', post_id,'/comments/'+user.uuid+'/'+orig_name, comment_type ='audio',public=True)
-                db.session.add(new_comment)
-                db.session.commit()
+                new_comment.save()
                 return{'res':'it worked'},200
              if args['file'].mimetype == 'picture/jpeg':
                  return {'res':'This is a picture'}
@@ -188,8 +183,7 @@ class Data(Resource):
                 
         if  content and post_id:
             new_comment=Comment(user,'1', post_id, content, comment_type,public=True)
-            db.session.add(new_comment)
-            db.session.commit()
+            new_comment.save()
             return{'res':'success'},200
         else:
             return {'res':'fail'},400
@@ -266,144 +260,7 @@ class Data(Resource):
             return {'res':'fail'},404
         #return {}, 200
         #return {}, 200
-@comment.route('/comment/subcomments')
-class Subcomments(Resource):
-    @comment.marshal_with(apiinfo)
-    def get(self):
-        if request.args:
-            start = request.args.get('start',None)
-            limit = request.args.get('limit',None)
-            count = request.args.get('count',None)
-            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
-            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            sub_comment = Subcomment.query.filter_by(public=True).paginate(int(start),int(count), False).items
-            return{
-                "start":start,
-                "limit":limit,
-                "count":count,
-                "next":next,
-                "previous":previous,
-                "results":marshal(sub_comment,subcommentdata)
-            }, 200
-        else:
-            sub_comment =Subcomment.query.all()
-            return marshal(sub_comment,subcommentdata),200
-    @token_required
-    def post(self):
-        post_id=request.args.get('postid')
-        comment_type=request.args.get('comment_type')
-        content =request.args.get('content')
-        comment=int(request.args.get('comment_id'))
-        if post_id is None:
-            return {'res':'fail'},400
-        token = request.headers['API-KEY']
-        args = uploader.parse_args()
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        post_id_real=Posts.query.get(int(post_id))
-        channel = Channels.query.filter_by(id=post_id_real.channel_id).first()
-        comment = Comment.query.filter_by(id=comment).first()
-        if channel.subscribed(user) is None:
-           return {'res':'You are not subscribed to this channel'}, 404
 
-        if comment.post_id == post_id_real.id and  args['file'] is not None: 
-             if args['file'].mimetype == 'audio/mpeg':
-                name = args['name']
-                orig_name = secure_filename(args['file'].filename)
-                file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'sub_comments/' ,user.uuid)
-                if not os.path.exists(destination):
-                    os.makedirs(destination)
-                audiofile = '%s%s' % (destination+'/', orig_name)
-                file.save(audiofile)
-                new_sub_comment=Subcomment('/sub_comments/'+user.uuid+'/'+orig_name,user.id,comment.id,comtype='audio')
-                db.session.add(new_sub_comment)
-                db.session.commit()
-                return{'res':'it worked'},200
-             if args['file'].mimetype == 'image/jpeg':
-                 return {'res':'This is a picture'}
-        else:
-            return {'res':'That comment not under this post'},400
-                
-        if  comment.post_id == post_id_real.id and content :
-            new_sub_comment=Subcomment(content,user.id,comment.id,comtype='audio')
-            db.session.add(new_sub_comment)
-            db.session.commit()
-            return{'res':'success'},200
-        else:
-            return {'res':'fail'},400
-
-    @token_required
-    @comment.expect(commentupdate)
-    def put(self):
-        req_data = request.get_json()
-        if request.args.get('postid'):
-            post_id=request.args.get('postid')
-        elif request.args.get('postid') is None:
-            post_id=Posts.query.get(req_data['post_id'])
-        if post_id is None:
-            return{'res':'fail'},400
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        sub_comment=Subcomment.query.get(req_data['Comment_id'])
-    
-        if req_data['content'] is None:
-            return{'res':'fail'}, 404
-        if post_id and comment:
-            if user.id  == sub_comment.user_id:
-                comment.content = req_data['content']
-                db.session.commit()
-            return {'res':'success'}, 200
-        else:
-            return {'res':'fail'},404
-       
-    @token_required
-    @comment.expect(commentupdate)
-    def patch(self):
-        req_data = request.get_json()
-        if request.args.get('postid'):
-            post_id=request.args.get('postid')
-        elif request.args.get('postid') is None:
-            post_id=Posts.query.get(req_data['post_id'])
-        if post_id is None:
-            return{'res':'fail'},400
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        sub_comment=Subcomment.query.get(req_data['Comment_id'])
-    
-        if req_data['content'] is None:
-            return{'res':'fail'}, 404
-        if post_id and comment:
-            if user.id  == sub_comment.user_id:
-                comment.content = req_data['content']
-                db.session.commit()
-            return {'res':'success'}, 200
-        else:
-            return {'res':'fail'},404
-    @token_required
-    @comment.expect(commentdelete)
-    def delete(self):
-        req_data = request.get_json()
-        if request.args.get('postid'):
-            post_id=request.args.get('postid')
-        elif request.args.get('postid') is None:
-            post_id=Posts.query.get(req_data['post_id'])
-        if post_id is None:
-            return{'res':'fail'},400
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        sub_comment=Subcomment.query.get(req_data['Comment_id'])
-
-        if post_id and comment:
-            if user.id == comment.user_id:
-                comment.public = False
-                db.session.commit()
-            return {'res':'success'}, 200
-        else:
-            return {'res':'fail'},404
 @comment.route('/comment/<word>')
 class Searchcomment(Resource):
     @comment.marshal_with(apiinfo)

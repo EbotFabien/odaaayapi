@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, Response
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
@@ -14,18 +14,28 @@ from redis import Redis
 import rq
 import rq_dashboard
 from flask_googletrans import translator
+from flask_msearch import Search
 
 
 db = SQLAlchemy()
+search = Search()
 mail = Mail()
 basedir= os.path.abspath(os.path.dirname(__file__))
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 dashboard.config.init_from(file=os.path.join(basedir, '../config.cfg'))
 limiter = Limiter(key_func=get_remote_address)
 
+SERVER_NAME = 'Google Web Server v0.1.0'
+
+class localFlask(Flask):
+    def process_response(self, response):
+        #Every response will be processed here first
+        response.headers['server'] = SERVER_NAME
+        super(localFlask, self).process_response(response)
+        return(response)
 
 def createapp(configname):
-    app = Flask(__name__)
+    app = localFlask(__name__)
     app.config.from_object(config[configname])
     CORS(app)
     db.init_app(app)
@@ -34,6 +44,7 @@ def createapp(configname):
     dashboard.bind(app)
     limiter.init_app(app)
     app.ts = translator(app)
+    search.init_app(app)
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     app.redis = Redis.from_url(app.config['REDIS_URL'])

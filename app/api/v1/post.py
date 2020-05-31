@@ -56,6 +56,7 @@ postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
     'channel': fields.Integer(required=True),
     'type': fields.String(required=True),
+    'post_url': fields.String(required=False),
     'content': fields.String(required=True)
 })
 
@@ -73,6 +74,7 @@ postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'channel_id': fields.Integer(required=True),
+    'post_url': fields.String(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)

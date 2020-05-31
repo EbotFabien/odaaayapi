@@ -38,6 +38,7 @@ sub_moderator = db.Table('sub_moderator',
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
 class Users(db.Model):
+    __searchable__ = ['username']
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable=False)
     uuid = db.Column(db.String, nullable=False)
@@ -206,6 +207,7 @@ class Notification(db.Model):
         return json.loads(str(self.payload_json))
 
 class Channels(db.Model):
+    __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
@@ -306,10 +308,13 @@ class Rating(db.Model):
 
 
 class Posts(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     content = db.Column(db.String)
     uploader = db.Column(db.String)
+    post_url = db.Column(db.String)
+    orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
     uploader_date = db.Column(db.DateTime, nullable=False)
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
     channel_id = db.Column(db.Integer, db.ForeignKey('channels.id'), nullable=False)
@@ -332,6 +337,8 @@ class Posts(db.Model):
         self.uploader_id = uploader
         self.channel_id = channel
         self.post_type = posttype
+        self.orig_lang = 1
+        self.post_url = url
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
         self.picture_url = picture_url
@@ -353,45 +360,6 @@ class Posts(db.Model):
     def __repr__(self):
         return '<Post>%r' %self.title
 
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    comment_type = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
-    #language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
-    public =db.Column(db.Boolean, nullable= False, default=True)
-
-    def __init__(self, language, user, post, content, comment_type,public):
-        self.content = content
-        self.user_id = user
-        self.post_id = post
-        #self.language_id = language
-        self.comment_type = comment_type
-        self.public = public
-
-    def __repr__(self):
-        return '<Comment>%r' %self.content
-
-
-class Subcomment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    subcomment_type = db.Column(db.String, nullable=False)
-    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'),nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    public =db.Column(db.Boolean, nullable= False, default=True)
-
-    def __init__(self, content, user, comment,comtype,public=True):
-        self.content = content
-        self.user = user
-        self.comment = comment
-        self.subcomment_type = comtype
-        self.public = public
-        
-    def __repr__(self):
-        return '<Subcomment>%r' %self.content
 
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -406,6 +374,46 @@ class Language(db.Model):
         self.name = name
     def __repr__(self):
         return '<Language>%r' %self.name
+
+
+class Comment(db.Model):
+
+    _N = 6
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String, nullable=False)
+    comment_type = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
+    language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
+    public =db.Column(db.Boolean, nullable= False, default=True)
+    path = db.Column(db.Text, index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    replies = db.relationship(
+        'Comment', backref=db.backref('parent', remote_side=[id]),
+        lazy='dynamic')
+
+    def __init__(self, language, user, post, content, comment_type,public):
+        self.content = content
+        self.user_id = user
+        self.post_id = post
+        self.language_id = language
+        self.comment_type = comment_type
+        self.public = public
+
+    def __repr__(self):
+        return '<Comment>%r' %self.content
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+        prefix = self.parent.path + '.' if self.parent else ''
+        self.path = prefix + '{:0{}d}'.format(self.id, self._N)
+        db.session.commit()
+
+    def level(self):
+        return len(self.path) // self._N - 1
 
 class Posttype(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -428,6 +436,7 @@ class Ratingtype(db.Model):
         return '<Ratingtype>%r' %self.id
 
 class Postarb(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
@@ -440,6 +449,7 @@ class Postarb(db.Model):
         self.language_id = lang
 
 class Posten(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
@@ -452,6 +462,7 @@ class Posten(db.Model):
         self.language_id = lang
 
 class Postpor(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
@@ -464,6 +475,7 @@ class Postpor(db.Model):
         self.language_id = lang
 
 class Postfr(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
@@ -476,6 +488,7 @@ class Postfr(db.Model):
         self.language_id = lang
 
 class Posthau(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
@@ -488,6 +501,7 @@ class Posthau(db.Model):
         self.language_id = lang 
 
 class Postsw(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
@@ -500,6 +514,7 @@ class Postsw(db.Model):
         self.language_id = lang 
 
 class Postes(db.Model):
+    __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)

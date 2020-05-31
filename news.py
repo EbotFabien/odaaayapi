@@ -1,7 +1,6 @@
 from faker import Faker
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
-    Subcomment,  Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
-        Postsw, Posttype, Rating, Ratingtype
+    Posts, Postarb, Posten, Postfr, Posthau, Postpor, Postsw, Posttype, Rating, Ratingtype
 from app import db, createapp
 import random
 import sentry_sdk
@@ -61,7 +60,7 @@ def seed():
             db.session.add(Channels(name=fake.company(), description=fake.paragraph(),profile_pic=fake.image_url(), background=fake.image_url(), user=random.randint(1,10), css=''))
             db.session.commit()
         for x in range(80):
-            db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10)))
+            db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10), url=fake.domain_word()))
             db.session.commit()
         for y in range(150):
             db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(1,80), content=fake.paragraph(), comment_type='text' , public=True))
@@ -104,4 +103,3 @@ def test():
 
 if __name__ == "__main__":
     manager.run()
-    #run()
