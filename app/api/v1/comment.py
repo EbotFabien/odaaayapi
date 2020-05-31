@@ -3,7 +3,7 @@ import jwt, uuid, os
 from flask_cors import CORS
 from functools import wraps
 from flask import abort, request, session,Blueprint
-from app.models import Users,Posts,Comment,Channels, subs, Subcomment
+from app.models import Users,Posts,Comment,Channels, subs
 from flask import current_app as app
 from app import db,cache
 from werkzeug.datastructures import FileStorage

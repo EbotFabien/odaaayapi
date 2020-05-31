@@ -311,6 +311,7 @@ class Posts(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
+    uuid = db.Column(db.String)
     content = db.Column(db.String)
     uploader = db.Column(db.String)
     post_url = db.Column(db.String)
@@ -334,11 +335,11 @@ class Posts(db.Model):
     def __init__(self, uploader, title, channel, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
         self.title = title
+        self.uuid = str(uuid.uuid4())
         self.uploader_id = uploader
         self.channel_id = channel
         self.post_type = posttype
         self.orig_lang = 1
-        self.post_url = url
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
         self.picture_url = picture_url

@@ -231,19 +231,6 @@ class Post(Resource):
         channel = Channels.query.filter_by(id=channel_id).first()
         if channel.subscribed(user) is None:
             return {'res':'You are not subscribed to this channel'}, 404
-<<<<<<< HEAD
-        if req_data['channel'] is None:
-            return {'res':'fail'}, 404 
-        elif user.subscribed(channel) and user:
-            if req_data['type'] is None:
-                req_data['type']="Text"
-            new_post = Posts(user.id, req_data['title'], req_data['channel'], req_data['type'], req_data['content'], user.id, req_data['post_url'])
-            db.session.add(new_post)
-            db.session.commit()
-            # channel = Channels.query.filter_by(id=req_data['channel']).first().langs
-            new_post.launch_translation_task('translate_posts', user.id,'Translating  post ...')
-            db.session.commit()
-=======
         if channel_id is None:
             return {'res':'fail'}, 404
         if args['file'] is not  None:
@@ -285,7 +272,6 @@ class Post(Resource):
             db.session.commit()
            #new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
             #db.session.commit()
->>>>>>> 8382b9ea01bb2fd2a0256a6dec8b9f507eab03ab
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404
