@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from app import db, limiter, cache
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
+import werkzeug
 import jwt, uuid, os
 from flask import current_app as app
 from .v1 import user, info, token, search, post, comment, channel
@@ -269,4 +270,5 @@ class Message(Resource):
     @token_required
     @message.marshal_with(schema.homedata)
     def get(self):
-        return {}, 200       
+        return {}, 200    
+

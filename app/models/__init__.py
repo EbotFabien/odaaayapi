@@ -394,14 +394,16 @@ class Comment(db.Model):
     replies = db.relationship(
         'Comment', backref=db.backref('parent', remote_side=[id]),
         lazy='dynamic')
-
-    def __init__(self, language, user, post, content, comment_type, public):
+    
+    def __init__(self, language, user, post, content, comment_type, public,parent_id=None):
         self.content = content
         self.user_id = user
         self.post_id = post
         self.language_id = language
         self.comment_type = comment_type
-        self.public = public
+        self.public = public 
+        self.parent_id = parent_id
+        
 
     def __repr__(self):
         return '<Comment>%r' %self.content
@@ -412,6 +414,7 @@ class Comment(db.Model):
         prefix = self.parent.path + '.' if self.parent else ''
         self.path = prefix + '{:0{}d}'.format(self.id, self._N)
         db.session.commit()
+        
 
     def level(self):
         return len(self.path) // self._N - 1

@@ -8,6 +8,7 @@ from flask import current_app as app
 from app import db,cache
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+import werkzeug
 
 authorizations = {
     'KEY': {
@@ -46,10 +47,14 @@ uploader = comment1.parser()
 uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
 uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
 
+
+
 comment = comment1.namespace('/api/comment', \
     description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
     on the application.", \
     path = '/v1/')
+
+
     
 apiinfo = comment.model('Info', {
     'name': fields.String,
@@ -93,6 +98,8 @@ commentdata =comment.model('commentdata',{
     'user_id':fields.String(required=True),
     'post_id':fields.String(required=True),
     'content':fields.String(required=True),
+    'path':fields.String(required=True),
+    
 })
 
 
@@ -106,7 +113,8 @@ commentdata =comment.model('commentdata',{
              'count': 'Number results per page',
              'file':'The file is an mp3',
              'content':'Specify if it is text or audio',
-             'comment_type':'Specify the type of comment'
+             'comment_type':'Specify the type of comment',
+             'Parent_id':'Specify parent_id if present'
              },
 
     responses={
@@ -133,7 +141,9 @@ class Data(Resource):
             count = request.args.get('count',None)
             next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            comment = Comment.query.filter_by(public=True).paginate(int(start),int(count), False).items
+            comment = Comment.query.filter_by(public=True).order_by(Comment.path).paginate(int(start),int(count), False).items
+            for comments in comment:
+                print( comments.path)
             return{
                 "start":start,
                 "limit":limit,
@@ -152,6 +162,7 @@ class Data(Resource):
         post_id=request.args.get('postid')
         comment_type=request.args.get('comment_type')
         content =request.args.get('content')
+        parent_id =request.args.get('Parent_id')
         if post_id is None:
             return {'res':'fail'},400
         token = request.headers['API-KEY']
@@ -173,17 +184,26 @@ class Data(Resource):
                     os.makedirs(destination)
                 audiofile = '%s%s' % (destination+'/', orig_name)
                 file.save(audiofile)
-                new_comment=Comment(user,'1', post_id,'/comments/'+user.uuid+'/'+orig_name, comment_type ='audio',public=True)
-                new_comment.save()
-                return{'res':'it worked'},200
+                if parent_id is None :
+                    new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True)
+                    new_comment.save()
+                else:
+                    new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True,parent_id=parent_id)
+                    new_comment.save()
+                       
+                return{'res':new_comment.id},200
              if args['file'].mimetype == 'picture/jpeg':
                  return {'res':'This is a picture'}
         else:
             return {'res':'fail'},400
                 
         if  content and post_id:
-            new_comment=Comment(user,'1', post_id, content, comment_type,public=True)
-            new_comment.save()
+            if parent_id is None :
+                new_comment=Comment(int(1),user.id, post_id, content, comment_type,public=True)
+                new_comment.save()
+            else:
+                new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True,parent_id=parent_id)
+                new_comment.save()
             return{'res':'success'},200
         else:
             return {'res':'fail'},400
@@ -260,6 +280,7 @@ class Data(Resource):
             return {'res':'fail'},404
         #return {}, 200
         #return {}, 200
+
 
 @comment.route('/comment/<word>')
 class Searchcomment(Resource):
