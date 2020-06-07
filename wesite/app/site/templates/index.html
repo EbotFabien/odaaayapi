@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <!-- <strong>Title</strong> --> {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+  {% block scripts %}
+    {{ super() }}
+    <script>
+      $("#search").keyup(function(){
+        let word = $(this).val();
+        search(word);
+      });
+      function summary(id){
+        $.ajax({
+          url: "/summary/"+id,
+          type: 'GET',
+          dataType: 'json',
+          success: function(res) {
+            $('#awsome-content').html("<h5>Summary</h5><br>"+res['content'])
+            $('#title').html(res['title'])
+            $('#content').html(res['data'])
+            $('#source').html(res['source'])
+            $('#source_desc').html(res['description'])
+            $('#feed').addClass( "main-visible" );
+            console.log(res);
+          }
+        });
+      }
+      function back(){
+        $('#feed').removeClass( "main-visible" );
+      }
+      function search(word){
+        $.ajax({
+          url: "/search?keyword="+word,
+          type: 'GET',
+          success: function(res){
+            if(res['res'] === 'none'){
+
+            } else {
+              results = JSON.parse(res)
+              $('#sidepost').empty();
+              results.forEach(element => order(element));
+            }
+          }
+        });
+      }
+
+      $('#toggle').click(function (){
+        if($('link[href="/static/css/template.min.css"]').length){
+          $('link[href="/static/css/template.min.css"]').attr('href','/static/css/template.dark.min.css');
+        }
+        if($('link[href="/static/css/template.dark.min.css"]').length){
+          $('link[href="/static/css/template.dark.min.css"]').attr('href','/static/css/template.min.css');
+        }  
+      });
+
+      function order(element){
+        if(element['thumb']){
+          template = `
+            <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
+              <div class="card mb-3">
+                  <img src="`+element['thumb']+`" class="card-img-top card-img" alt="...">
+                  <div class="card-body">
+                      <h5 class="card-title">`+element['title']+`</h5>
+                      <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
+                  </div>
+              </div>
+            </a>
+          `;
+          $('#sidepost').append(template);
+        }else{
+          template = `
+            <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
+              <div class="card mb-3">
+                  <div class="card-body">
+                      <h5 class="card-title">`+element['title']+`</h5>
+                      <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
+                  </div>
+              </div>
+            </a>
+          `;
+          $('#sidepost').append(template);
+        }
+      }
+      $( document ).ready(function() {
+        if ($('#back-to-top').length) {
+          console.log("Hey i was called");
+          var scrollTrigger = 100, // px
+          backToTop = function () {
+            var scrollTop = $(window).scrollTop();
+            if (scrollTop > scrollTrigger) {
+              $('#back-to-top').addClass('show');
+            } else {
+              $('#back-to-top').removeClass('show');
+            }
+          };
+          backToTop();
+          $(window).on('scroll', function () {
+            backToTop();
+          });
+          $('#back-to-top').on('click', function (e) {
+            e.preventDefault();
+            $('html,body').animate({
+                scrollTop: 0
+            }, 700);
+          });
+        }
+      });
+      $('#sidepost').scroll(function() {
+        if($(window).scrollTop() + $(window).height() == $(document).height()) {
+            alert("bottom!");
+        }
+      });
+    </script>
+  {% endblock %}
+{% endblock %}
+
+  
+  

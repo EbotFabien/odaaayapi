@@ -1,0 +1,53 @@
+
+<!-- Navbar -->
+<div class="navigation navbar navbar-light justify-content-center py-xl-7">
+
+    <!-- Brand -->
+    <a href="index.html#" class="d-none d-xl-block mb-6">
+        <img src="{{url_for('static', filename='images/brand.svg')}}" class="mx-auto fill-primary" data-inject-svg="" alt="" style="height: 46px;">
+    </a>
+
+    <!-- Menu -->
+    <ul class="nav navbar-nav flex-row flex-xl-column flex-grow-1 justify-content-between justify-content-xl-center py-3 py-lg-0" role="tablist">
+
+        <!-- Invisible item to center nav vertically -->
+        <li class="nav-item d-none d-xl-block invisible flex-xl-grow-1">
+            <a class="nav-link position-relative p-0 py-xl-2" href="#" title="">
+                <i class="icon-lg fe-x"></i>
+            </a>
+        </li>
+
+        <!-- Chats -->
+        <li class="nav-item mt-xl-9">
+            <a class="nav-link position-relative p-0 py-xl-3 active" data-toggle="tab" href="#" title="Chats" role="tab">
+                <i class="icon-lg fas fa-rss-square"></i>
+                <div class="badge badge-dot badge-primary badge-bottom-center"></div>
+            </a>
+        </li>
+
+        <!-- Profile -->
+        <li class="nav-item mt-xl-9" id="toggle">
+            <a class="nav-link position-relative p-0 py-xl-3" data-toggle="tab" href="#" title="User" role="tab">
+                <i class="icon-lg fas fa-moon"></i>
+            </a>
+        </li>
+
+        <!-- Demo only: Documentation -->
+        <li class="nav-item mt-xl-9 d-none d-xl-block flex-xl-grow-1">
+            <a class="nav-link position-relative p-0 py-xl-3" data-toggle="tab" href="#" title="Demos" role="tab">
+                <i class="icon-lg fas fa-info-circle"></i>
+            </a>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item mt-xl-9">
+            <a class="nav-link position-relative p-0 py-xl-3" href="#" title="Settings">
+                <i class="icon-lg fe-settings"></i>
+            </a>
+        </li>
+
+    </ul>
+    <!-- Menu -->
+
+</div>
+<!-- Navbar -->
