@@ -8,7 +8,6 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
-from flask_migrate import upgrade
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand, upgrade
 import unittest
@@ -29,7 +28,7 @@ name = '''
 ░ ░░   ░ ▒░ ░ ░  ░  ▒ ░ ░  ░ ░▒  ░ ░
    ░   ░ ░    ░     ░   ░  ░  ░  ░  
          ░    ░  ░    ░          ░  
- ~ By Leslie Etubo T, E. Fabien, Samuel Klein, Marc.
+ ~ By Leslie Etubo T, E. Fabien, Marc.
 
 '''
 
