@@ -65,7 +65,7 @@ def create_db():
         db.create_all()
         db.session.commit()
 
-job = scheduler.add_job(cnn_job, 'interval', minutes=10)
+job = scheduler.add_job(cnn_job, 'interval', minutes=1)
 #job1 = scheduler.add_job(nytimes_job, 'interval', minutes=1)
 
 @manager.command

@@ -54,16 +54,24 @@ def index():
 @site.route('/summary/<int:id>', methods=['GET'])
 def post_summary(id):
     post_id = id
+    arguments = request.args.get('json', None)
     summary = Summary.query.filter_by(post_id=id).first_or_404()
-    return json.dumps({
-        'content':summary.content,
-        'source':summary.posts.source,
-        'data':summary.posts.description,
-        'date':str(summary.posts.pubdate),
-        'title':summary.posts.title,
-        'link':summary.posts.link,
-        'description':summary.posts.source_desc
-    })
+    if arguments:
+        return json.dumps({
+            'content':summary.content,
+            'source':summary.posts.source,
+            'data':summary.posts.description,
+            'date':str(summary.posts.pubdate),
+            'title':summary.posts.title,
+            'link':summary.posts.link,
+            'description':summary.posts.source_desc
+        })
+    else:
+        posts = Posts.query.order_by(Posts.timestamp.desc()).paginate(1, 10, False)
+        next_url = url_for('site.index', start=2,  count=10) if posts.has_next else None
+        previous = None  
+        return render_template('index.html', posts=posts.items, next_url=next_url, previous_url=previous)
+
 
 @site.route('/post', methods=['POST'])
 def make_post():

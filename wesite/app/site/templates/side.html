@@ -32,7 +32,7 @@
                                     <a id="{{ post.id }}" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary({{ post.id }})">
                                         <div class="card mb-3">
                                             <img src="{{ post.thumb }}" class="card-img-top card-img" alt="...">
-                                            <div class="card-body">
+                                            <div class="card-body media-body">
                                                 <h5 class="card-title">{{ post.title }}</h5>
                                                 <p class="card-text"><small class="text-muted">{{ post.pubdate}}</small></p>
                                             </div>
@@ -41,7 +41,7 @@
                                 {% else %}
                                     <a id="{{ post.id }}" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary({{ post.id }})">
                                         <div class="card mb-3">
-                                            <div class="card-body">
+                                            <div class="card-body media-body">
                                                 <h5 class="card-title">{{ post.title }}</h5>
                                                 <p class="card-text"><small class="text-muted">{{ post.pubdate}}</small></p>
                                             </div>
@@ -54,9 +54,6 @@
                             <span style="font-size: 100px;  margin-left: 35%;" class='typing-dots'><span>.</span><span>.</span><span>.</span></span>
                         </nav>
                         <!-- Chats -->
-                        <a href="#" id="back-to-top" title="Back to top">
-                            <i class="icon-lg fas fa-arrow-up"></i>
-                        </a>
                     </div>
                 </div>
 
