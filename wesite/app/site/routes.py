@@ -97,7 +97,11 @@ def make_post():
             return {'res':'exist'}, 200
         else:
             soup = bs4.BeautifulSoup(description, "html.parser")
-            thumburl = soup.div.find('img')
+            try:
+                thumburl = soup.div.find('img')
+            except:
+                thumburl=None
+                print("No image")
             thumb = soup.div.img['src'] if thumburl else None
             post = Posts(title, description, link, pubdate, source, source_desc, thumb)
             db.session.add(post)
@@ -121,3 +125,25 @@ def search():
         return schema.dumps(results, many=True), 200
     else:
         return {'res':'none'}, 200
+
+@site.route('/notification', methods=['GET'])
+def notification():
+    results = Posts.query.order_by(Posts.timestamp.desc()).paginate(1, 10, False)
+    if results:
+        return schema.dumps(results.items, many=True), 200
+    else:
+        return {'res':'none'}, 200
+
+@site.route('/new', methods=['GET'])
+def new():
+    if request.args:
+        start  = request.args.get('page', None)
+        count = request.args.get('count', None)
+        posts = Posts.query.order_by(Posts.timestamp.desc()).paginate(int(start), int(count), False)
+        next_url = url_for('site.index', start=posts.next_num,  count=int(count)) if posts.has_next else None 
+        previous = url_for('site.index', start=posts.prev_num,  count=int(count)) if posts.has_prev else None 
+    else:
+        posts = Posts.query.order_by(Posts.timestamp.desc()).paginate(1, 10, False)
+        next_url = url_for('site.index', start=2,  count=10) if posts.has_next else None
+        previous = None  
+    return schema.dumps(posts.items, many=True), 200

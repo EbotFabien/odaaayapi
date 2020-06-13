@@ -9,7 +9,8 @@
         //
         // Horizontal scroll
         //
-
+        var count=0;
+        var page =1;
         let url = $(location).attr('href');
         let id = url.split("/")[4];
         console.log(id);
@@ -222,87 +223,184 @@
 })(jQuery);
 
 $("#search").keyup(function(){
-    let word = $(this).val();
-    search(word);
-  });
-  function summary(id){
-    $.ajax({
-      url: "/summary/"+id+"?json=1",
-      type: 'GET',
-      dataType: 'json',
-      success: function(res) {
-        $('#awsome-content').html("<h5>Summary</h5><br>"+res['content'])
-        $('#title').html(res['title'])
-        $('#content').html(res['data'])
-        $('#source').html(res['source'])
-        $('#source_desc').html(res['description'])
-        $('#feed').addClass( "main-visible" );
-        window.history.pushState("", "", "/summary/"+id);
-      }
-    });
-  }
-  function back(){
-    $('#feed').removeClass( "main-visible" );
-  }
-  function search(word){
-    $.ajax({
-      url: "/search?keyword="+word,
-      type: 'GET',
-      success: function(res){
-        if(res['res'] === 'none'){
+var btn = $('#back-to-top');
+var btn2= $("#top-minor");
 
-        } else {
-          results = JSON.parse(res)
-          $('#sidepost').empty();
-          results.forEach(element => order(element));
-        }
-      }
-    });
-  }
+$('#first_scroll').onscroll = function() {scrollFunction()};
 
-  $('#toggle').click(function (){
-    $('link[href="/static/css/template.min.css"]').attr('href','/static/css/template.dark.min.css');  
-  });
-
-  function order(element){
-    if(element['thumb']){
-      template = `
-        <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
-          <div class="card mb-3">
-              <img src="`+element['thumb']+`" class="card-img-top card-img" alt="...">
-              <div class="card-body">
-                  <h5 class="card-title">`+element['title']+`</h5>
-                  <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
-              </div>
-          </div>
-        </a>
-      `;
-      $('#sidepost').append(template);
-    }else{
-      template = `
-        <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
-          <div class="card mb-3">
-              <div class="card-body">
-                  <h5 class="card-title">`+element['title']+`</h5>
-                  <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
-              </div>
-          </div>
-        </a>
-      `;
-      $('#sidepost').append(template);
+function scrollFunction() {
+    if ($('#first_scroll').scrollTop > 20) {
+        btn.show();
+        console.log('s');
+    } else {
+        btn.hide();
+        console.log('h');
     }
-  }
-  $( document ).ready(function() {
-    $(window).scroll(function() {
-      if($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
-        $(window).unbind('scroll');
-        alert("near bottom!");
-      }
-    });
-  });
-
-  $('#sidepost').scroll(function() {
-    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-        alert('end reached');
+}
+btn.on('click', function(e) {
+  e.preventDefault();
+  $('html,#first_scroll').animate({scrollTop:0}, '300');     
+});
+if(count == 0){
+  $("#nbadge").hide();
+}
+$("#search").keyup(function(){
+  let word = $(this).val();
+  search(word);
+});
+function summary(id){
+  $.ajax({
+    url: "/summary/"+id+"?json=1",
+    type: 'GET',
+    dataType: 'json',
+    success: function(res) {
+      $('#awsome-content').html("<h5>Summary</h5><br>"+res['content'])
+      $('#title').html(res['title'])
+      $('#content').html(res['data'])
+      $('#source').html(res['source'])
+      $('#source_desc').html(res['description'])
+      window.history.pushState("", "", "/summary/"+id);
+      $('#more').attr('href',res['link'])
+      $('#source_desc').html(res['description'])
+      $('#feed').addClass( "main-visible" );
+      console.log(res);
     }
   });
+}
+function back(){
+  $('#feed').removeClass( "main-visible" );
+}
+function search(word){
+  $.ajax({
+    url: "/search?keyword="+word,
+    type: 'GET',
+    success: function(res){
+      if(res['res'] === 'none'){
+
+      } else {
+        results = JSON.parse(res)
+        $('#sidepost').empty();
+        results.forEach(element => order(element));
+      }
+    }
+  });
+}
+
+$('#toggle').click(function (){
+  $('link[href="/static/css/template.min.css"]').attr('href','/static/css/template.dark.min.css');  
+});
+
+function order(element){
+  if(element['thumb']){
+    template = `
+      <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
+        <div class="card mb-3">
+            <img src="`+element['thumb']+`" class="card-img-top card-img" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">`+element['title']+`</h5>
+                <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
+            </div>
+        </div>
+      </a>
+    `;
+    $('#sidepost').append(template);  
+  }else{
+    template = `
+      <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">`+element['title']+`</h5>
+                <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
+            </div>
+        </div>
+      </a>
+    `;
+    $('#sidepost').append(template);
+  }
+}
+$( document ).ready(function() {
+  $(function () {
+    $('[data-toggle="popover"]').popover();
+  });
+  setInterval(notify,60000);
+  if ($('#back-to-top').length) {
+    console.log("Hey i was called");
+    var scrollTrigger = 100, // px
+    backToTop = function () {
+      var scrollTop = $(window).scrollTop();
+      if (scrollTop > scrollTrigger) {
+        $('#back-to-top').addClass('show');
+      } else {
+        $('#back-to-top').removeClass('show');
+      }
+    };
+    backToTop();
+    $(window).on('scroll', function () {
+      backToTop();
+    });
+    $('#back-to-top').on('click', function (e) {
+      e.preventDefault();
+      $('html,body').animate({
+          scrollTop: 0
+      }, 700);
+    });
+  }
+});
+
+$('#sidepost').scroll(function() {
+  if($(window).scrollTop() + $(window).height() == $(document).height()) {
+      alert("bottom!");
+  }
+});
+function notify(){
+  $.ajax({
+    url: "/notification",
+    type: 'GET',
+    success: function(res){
+      if(res['res'] === 'none'){
+          console.log("result is none");
+      } else {
+        results = JSON.parse(res);
+        results.forEach(element => add_not(element));
+      }
+    }
+  });
+  
+}
+function add_not(element,index){
+  var A=localStorage.getItem(element['uuid']);
+  if(A){
+    
+  }
+  else{
+    $("#nbadge").show();
+    count++;
+    localStorage.setItem(element['uuid'],index);
+    $("#noti").text(count);
+  } 
+
+}
+function newcart(page){
+  $.ajax({
+    url: "/new?page="+page+'&count=10',
+    type: 'GET',
+    success: function(res){
+      if(res['res'] === 'none'){
+
+      } else {
+        $("#loading").hide();
+        results = JSON.parse(res)
+        results.forEach(element => order(element));
+      }
+    }
+  });
+}
+$("#first_scroll").scroll(function(){
+  var ele = document.getElementById('first_scroll');
+    if((ele.scrollHeight - ele.scrollTop) <= ele.clientHeight){
+      newcart(page);
+      page++;
+    }
+    $("#loading").show();
+  });
+});
