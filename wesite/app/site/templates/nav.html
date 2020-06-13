@@ -3,8 +3,11 @@
 <div class="navigation navbar navbar-light justify-content-center py-xl-7">
 
     <!-- Brand -->
-    <a href="index.html#" class="d-none d-xl-block mb-6">
+    <a href="" class="d-none d-xl-block mb-6">
         <img src="{{url_for('static', filename='images/brand.svg')}}" class="mx-auto fill-primary" data-inject-svg="" alt="" style="height: 46px;">
+        <a id="nbadge" class="badge badge-circle badge-primary badge-border-light badge-top-right ">
+            <span id="noti"></span>
+        </a>
     </a>
 
     <!-- Menu -->
@@ -40,9 +43,9 @@
         </li>
 
         <!-- Settings -->
-        <li class="nav-item mt-xl-9">
-            <a class="nav-link position-relative p-0 py-xl-3" href="#" title="Settings">
-                <i class="icon-lg fe-settings"></i>
+        <li class="nav-item mt-xl-9"  >
+            <a class="nav-link position-relative p-0 py-xl-3" href="#" title="Riddle"   role="button" data-toggle="popover" data-trigger="focus" title="Dismissible popover" data-content="I’m tall when I’m young, and I’m short when I’m old. What am I?">
+                <i class="icon-lg fe-settings" ></i>
             </a>
         </li>
 
