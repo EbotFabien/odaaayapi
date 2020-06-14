@@ -10,10 +10,12 @@
     
     {% block styles %}
       <!-- Bootstrap CSS -->
-	      <link rel="stylesheet" href="{{url_for('static', filename='css/template.min.css')}}">
-        <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}" />
         {{ fontawesome_html() }}
 	    {{ bootstrap.load_css() }}
+        <link id="theme" rel="stylesheet" href="{{url_for('static', filename='css/template.min.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/needsharebutton.min.css')}}" />
+        <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}" />
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     {% endblock %}
     {% endblock %}
     <title>Lirivi</title>
@@ -32,7 +34,7 @@
                       <div class="col-3 d-xl-none">
                           <ul class="list-inline mb-0">
                               <li class="list-inline-item">
-                                  <a class="text-muted px-0" href="#" data-chat="open" onclick="back()">
+                                  <a class="text-muted px-0" href="#" data-chat="open" id="back">
                                       <i class="icon-md fe-chevron-left"></i>
                                   </a>
                               </li>
@@ -42,7 +44,7 @@
                       <div class="col-6 col-xl-6">
                           <div class="media text-center text-xl-left">
                               <div class="avatar avatar-sm d-none d-xl-inline-block mr-5">
-                                  <img src="{{url_for('static', filename='images/brand.svg')}}" class="avatar-img" alt="">
+                                  <img id="slogo" src="{{url_for('static', filename='images/brand.svg')}}" class="avatar-img" alt="">
                               </div>
 
                               <div class="media-body align-self-center text-truncate">
@@ -91,7 +93,10 @@
                         <p>Please select a feed to know more.</p>
                       </div> 
                     </div>
-                    <a class="btn btn-link" target="_blank" href="" id="more">More</a>
+                    <div class="btn-group" role="group" id="more">
+                        <a class="btn btn-link" target="_blank" href="" id="more-btn" >More</a>|
+                        <a class="btn btn-link" href="" id="share-button"></a>
+                    </div>
                 </div>
               </div>
           </div>
@@ -107,9 +112,10 @@
 		</div>
     {% block scripts %}
     <!-- Optional JavaScript -->
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     {{ bootstrap.load_js() }}
     <script src="{{url_for('static', filename='js/plugins/plugins.bundle.js')}}"></script>
+    <script src="{{url_for('static', filename='js/sharect.js')}}"></script>
+    <script src="{{url_for('static', filename='js/needsharebutton.js')}}"></script>
     <script src="{{url_for('static', filename='js/template.js')}}"></script>
     {% endblock %}
   </body>

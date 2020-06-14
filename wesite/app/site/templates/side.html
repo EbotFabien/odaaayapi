@@ -55,8 +55,8 @@ span.num {
                                 {% if posts %}
                                 {% for post in posts %}
                                     {% if post.thumb %}
-                                        <a id="{{ post.id }}" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary({{ post.id }})">
-                                            <div class="card mb-3">
+                                        <a id="card" class="text-reset nav-link p-0 mb-6 card-active-listener" href="#" onclick="summary({{ post.id }})">
+                                            <div class="card ">
                                                 <img src="{{ post.thumb }}" class="card-img-top card-img" alt="...">
                                                 <div class="card-body">
                                                     <h5 class="card-title">{{ post.title }}</h5>
@@ -65,8 +65,8 @@ span.num {
                                             </div>
                                         </a>
                                     {% else %}
-                                        <a id="{{ post.id }}" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary({{ post.id }})">
-                                            <div class="card mb-3">
+                                        <a id="card" class="text-reset nav-link p-0 mb-6 card-active-listener" href="#" onclick="summary({{ post.id }})">
+                                            <div class="card ">
                                                 <div class="card-body">
                                                     <h5 class="card-title">{{ post.title }}</h5>
                                                     <p class="card-text"><small class="text-muted">{{ post.pubdate}}</small></p>
