@@ -251,22 +251,26 @@ $("#search").keyup(function(){
   search(word);
 });
 function summary(id){
+  $('.loading-image').show();
   $.ajax({
     url: "/summary/"+id+"?json=1",
     type: 'GET',
     dataType: 'json',
     success: function(res) {
-      $('#awsome-content').html("<h5>Summary</h5><br>"+res['content'])
-      $('#title').html(res['title'])
-      $('#content').html(res['data'])
-      $('#source').html(res['source'])
-      $('#source_desc').html(res['description'])
+      $('#awsome-content').html("<h5>Summary</h5><br>"+res['content']);
+      $('#title').html(res['title']);
+      $('#content').html(res['data']);
+      $('#source').html(res['source']);
+      $('#source_desc').html(res['description']);
       window.history.pushState("", "", "/summary/"+id);
-      $('#more-btn').attr('href',res['link'])
-      $('#source_desc').html(res['description'])
+      $('#more-btn').attr('href',res['link']);
+      $('#source_desc').html(res['description']);
       $('#feed').addClass( "main-visible" );
-      $('#slogo').attr('src', '/static/images/'+res['source']+'.svg')
+      $('#slogo').attr('src', '/static/images/'+res['source']+'.svg');
       $("#more").show();
+    },
+    complete: function(){
+      $('.loading-image').hide();
     }
   });
 }
@@ -303,7 +307,7 @@ function order(element){
     template = `
       <a id="`+element['id']+`" class="text-reset nav-link p-0 mb-6" href="#" onclick="summary(`+element['id']+`)">
         <div class="card mb-3">
-            <img src="`+element['thumb']+`" class="card-img-top card-img" alt="...">
+            <img src="`+element['thumb']+`" class="card-img-top card-img" alt="`+element['title']+`">
             <div class="card-body">
                 <h5 class="card-title">`+element['title']+`</h5>
                 <p class="card-text"><small class="text-muted">`+element['pubdate']+`</small></p>
@@ -336,9 +340,9 @@ $( document ).ready(function() {
   new needShareDropdown(document.getElementById('share-button'), {
     iconStyle: 'box',
     boxForm: 'vertical',
-    networks: 'Mailto,Twitter,Facebook,Linkedin',
+    networks: 'Mailto,Twitter,Facebook',
     boxForm: 'horizontal',
-    position: 'middleRight'
+    position: 'topCenter'
   });
   $("#back").click(function(){
     $('#feed').removeClass( "main-visible" );
