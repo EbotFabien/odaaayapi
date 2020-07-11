@@ -17,6 +17,11 @@ signupdata = apisec.model('Signup', {
     'username': fields.String(required=True, description="The username for the application"),
     'phonenumber': fields.String(required=True, description="Users phone number")
 })
+signupdataemail= apisec.model('signup',{
+    'username': fields.String(required=True, description="The username for the application"),
+    'password': fields.String(required=True, description="Users password"),
+    'Email': fields.String(required=True, description="Users Email")
+})
 
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),

@@ -6,9 +6,10 @@ from flask_cors import CORS
 from functools import wraps
 from flask import current_app as app
 from datetime import datetime, timedelta
-from app import db, limiter, cache
+from app import db, limiter, cache,bycrypt
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
+import werkzeug
 import jwt, uuid, os
 from flask import current_app as app
 from .v1 import user, info, token, search, post, comment, channel
@@ -89,7 +90,8 @@ message = apisec.namespace('/api/mesage/user*', \
 @login.doc(
     params={ 
             'phone': 'User phone number',
-            'code': 'verification code' },
+            'code': 'verification code'},
+
     responses={
         200: 'ok',
         201: 'created',
@@ -102,7 +104,7 @@ message = apisec.namespace('/api/mesage/user*', \
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@login.route('/auth/login')
+@login.route('/auth/phone_login')
 class Login(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("1/hour")
@@ -154,6 +156,54 @@ class Login(Resource):
                'res': 'Invalid request'
                }, 500
 
+@login.doc(
+    params={
+            'username':'Username',
+            'password': 'password'},
+
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@login.route('/auth/email_login')
+class Login_email(Resource):
+# Limiting the user request to localy prevent DDoSing
+     @limiter.limit("1/hour")
+     def post(self):
+        app.logger.info('User login with user_name')
+        if request.args:
+            user_name = request.args.get('username', None)
+            password = request.args.get('password', None)
+            user = Users.query.filter_by(user_name=user_name).first()
+            if user is not none:
+                if password:
+                    if bcrypt.check_password_hash(user.password,password):
+                        token = jwt.encode({
+                            'user': user.username,
+                            'uuid': user.uuid,
+                            'iat': datetime.utcnow()
+                        },
+                        app.config.get('SECRET_KEY'),
+                        algorithm='HS256')
+                        return {
+                            'res': 'success',
+                            'token': str(token)
+                        }, 200
+                    else:
+                        return {'res': 'Your Password is wrong'}, 401
+                else:
+                    default_password = '123456'
+                    user.password = default_password
+                    db.session.commit()
+                    return {'res': 're_enter password'}, 301
 @signup.doc(
     responses={
         200: 'ok',
@@ -167,7 +217,7 @@ class Login(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@signup.route('/auth/signup')
+@signup.route('/auth/phone_signup')
 class Signup(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
@@ -203,6 +253,42 @@ class Signup(Resource):
         else:
             return {},404
 
+@signup.route('/auth/email_signup')
+class Signup_email(Resource):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("10/hour")
+    @signup.expect(schema.signupdataemail)
+    def post(self):
+        signup_data = request.get_json()
+        email = signup_data['Email']
+        exuser = Users.query.filter_by(email=email).first()
+        hashed_password = bcrypt.generate_password_hash(signup_data['password']).decode('utf-8')
+        if signup_data:
+            if exuser:
+                return { 
+                    'res':'failed',
+                    'status':'user already exist'
+                }, 200
+            else:
+                email = signup_data['Email']
+                verification_code = '123456'
+
+                if verification_code:
+                    newuser = Users(signup_data['username'],'675337250', True, signup_data['Email'],hashed_password)
+                    newuser.code = verification_code
+                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    db.session.add(newuser)
+                    db.session.commit()
+                    return {
+                        'res': 'success',
+                        'phone': signup_data['Email']
+                    }, 200
+                else:
+                    return {
+                        'results':'error'
+                    }, 401
+        else:
+            return {},404
 # Home still requires paginated queries for user's phone not to load forever
 @cache.cached(300, key_prefix='all_home_posts')
 @home.doc(
@@ -281,4 +367,5 @@ class Message(Resource):
     @token_required
     @message.marshal_with(schema.homedata)
     def get(self):
-        return {}, 200       
+        return {}, 200    
+
