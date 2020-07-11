@@ -41,6 +41,8 @@ class Users(db.Model):
     __searchable__ = ['username']
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable=False)
+    email = db.Column(db.String(120),unique=True, nullable=True)
+    password = db.Column(db.String(60),nullable=True)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
@@ -79,12 +81,14 @@ class Users(db.Model):
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
         
-    def __init__(self, username, number, user_visibility):
+    def __init__(self, username, number, user_visibility,email=None,password=None):
         self.username = username
         self.uuid = str(uuid.uuid4())
         self.user_number = number
         self.user_visibility = user_visibility
-
+        self.password = password
+        self.email =email
+        #
     def __repr__(self):
         return '<User %r>' % self.username
 

@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_script import Manager
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 from flask_caching import Cache
 import flask_monitoringdashboard as dashboard
 from flask_limiter import Limiter
@@ -18,7 +19,7 @@ import rq_dashboard
 from flask_googletrans import translator
 from flask_msearch import Search
 
-
+bycrypt = Bcrypt()
 db = SQLAlchemy()
 search = Search()
 mail = Mail()
@@ -40,6 +41,7 @@ def createapp(configname):
     app = localFlask(__name__)
     app.config.from_object(config[configname])
     CORS(app)
+    bycrypt.init_app(app)
     db.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
