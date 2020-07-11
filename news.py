@@ -70,7 +70,7 @@ def seed():
 def run():
     logo()
     recreate_db()
-    seed()
+    #seed()
     # Error tracking and logging with sentry
     sentry_sdk.init(
         dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
@@ -101,4 +101,5 @@ def test():
     return 1
 
 if __name__ == "__main__":
-    manager.run()
+    #manager.run()
+    run()

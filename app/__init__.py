@@ -62,7 +62,7 @@ def createapp(configname):
 
     @app.route('/')
     def index():
-        return "Hello from News-app"
+        return "Hello from Odaaay-app"
 
     @app.route('/debug-sentry')
     def trigger_error():

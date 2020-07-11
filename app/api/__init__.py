@@ -45,9 +45,9 @@ def token_required(f):
     return decorated
 
 api = Blueprint('api', __name__, template_folder = '../templates')
-apisec = Api( app=api, doc='/docs', version='1.4', title='News API.', \
-    description='This documentation contains all routes to access the lirivi API. \npip install googletransSome routes require authorization and can only be gotten \
-    from the lirivi company', license='../LICENSE', license_url='www.lirivi.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
+apisec = Api( app=api, doc='/docs', version='1.9.0', title='Odaaay API.', \
+    description='This documentation contains all routes to access the Odaaay API. \npip install googletransSome routes require authorization and can only be gotten \
+    from the odaaay company', license='../LICENSE', license_url='www.odaaay.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
@@ -128,7 +128,10 @@ class Login(Resource):
                             'token': str(token)
                         }, 200
                     else:
-                        return {'res': 'verification fail make sure code is not more than 5 mins old'}, 401
+                        return {
+                            'status': 0,
+                            'res': 'verification fail make sure code is not more than 5 mins old'
+                            }, 200
                 else:
                     verification_code = '123456'
                     user.code = verification_code
@@ -136,11 +139,20 @@ class Login(Resource):
                     #db.session.add(newuser)
                     db.session.commit()
                     # phone.send_confirmation_code(request.args.get('phone', None))
-                    return {'res': 'verification sms sent'}, 301
+                    return {
+                        'status': 1,
+                        'res': 'verification sms sent'
+                        }, 201
             else:
-                return {'res': 'user does not exist sign up'},404
+                return {
+                    'status': 0,
+                    'res': 'user does not exist sign up'
+                    },200
         else:
-           return {'res': 'Invalid request'}, 500
+           return {
+               'status': 0,
+               'res': 'Invalid request'
+               }, 500
 
 @signup.doc(
     responses={
