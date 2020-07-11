@@ -62,19 +62,13 @@ class Users(db.Model):
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    #subs = db.relationship('Channels', secondary=subs, lazy='subquery',
-    #    backref=db.backref('subscribers', lazy=True))
     
     followed = db.relationship(
         'Users', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-    #subs = db.relationship(
-    #    'Users', secondary=subs,
-    #    primaryjoin=(subs.c.channel_id == Channels.id),
-    #    secondaryjoin=(subs.c.users_id == id),
-    #    backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')    
+ 
     blocked = db.relationship(
         'Users', secondary=blocking,
         primaryjoin=(blocking.c.blocker_id == id),
@@ -87,12 +81,12 @@ class Users(db.Model):
         self.user_number = number
         self.user_visibility = user_visibility
         self.password = password
-        self.email =email
-        #
+        self.email = email
+
     def __repr__(self):
         return '<User %r>' % self.username
 
-    def is_blocking(self,user):
+    def is_blocking(self, user):
         return self.blocked.filter(
             blocking.c.blocked_id == user.id).count() > 0
 
