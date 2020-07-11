@@ -80,7 +80,7 @@ class Users(db.Model):
         self.uuid = str(uuid.uuid4())
         self.user_number = number
         self.user_visibility = user_visibility
-        self.password = password
+        self.password = generate_password_hash(password)
         self.email = email
 
     def __repr__(self):
