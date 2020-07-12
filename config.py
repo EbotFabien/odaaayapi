@@ -29,10 +29,10 @@ class Config(object):
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
     # gmail authentication
-    MAIL_USERNAME = 'das.sanctity.ds@gmail.com'
-    MAIL_PASSWORD = ''
+    MAIL_USERNAME = 'touchone0001@gmail.com'
+    MAIL_PASSWORD = 'onetouch000100'
     # mail accounts
-    MAIL_DEFAULT_SENDER = 'das.sanctity.ds@gmail.com'
+    MAIL_DEFAULT_SENDER = 'touchone0001@gmail.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
     UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])

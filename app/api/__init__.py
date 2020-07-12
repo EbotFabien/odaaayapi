@@ -182,10 +182,10 @@ class Login_email(Resource):
         if request.args:
             user_name = request.args.get('username', None)
             password = request.args.get('password', None)
-            user = Users.query.filter_by(user_name=user_name).first()
-            if user is not none:
+            user = Users.query.filter_by(username=user_name).first()
+            if user :
                 if password:
-                    if bcrypt.check_password_hash(user.password,password):
+                    if user.verify_password(password) and user.verified == True:
                         token = jwt.encode({
                             'user': user.username,
                             'uuid': user.uuid,
@@ -198,7 +198,7 @@ class Login_email(Resource):
                             'token': str(token)
                         }, 200
                     else:
-                        return {'res': 'Your Password is wrong'}, 401
+                        return {'res': 'Your Password is wrong or you not verified'}, 401
                 else:
                     default_password = '123456'
                     user.password = default_password
@@ -237,7 +237,7 @@ class Signup(Resource):
                 verification_code = '123456'
                 # phone.send_confirmation_code(number)
                 if verification_code:
-                    newuser = Users(signup_data['username'], signup_data['phonenumber'], True)
+                    newuser = Users(signup_data['username'], True,int(signup_data['phonenumber']))
                     newuser.code = verification_code
                     newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
                     db.session.add(newuser)
@@ -262,26 +262,34 @@ class Signup_email(Resource):
         signup_data = request.get_json()
         email = signup_data['Email']
         exuser = Users.query.filter_by(email=email).first()
-        hashed_password = bcrypt.generate_password_hash(signup_data['password']).decode('utf-8')
+        if signup_data['password'] is None :
+            return {
+                        'results':'Insert password',
+                        'status': 0
+                    }, 401
         if signup_data:
             if exuser:
                 return { 
-                    'res':'failed',
-                    'status':'user already exist'
+                    'res':'user already exist',
+                    'status': 0
                 }, 200
             else:
                 email = signup_data['Email']
                 verification_code = '123456'
 
                 if verification_code:
-                    newuser = Users(signup_data['username'],'675337250', True, signup_data['Email'],hashed_password)
+                    newuser = Users(signup_data['username'], True, signup_data['Email'])
                     newuser.code = verification_code
                     newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
                     db.session.add(newuser)
+                    newuser.passwordhash(signup_data['password'])
                     db.session.commit()
+                    #send code to email
+                    mail.send_email([signup_data['Email']],verification_code) 
                     return {
                         'res': 'success',
-                        'phone': signup_data['Email']
+                        'email': signup_data['Email'],
+                        'status': 1
                     }, 200
                 else:
                     return {
@@ -289,6 +297,34 @@ class Signup_email(Resource):
                     }, 401
         else:
             return {},404
+
+@signup.route('/auth/email_verification')
+class email_verification(Resource):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("10/hour")
+    @signup.expect(schema.verifyemail)
+    def post(self):
+        signup_data = request.get_json()
+        email = signup_data['Email']
+        exuser = Users.query.filter_by(email=email).first()
+        if exuser:
+            if exuser.code == int(signup_data['verification_code']):
+                exuser.verified = True
+                db.session.commit()
+                return {
+                        'res': "user is verified",
+                        'status': 1
+                    }, 200
+            else:
+                return {
+                    'res': "user code wrong",
+                    'status': 0
+                }, 200
+        else:
+            return {
+                    'res': 'User doesnt exist',
+                    'status': 1
+                }, 200
 # Home still requires paginated queries for user's phone not to load forever
 @cache.cached(300, key_prefix='all_home_posts')
 @home.doc(

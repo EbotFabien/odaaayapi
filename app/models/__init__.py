@@ -42,10 +42,15 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable=False)
     email = db.Column(db.String(120),unique=True, nullable=True)
+<<<<<<< HEAD
     password_hash = db.Column(db.String(60),nullable=True)
+=======
+    password_hash = db.Column(db.String(256),nullable=True)
+>>>>>>> a07bd0f78cd6977a7405908bbbedff2a30135d59
     uuid = db.Column(db.String, nullable=False)
-    user_number = db.Column(db.String, nullable=True)
+    user_number = db.Column(db.Integer, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
+    verified = db.Column(db.Boolean, nullable=False, default=False)
     user_saves = db.relationship('Save', backref="save", lazy=True )
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
@@ -75,13 +80,18 @@ class Users(db.Model):
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
         
-    def __init__(self, username, number, user_visibility,email=None,password=None):
+    def __init__(self, username,user_visibility,email=None,number=None):
         self.username = username
         self.uuid = str(uuid.uuid4())
         self.user_number = number
         self.user_visibility = user_visibility
+<<<<<<< HEAD
         self.password_hash = password
         self.email = email
+=======
+        self.email =email
+
+>>>>>>> a07bd0f78cd6977a7405908bbbedff2a30135d59
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -138,9 +148,12 @@ class Users(db.Model):
             Channels,(Channels.moderator == Users.id)).filter(
                 Channels.moderator == self.id).first()
 
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
+    
+    def passwordhash(self, password_taken):
+        self.password_hash = generate_password_hash(password_taken)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def verify_phone(self, phone):
         return check_password_hash(self.user_number, phone)
