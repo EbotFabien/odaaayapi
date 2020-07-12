@@ -22,6 +22,10 @@ signupdataemail= apisec.model('signup',{
     'password': fields.String(required=True, description="Users password"),
     'Email': fields.String(required=True, description="Users Email")
 })
+verifyemail= apisec.model('verify',{
+    'verification_code': fields.String(required=True, description="The username for the application"),
+    'Email': fields.String(required=True, description="Users Email")
+})
 
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
