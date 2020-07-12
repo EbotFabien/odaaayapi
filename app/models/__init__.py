@@ -42,7 +42,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable=False)
     email = db.Column(db.String(120),unique=True, nullable=True)
-    password = db.Column(db.String(60),nullable=True)
+    password_hash = db.Column(db.String(60),nullable=True)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
@@ -62,13 +62,13 @@ class Users(db.Model):
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    
+
     followed = db.relationship(
         'Users', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
- 
+        
     blocked = db.relationship(
         'Users', secondary=blocking,
         primaryjoin=(blocking.c.blocker_id == id),
@@ -80,7 +80,7 @@ class Users(db.Model):
         self.uuid = str(uuid.uuid4())
         self.user_number = number
         self.user_visibility = user_visibility
-        self.password = generate_password_hash(password)
+        self.password_hash = password
         self.email = email
 
     def __repr__(self):
