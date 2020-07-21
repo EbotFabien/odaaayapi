@@ -14,13 +14,11 @@ logindata = apisec.model('Login', {
 })
 
 signupdata = apisec.model('Signup', {
-    'username': fields.String(required=True, description="The username for the application"),
+    'username': fields.String(required=False, description="The username for the application"),
     'phonenumber': fields.String(required=True, description="Users phone number")
 })
 signupdataemail= apisec.model('signup',{
-    'username': fields.String(required=True, description="The username for the application"),
-    'password': fields.String(required=True, description="Users password"),
-    'Email': fields.String(required=True, description="Users Email")
+    'email': fields.String(required=True, description="Users Email")
 })
 verifyemail= apisec.model('verify',{
     'verification_code': fields.String(required=True, description="The username for the application"),

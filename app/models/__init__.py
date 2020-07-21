@@ -42,11 +42,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable=False)
     email = db.Column(db.String(120),unique=True, nullable=True)
-<<<<<<< HEAD
-    password_hash = db.Column(db.String(60),nullable=True)
-=======
     password_hash = db.Column(db.String(256),nullable=True)
->>>>>>> a07bd0f78cd6977a7405908bbbedff2a30135d59
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
@@ -85,13 +81,8 @@ class Users(db.Model):
         self.uuid = str(uuid.uuid4())
         self.user_number = number
         self.user_visibility = user_visibility
-<<<<<<< HEAD
-        self.password_hash = password
-        self.email = email
-=======
         self.email =email
 
->>>>>>> a07bd0f78cd6977a7405908bbbedff2a30135d59
 
     def __repr__(self):
         return '<User %r>' % self.username
