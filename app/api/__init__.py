@@ -16,7 +16,7 @@ from sqlalchemy import func
 from .v1 import user, info, token, search, post, comment, channel
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
-        Postsw, Posttype, Rating, Ratingtype
+        Postsw, Postes, Posttype, Rating, Ratingtype
 
 # API security
 authorizations = {
@@ -196,10 +196,11 @@ class Login_email(Resource):
                         },
                         app.config.get('SECRET_KEY'),
                         algorithm='HS256')
+                        string_token = str(token)
                         return {
                             'status': 1,
                             'res': 'success',
-                            'token': str(token)
+                            'token': string_token
                         }, 201
                     else:
                         return {
@@ -341,7 +342,8 @@ class email_verification(Resource):
     security='KEY',
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
-            'count': 'Number results per page' },
+            'count': 'Number results per page',
+            'id': 'Article id'},
     responses={
         200: 'ok',
         201: 'created',
@@ -355,7 +357,7 @@ class email_verification(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @home.route('/home')
-class Home(Resource):
+class Home(Resource): 
     def get(self):
         # user getting data for their home screen
         if request.args:
@@ -364,7 +366,7 @@ class Home(Resource):
             count = request.args.get('count', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(func.random()).paginate(int(start), int(count), False)
+            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(Posts.id.desc()).paginate(int(start), int(count), False)
             total = (posts_feed.total/int(count))
             next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
             previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -413,12 +415,82 @@ class Discover(Resource):
                 }
             }, 200
         else:
-            posts_trending = Posts.query.limit(10).all()
             posts_feed = Posts.query.limit(10).all()
-            posts_discover = Posts.query.limit(10).all()
             return {
                 'feed': marshal(posts_feed, schema.postdata)
             }, 200      
+
+@home.route('/related')
+class Related(Resource):
+    def get(self):
+        # user getting data for their home screen
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            post_type = request.args.get('ptype', '1')
+            # Still to fix the next and previous WRT Sqlalchemy
+            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(func.random()).paginate(int(start), int(count), False)
+            total = (posts_feed.total/int(count))
+            next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+            previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+            return {
+                "start": start,
+                "limit": limit,
+                "count": count,
+                "next": next_url, 
+                "previous": previous,
+                "totalPages": total,
+                "results": {
+                    'feed': marshal(posts_feed.items, schema.postdata)
+                }
+            }, 200
+        else:
+            posts_feed = Posts.query.limit(10).all()
+            return {
+                'feed': marshal(posts_feed, schema.postdata)
+            }, 200
+
+@home.route('/article/<id>')
+class Article(Resource):
+    def get(self, id):
+        if id:
+            posts_feed = Posts.query.filter_by(uuid = id).first()
+            channel = Channels.query.filter_by(id=posts_feed.channel_id).all()
+            return {
+                "results": {
+                    'article': marshal(posts_feed, schema.postdata),
+                    'channels': marshal(channel, schema.channeldata)
+                }
+            }, 200
+        else:
+            return {
+                'status': 0,
+                'res': 'article not found'
+            }, 404
+
+@home.route('/summary/<id>')
+class Aticle(Resource):
+    def get(self, id):
+        # user getting data for their home screen
+        language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+        if request.args:
+            lang  = request.args.get('lang', None)
+            table = language_dict.get(lang)
+            orig_post = Posts.query.filter_by(uuid = id).first()
+            posts_feed = table.query.filter_by(id = orig_post.id).first()
+            return {
+                "lang": lang,
+                "results": {
+                    'article': marshal(posts_feed, schema.postdata)
+                }
+            }, 200
+        else:
+            posts_feed = Posts.query.filter_by(uuid = id).first()
+            return {
+                'feed': marshal(posts_feed, schema.postdata)
+            }, 200     
+
 
 @message.doc(
     security='KEY',

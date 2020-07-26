@@ -270,8 +270,8 @@ class Post(Resource):
             new_post = Posts(user.id,title, channel, Type, content, user.id)
             db.session.add(new_post)
             db.session.commit()
-           #new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-            #db.session.commit()
+            new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            db.session.commit()
             return {'res':'success'}, 200
         else:
             return {'res':'fail'}, 404

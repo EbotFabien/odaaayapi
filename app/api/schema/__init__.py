@@ -24,10 +24,26 @@ verifyemail= apisec.model('verify',{
     'verification_code': fields.String(required=True, description="The username for the application"),
     'Email': fields.String(required=True, description="Users Email")
 })
-
+channeldata = apisec.model('channel',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True, description="name of channel"),
+    'description': fields.String(required=True, description="description of channel"),
+    'profile_pic': fields.String(required=True, description="profile pic"),
+    'background': fields.String(required=True, description="background image"),
+    'css': fields.String(required=True, description="css to style channel page"),
+    'desc_en': fields.String(required=True, description="description in english"),
+    'desc_es': fields.String(required=True, description="description in spanish"),
+    'desc_ar': fields.String(required=True, description="description in arabic"),
+    'desc_pt': fields.String(required=True, description="description in portuguese"),
+    'desc_fr': fields.String(required=True, description="description in french"),
+    'desc_sw': fields.String(required=True, description="description in swahili"),
+    'desc_ha': fields.String(required=True, description="description in hausa"),
+    'moderator': fields.String(required=True, description="Moderator id")
+})
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
+    'uuid': fields.String(required=True),
     'channel_id': fields.Integer(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
