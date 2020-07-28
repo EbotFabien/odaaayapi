@@ -93,8 +93,8 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_check =Users.query.get(user_id).first()
-        if user_id == user.id: 
+        user_check = Users.query.get(int(user_id))
+        if user_check.id == user.id: 
             return{
                 "results":marshal(user,userdata)
                 }, 200
