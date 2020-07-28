@@ -95,16 +95,17 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_check = Users.query.get(int(user_id))
         if user.id: 
             return{
                 "results":marshal(user,userdata)
                 }, 200
-        if user_check.is_blocking(user):
-            return {'res': 'User not found'}, 404
-        if user_check :
-             return{
-                "results":marshal(user_check,following_followers)# we use this model because it gives us the structure we need
+        if user_id:
+            user_check = Users.query.get(int(user_id))
+            if user_check.is_blocking(user):
+                return {'res': 'User not found'}, 404
+            if user_check :
+                return{
+                    "results":marshal(user_check,following_followers)# we use this model because it gives us the structure we need
                 }, 200
         else:
             return {'res': 'User not found'}, 404
