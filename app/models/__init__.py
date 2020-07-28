@@ -210,7 +210,7 @@ class Notification(db.Model):
 
 class Channels(db.Model):
     __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
-    id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)
@@ -334,11 +334,11 @@ class Posts(db.Model):
     picture_url =db.Column(db.String)
     video_url =db.Column(db.String)
 
-    def __init__(self, uploader, title, channel, posttype, content, uploader_id,picture_url=None,video_url=None):
+    def __init__(self, title, channel, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
         self.title = title
         self.uuid = str(uuid.uuid4())
-        self.uploader_id = uploader
+        self.uploader_id = uploader_id
         self.channel_id = channel
         self.post_type = posttype
         self.orig_lang = 1

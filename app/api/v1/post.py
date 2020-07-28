@@ -44,8 +44,8 @@ description='', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 uploader = post1.parser()
-uploader.add_argument('file', location='files', type=FileStorage, required=True, help="You must parse a file")
-uploader.add_argument('name', location='form', type=str, required=True, help="Name cannot be blank")
+uploader.add_argument('file', location='files', type=FileStorage, required=False, help="You must parse a file")
+uploader.add_argument('name', location='form', type=str, required=False, help="Name cannot be blank")
 
 post = post1.namespace('/api/post', \
     description='This contains routes for core app data access. Authorization is required for each of the calls. \
@@ -224,16 +224,17 @@ class Post(Resource):
         title=request.args.get('title')
         content=request.args.get('content')
         channel_id =int(request.args.get('channel'))
-        Type =request.args.get('type')
+        ptype =request.args.get('type')
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         channel = Channels.query.filter_by(id=channel_id).first()
         if channel.subscribed(user) is None:
-            return {'res':'You are not subscribed to this channel'}, 404
-        if channel_id is None:
-            return {'res':'fail'}, 404
-        if args['file'] is not  None:
+            return {
+                'status': 0,
+                'res':'You are not subscribed to this channel'
+                }, 404
+        if args['file'] is not None:
             if args['file'].mimetype == 'video/mp4':
                 name = args['name']
                 orig_name = args['file'].filename
@@ -262,12 +263,12 @@ class Post(Resource):
                 db.session.add(new_post)
                 db.session.commit()
                 return {'res':'success'}, 200
-        if user.subscribed(channel) and user:
+        if channel.subscribed(user):
             if content is None: 
-                return{'res':'put content'},404
-            if Type is None:
-                Type="Text"
-            new_post = Posts(user.id,title, channel, Type, content, user.id)
+                return{'res':'put content'},200
+            if ptype is None:
+                ptype=1
+            new_post = Posts(title, channel.id, ptype, content, user.id)
             db.session.add(new_post)
             db.session.commit()
             new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
