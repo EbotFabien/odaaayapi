@@ -40,6 +40,8 @@ userdata = user.model('Profile', {
     'username': fields.String(required=True),
     'email': fields.String(required=True),
     'number': fields.String(required=True),
+    'verified': fields.Boolean(required=True),
+    'user_visibility': fields.Boolean(required=True)
 })
 updateuser = user.model('Update',{
     'user_id':fields.String(required=True),
