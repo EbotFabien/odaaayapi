@@ -177,9 +177,9 @@ class Login(Resource):
     })
 @login.route('/auth/email_login')
 class Login_email(Resource):
-# Limiting the user request to localy prevent DDoSing
-     @limiter.limit("1/hour")
-     def post(self):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("1/hour")
+    def post(self):
         app.logger.info('User login with user_name')
         data = request.get_json()
         if data:
@@ -364,6 +364,7 @@ class Home(Resource):
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
+            lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
             posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(Posts.id.desc()).paginate(int(start), int(count), False)
@@ -375,6 +376,7 @@ class Home(Resource):
                 "limit": limit,
                 "count": count,
                 "next": next_url,
+                "lang": lang,
                 "previous": previous,
                 "totalPages": total,
                 "results": {

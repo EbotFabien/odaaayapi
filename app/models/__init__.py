@@ -11,7 +11,8 @@ import redis
 import rq
 from flask import current_app as app
 from time import time
-import json
+import json, shortuuid
+from werkzeug.utils import secure_filename
 
 channel_langs = db.Table('channel_langs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
@@ -337,7 +338,7 @@ class Posts(db.Model):
     def __init__(self, title, channel, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
         self.title = title
-        self.uuid = str(uuid.uuid4())
+        self.uuid = secure_filename(title)+'_'+shortuuid.uuid()
         self.uploader_id = uploader_id
         self.channel_id = channel
         self.post_type = posttype

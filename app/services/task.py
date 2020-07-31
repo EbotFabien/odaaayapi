@@ -71,15 +71,19 @@ def translate_posts(post_id, user_id):
     if post.post_url is not None:
         parser = HtmlParser.from_url(post.post_url, Tokenizer(post_language.name))
         stemmer = Stemmer(post_language.name)
-
         summarizer = Summarizer(stemmer)
         summarizer.stop_words = get_stop_words(post_language.name)
 
-        for sentence in summarizer(parser.document, 8):
+        for sentence in summarizer(parser.document, 4):
             sum_content += '\n'+str(sentence)
-        print(sum_content)
     else:
-        sum_content = post.content
+        parser = PlaintextParser.from_string(post.content, Tokenizer(post_language.name))
+        stemmer = Stemmer(post_language.name)
+        summarizer = Summarizer(stemmer)
+        summarizer.stop_words = get_stop_words(post_language.name)
+
+        for sentence in summarizer(parser.document, 4):
+            sum_content += '\n'+str(sentence)
     try:
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
