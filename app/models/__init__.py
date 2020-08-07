@@ -18,6 +18,10 @@ channel_langs = db.Table('channel_langs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True)
 )
+postchannel = db.Table('postchannel',
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+)
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
@@ -75,7 +79,7 @@ class Users(db.Model):
         'Users', secondary=blocking,
         primaryjoin=(blocking.c.blocker_id == id),
         secondaryjoin=(blocking.c.blocked_id == id),
-        backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
+        backref=db.backref('blocking',lazy='dynamic'), lazy='dynamic')
         
     def __init__(self, username,user_visibility,email=None,number=None):
         self.username = username
@@ -139,6 +143,11 @@ class Users(db.Model):
         return Users.query.join(
             Channels,(Channels.moderator == Users.id)).filter(
                 Channels.moderator == self.id).first()
+
+    def get_channels(self):
+        return Channels.query.join(
+            subs,(subs.c.users_id == self.id)).filter(
+                subs.c.channel_id == Channels.id).all()
 
     
     def passwordhash(self, password_taken):
