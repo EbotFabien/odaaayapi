@@ -17,6 +17,10 @@ channel_langs = db.Table('channel_langs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True)
 )
+post_channel= db.Table('channel_langs',
+    db.Column('channel_id',db.Integer, db.ForeignKey('channels.id'), primary_key=True),
+    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'),primary_key=True)
+)
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
@@ -229,7 +233,7 @@ class Channels(db.Model):
     desc_fr = db.Column(db.String)
     desc_sw = db.Column(db.String)
     desc_ha = db.Column(db.String)
-    moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    moderator = db.Column(db.Integer, db.F oreignKey('users.id'), primary_key=True)
     sub_moderator = db.relationship('Users', secondary=sub_moderator,
         primaryjoin=(sub_moderator.c.channel_id == id),
         secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
@@ -326,7 +330,6 @@ class Posts(db.Model):
     orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
     uploader_date = db.Column(db.DateTime, nullable=False)
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
-    channel_id = db.Column(db.Integer, db.ForeignKey('channels.id'), nullable=False)
     uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
@@ -340,12 +343,11 @@ class Posts(db.Model):
     picture_url =db.Column(db.String)
     video_url =db.Column(db.String)
 
-    def __init__(self, uploader, title, channel, posttype, content, uploader_id,picture_url=None,video_url=None):
+    def __init__(self, uploader, title, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
         self.title = title
         self.uuid = str(uuid.uuid4())
         self.uploader_id = uploader
-        self.channel_id = channel
         self.post_type = posttype
         self.orig_lang = 1
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
@@ -537,4 +539,4 @@ class Postes(db.Model):
         self.title = title
         self.content= content
         self.language_id = lang
-
+ 

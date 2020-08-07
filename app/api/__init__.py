@@ -192,6 +192,8 @@ class Login_email(Resource):
                     user.password = default_password
                     db.session.commit()
                     return {'res': 're_enter password'}, 301
+            else:
+                return {'res': 'User does not exist'}, 401
 @signup.doc(
     responses={
         200: 'ok',
