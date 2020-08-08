@@ -1,4 +1,4 @@
-from flask_restplus import Namespace, Resource, fields
+from flask_restplus import Namespace, Resource, fields, marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
@@ -41,6 +41,18 @@ okresponse = channel.model('Okresponse', {
     'res': fields.String(required=True),
 })
 
+channel_view = channel.model('channel_view', {
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True),
+    'profile_pic': fields.String(required=True),
+    'background': fields.String(required=True)
+})
+
+channel_list = channel.model('channel_list', {
+    'channel': fields.List(fields.Nested(channel_view))
+})
+
 channelcreationdata = channel.model('ChannelCreationData', {
     'name': fields.String(required=True),
     'profile_pic': fields.String(required=True),
@@ -74,9 +86,15 @@ channel_subscribe = channel.model('channel_subscribe',{
 
 @channel.route('/channel')
 class Data(Resource):
-    @channel.marshal_with(okresponse)
+    @channel.marshal_with(channel_view)
+    @token_required
     def get(self):
-        return {}, 200
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        channel = user.get_channels()
+        return channel, 200
     @token_required
     @channel.expect(channelcreationdata)
     def post(self):

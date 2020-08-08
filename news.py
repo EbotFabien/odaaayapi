@@ -38,7 +38,7 @@ def logo():
 
 def recreate_db():
     with app.app_context():
-        #db.drop_all()
+        # db.drop_all()
         db.create_all()
         db.session.commit()
 
@@ -61,8 +61,8 @@ def seed():
         for x in range(80):
             db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10)))
             db.session.commit()
-        for y in range(150):
-            db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(1,80), content=fake.paragraph(), comment_type='text' , public=True))
+        for y in range(100):
+            db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(2,80), content=fake.paragraph(), comment_type='text' , public=True))
             db.session.commit()
 
 
@@ -70,7 +70,7 @@ def seed():
 def run():
     logo()
     recreate_db()
-    #seed()
+    # seed()
     # Error tracking and logging with sentry
     sentry_sdk.init(
         dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
@@ -101,4 +101,5 @@ def test():
     return 1
 
 if __name__ == "__main__":
-    manager.run()
+    #manager.run()
+    run()

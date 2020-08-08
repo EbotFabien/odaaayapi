@@ -12,10 +12,11 @@ from werkzeug.datastructures import FileStorage
 import werkzeug
 import jwt, uuid, os
 from flask import current_app as app
+from sqlalchemy import func
 from .v1 import user, info, token, search, post, comment, channel
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
-        Postsw, Posttype, Rating, Ratingtype
+        Postsw, Postes, Posttype, Rating, Ratingtype
 
 # API security
 authorizations = {
@@ -46,9 +47,9 @@ def token_required(f):
     return decorated
 
 api = Blueprint('api', __name__, template_folder = '../templates')
-apisec = Api( app=api, doc='/docs', version='1.4', title='News API.', \
-    description='This documentation contains all routes to access the lirivi API. \npip install googletransSome routes require authorization and can only be gotten \
-    from the lirivi company', license='../LICENSE', license_url='www.lirivi.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
+apisec = Api( app=api, doc='/docs', version='1.9.0', title='Odaaay API.', \
+    description='This documentation contains all routes to access the Odaaay API. \npip install googletransSome routes require authorization and can only be gotten \
+    from the odaaay company', license='../LICENSE', license_url='www.odaaay.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
@@ -126,11 +127,15 @@ class Login(Resource):
                         app.config.get('SECRET_KEY'),
                         algorithm='HS256')
                         return {
+                            'status': 1,
                             'res': 'success',
                             'token': str(token)
                         }, 200
                     else:
-                        return {'res': 'verification fail make sure code is not more than 5 mins old'}, 401
+                        return {
+                            'status': 0,
+                            'res': 'verification fail make sure code is not more than 5 mins old'
+                            }, 200
                 else:
                     verification_code = '123456'
                     user.code = verification_code
@@ -138,11 +143,20 @@ class Login(Resource):
                     #db.session.add(newuser)
                     db.session.commit()
                     # phone.send_confirmation_code(request.args.get('phone', None))
-                    return {'res': 'verification sms sent'}, 301
+                    return {
+                        'status': 1,
+                        'res': 'verification sms sent'
+                        }, 201
             else:
-                return {'res': 'user does not exist sign up'},404
+                return {
+                    'status': 0,
+                    'res': 'user does not exist sign up'
+                    },200
         else:
-           return {'res': 'Invalid request'}, 500
+           return {
+               'status': 0,
+               'res': 'Invalid request'
+               }, 500
 
 @login.doc(
     params={
@@ -163,13 +177,14 @@ class Login(Resource):
     })
 @login.route('/auth/email_login')
 class Login_email(Resource):
-# Limiting the user request to localy prevent DDoSing
-     @limiter.limit("1/hour")
-     def post(self):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("1/hour")
+    def post(self):
         app.logger.info('User login with user_name')
-        if request.args:
-            user_name = request.args.get('username', None)
-            password = request.args.get('password', None)
+        data = request.get_json()
+        if data:
+            user_name = data['username']
+            password = data['password']
             user = Users.query.filter_by(username=user_name).first()
             if user :
                 if password:
@@ -181,10 +196,12 @@ class Login_email(Resource):
                         },
                         app.config.get('SECRET_KEY'),
                         algorithm='HS256')
+                        string_token = str(token)
                         return {
+                            'status': 1,
                             'res': 'success',
-                            'token': str(token)
-                        }, 200
+                            'token': string_token
+                        }, 201
                     else:
                         return {'res': 'Your Password is wrong or you not verified'}, 401
                 else:
@@ -219,29 +236,34 @@ class Signup(Resource):
         if signup_data:
             if exuser:
                 return { 
-                    'res':'failed',
-                    'status':'user already exist'
+                    'res':'user already exist',
+                    'status':0
                 }, 200
             else:
                 number = signup_data['phonenumber']
                 verification_code = '123456'
                 # phone.send_confirmation_code(number)
                 if verification_code:
-                    newuser = Users(signup_data['username'], True,int(signup_data['phonenumber']))
+                    newuser = Users('', True, number=int(signup_data['phonenumber']))
                     newuser.code = verification_code
                     newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
                     db.session.add(newuser)
                     db.session.commit()
                     return {
+                        'status': 1,
                         'res': 'success',
                         'phone': signup_data['phonenumber']
                     }, 200
                 else:
                     return {
+                        'status': 0,
                         'results':'error'
-                    }, 401
+                    }, 201
         else:
-            return {},404
+            return {
+                'status': 0,
+                'results':'error'
+            },201
 
 @signup.route('/auth/email_signup')
 class Signup_email(Resource):
@@ -250,43 +272,41 @@ class Signup_email(Resource):
     @signup.expect(schema.signupdataemail)
     def post(self):
         signup_data = request.get_json()
-        email = signup_data['Email']
-        exuser = Users.query.filter_by(email=email).first()
-        if signup_data['password'] is None :
-            return {
-                        'results':'Insert password',
-                        'status': 0
-                    }, 401
+        email = signup_data['email']
+        user = Users.query.filter_by(email=email).first()
         if signup_data:
-            if exuser:
+            if user:
                 return { 
                     'res':'user already exist',
                     'status': 0
                 }, 200
             else:
-                email = signup_data['Email']
+                email = signup_data['email']
                 verification_code = '123456'
 
                 if verification_code:
-                    newuser = Users(signup_data['username'], True, signup_data['Email'])
+                    newuser = Users('', True, signup_data['email'])
                     newuser.code = verification_code
                     newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
                     db.session.add(newuser)
-                    newuser.passwordhash(signup_data['password'])
                     db.session.commit()
                     #send code to email
-                    mail.send_email([signup_data['Email']],verification_code) 
+                    mail.send_email([signup_data['email']],verification_code) 
                     return {
                         'res': 'success',
-                        'email': signup_data['Email'],
+                        'email': signup_data['email'],
                         'status': 1
                     }, 200
                 else:
                     return {
-                        'results':'error'
-                    }, 401
+                        'status': 0,
+                        'res':'error'
+                    }, 201
         else:
-            return {},404
+            return {
+                'status': 0,
+                'res': 'No data'
+            },201
 
 @signup.route('/auth/email_verification')
 class email_verification(Resource):
@@ -298,7 +318,7 @@ class email_verification(Resource):
         email = signup_data['Email']
         exuser = Users.query.filter_by(email=email).first()
         if exuser:
-            if exuser.code == int(signup_data['verification_code']):
+            if exuser.code == int(signup_data['verification_code']) and not (datetime.utcnow() > exuser.code_expires_in):
                 exuser.verified = True
                 db.session.commit()
                 return {
@@ -307,7 +327,7 @@ class email_verification(Resource):
                     }, 200
             else:
                 return {
-                    'res': "user code wrong",
+                    'res': "user code wrong or expired",
                     'status': 0
                 }, 200
         else:
@@ -321,7 +341,8 @@ class email_verification(Resource):
     security='KEY',
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
-            'count': 'Number results per page' },
+            'count': 'Number results per page',
+            'id': 'Article id'},
     responses={
         200: 'ok',
         201: 'created',
@@ -335,32 +356,30 @@ class email_verification(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @home.route('/home')
-class Home(Resource):
-    @token_required
+class Home(Resource): 
     def get(self):
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
         # user getting data for their home screen
         if request.args:
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
+            lang = request.args.get('lang', None)
+            post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            posts_trending = Posts.query.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
-            posts_feed = Posts.query.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
-            posts_discover = Posts.query.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
-            next_url = url_for('api./api/home_home', start=posts_trending.next_num, limit=int(limit), count=int(count)) if posts_trending.has_next else None 
-            previous = url_for('api./api/home_home', start=posts_trending.prev_num, limit=int(limit), count=int(count)) if posts_trending.has_prev else None 
+            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(Posts.id.desc()).paginate(int(start), int(count), False)
+            total = (posts_feed.total/int(count))
+            next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+            previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
             return {
                 "start": start,
                 "limit": limit,
                 "count": count,
                 "next": next_url,
+                "lang": lang,
                 "previous": previous,
+                "totalPages": total,
                 "results": {
-                    'trending': marshal(posts_trending.items, schema.postdata),
-                    'feed': marshal(posts_feed.items, schema.postdata),
-                    'discover': marshal(posts_discover.items, schema.postdata)
+                    'feed': marshal(posts_feed.items, schema.postdata)
                 }
             }, 200
         else:
@@ -368,10 +387,111 @@ class Home(Resource):
             posts_feed = Posts.query.limit(10).all()
             posts_discover = Posts.query.limit(10).all()
             return {
-                'trending': marshal(posts_trending, schema.postdata),
-                'feed': marshal(posts_feed, schema.postdata),
-                'discover': marshal(posts_discover, schema.postdata)
+                'feed': marshal(posts_feed, schema.postdata)
             }, 200       
+
+@home.route('/discover')
+class Discover(Resource):
+    def get(self):
+        # user getting data for their home screen
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            post_type = request.args.get('ptype', '1')
+            # Still to fix the next and previous WRT Sqlalchemy
+            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(func.random()).paginate(int(start), int(count), False)
+            total = (posts_feed.total/int(count))
+            next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+            previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+            return {
+                "start": start,
+                "limit": limit,
+                "count": count,
+                "next": next_url, 
+                "previous": previous,
+                "totalPages": total,
+                "results": {
+                    'feed': marshal(posts_feed.items, schema.postdata)
+                }
+            }, 200
+        else:
+            posts_feed = Posts.query.limit(10).all()
+            return {
+                'feed': marshal(posts_feed, schema.postdata)
+            }, 200      
+
+@home.route('/related')
+class Related(Resource):
+    def get(self):
+        # user getting data for their home screen
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            post_type = request.args.get('ptype', '1')
+            # Still to fix the next and previous WRT Sqlalchemy
+            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(func.random()).paginate(int(start), int(count), False)
+            total = (posts_feed.total/int(count))
+            next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+            previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+            return {
+                "start": start,
+                "limit": limit,
+                "count": count,
+                "next": next_url, 
+                "previous": previous,
+                "totalPages": total,
+                "results": {
+                    'feed': marshal(posts_feed.items, schema.postdata)
+                }
+            }, 200
+        else:
+            posts_feed = Posts.query.limit(10).all()
+            return {
+                'feed': marshal(posts_feed, schema.postdata)
+            }, 200
+
+@home.route('/article/<id>')
+class Article(Resource):
+    def get(self, id):
+        if id:
+            posts_feed = Posts.query.filter_by(uuid = id).first()
+            channel = Channels.query.filter_by(id=posts_feed.channel_id).all()
+            return {
+                "results": {
+                    'article': marshal(posts_feed, schema.postdata),
+                    'channels': marshal(channel, schema.channeldata)
+                }
+            }, 200
+        else:
+            return {
+                'status': 0,
+                'res': 'article not found'
+            }, 404
+
+@home.route('/summary/<id>')
+class Aticle(Resource):
+    def get(self, id):
+        # user getting data for their home screen
+        language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+        if request.args:
+            lang  = request.args.get('lang', None)
+            table = language_dict.get(lang)
+            orig_post = Posts.query.filter_by(uuid = id).first()
+            posts_feed = table.query.filter_by(id = orig_post.id).first()
+            return {
+                "lang": lang,
+                "results": {
+                    'article': marshal(posts_feed, schema.postdata)
+                }
+            }, 200
+        else:
+            posts_feed = Posts.query.filter_by(uuid = id).first()
+            return {
+                'feed': marshal(posts_feed, schema.postdata)
+            }, 200     
+
 
 @message.doc(
     security='KEY',

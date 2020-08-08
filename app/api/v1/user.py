@@ -37,9 +37,13 @@ userinfo = user.model('Profile', {
     'description': fields.String
 })
 userdata = user.model('Profile', {
+    'id': fields.Integer(required=True),
     'username': fields.String(required=True),
     'email': fields.String(required=True),
-    'number': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'user_number': fields.String(required=True),
+    'verified': fields.Boolean(required=True),
+    'user_visibility': fields.Boolean(required=True)
 })
 updateuser = user.model('Update',{
     'user_id':fields.String(required=True),
@@ -93,16 +97,17 @@ class Data(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_check =Users.query.get(user_id).first()
-        if user_id == user.id: 
+        if user.id: 
             return{
                 "results":marshal(user,userdata)
                 }, 200
-        if user_check.is_blocking(user):
-            return {'res': 'User not found'}, 404
-        if user_check :
-             return{
-                "results":marshal(user_check,following_followers)# we use this model because it gives us the structure we need
+        if user_id:
+            user_check = Users.query.get(int(user_id))
+            if user_check.is_blocking(user):
+                return {'res': 'User not found'}, 404
+            if user_check :
+                return{
+                    "results":marshal(user_check,following_followers)# we use this model because it gives us the structure we need
                 }, 200
         else:
             return {'res': 'User not found'}, 404

@@ -11,15 +11,16 @@ import redis
 import rq
 from flask import current_app as app
 from time import time
-import json
+import json, shortuuid
+from werkzeug.utils import secure_filename
 
 channel_langs = db.Table('channel_langs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True)
 )
-post_channel= db.Table('channel_langs',
-    db.Column('channel_id',db.Integer, db.ForeignKey('channels.id'), primary_key=True),
-    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'),primary_key=True)
+postchannel = db.Table('postchannel',
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'), primary_key=True)
 )
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
@@ -67,24 +68,18 @@ class Users(db.Model):
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    #subs = db.relationship('Channels', secondary=subs, lazy='subquery',
-    #    backref=db.backref('subscribers', lazy=True))
-    
+
     followed = db.relationship(
         'Users', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-    #subs = db.relationship(
-    #    'Users', secondary=subs,
-    #    primaryjoin=(subs.c.channel_id == Channels.id),
-    #    secondaryjoin=(subs.c.users_id == id),
-    #    backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')    
+        
     blocked = db.relationship(
         'Users', secondary=blocking,
         primaryjoin=(blocking.c.blocker_id == id),
         secondaryjoin=(blocking.c.blocked_id == id),
-        backref=db.backref('blocking',lazy='dynamic'),lazy='dynamic')
+        backref=db.backref('blocking',lazy='dynamic'), lazy='dynamic')
         
     def __init__(self, username,user_visibility,email=None,number=None):
         self.username = username
@@ -97,7 +92,7 @@ class Users(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
-    def is_blocking(self,user):
+    def is_blocking(self, user):
         return self.blocked.filter(
             blocking.c.blocked_id == user.id).count() > 0
 
@@ -148,6 +143,11 @@ class Users(db.Model):
         return Users.query.join(
             Channels,(Channels.moderator == Users.id)).filter(
                 Channels.moderator == self.id).first()
+
+    def get_channels(self):
+        return Channels.query.join(
+            subs,(subs.c.users_id == self.id)).filter(
+                subs.c.channel_id == Channels.id).all()
 
     
     def passwordhash(self, password_taken):
@@ -220,7 +220,7 @@ class Notification(db.Model):
 
 class Channels(db.Model):
     __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
-    id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)
@@ -233,7 +233,7 @@ class Channels(db.Model):
     desc_fr = db.Column(db.String)
     desc_sw = db.Column(db.String)
     desc_ha = db.Column(db.String)
-    moderator = db.Column(db.Integer, db.F oreignKey('users.id'), primary_key=True)
+    moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     sub_moderator = db.relationship('Users', secondary=sub_moderator,
         primaryjoin=(sub_moderator.c.channel_id == id),
         secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
@@ -342,6 +342,24 @@ class Posts(db.Model):
     frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
     picture_url =db.Column(db.String)
     video_url =db.Column(db.String)
+    postchannel = db.relationship(
+        'Channels',secondary=postchannel,
+        primaryjoin=(postchannel.c.post_id == id),
+        secondaryjoin=(postchannel.c.channel_id == Channels.id),
+        backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
+
+    def post_is_channel(self,channel):
+        return self.query.join(
+            postchannel,(postchannel.c.post_id == self.id)).filter(
+                postchannel.c.channel_id == channel.id).first()
+
+    def add_post(self,channel):
+        if not self.post_is_channel(channel):
+            self.postchannel.append(channel)
+
+    def remove_post(self,channel):
+        if self.post_is_channel(channel):
+            self.postchannel.remove(user)
 
     def __init__(self, uploader, title, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
@@ -353,7 +371,7 @@ class Posts(db.Model):
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
         self.picture_url = picture_url
-        self.video_url = video_url
+        self.video_url = video_url   
     
     def launch_translation_task(self, name, userid, descr):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)

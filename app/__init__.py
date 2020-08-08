@@ -13,7 +13,7 @@ from flask_limiter.util import get_remote_address
 from flask_matomo import *
 from werkzeug.http import HTTP_STATUS_CODES
 import werkzeug
-#from redis import Redis
+from redis import Redis
 import rq
 import rq_dashboard
 from flask_googletrans import translator
@@ -51,8 +51,8 @@ def createapp(configname):
     search.init_app(app)
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
-    #app.redis = Redis.from_url(app.config['REDIS_URL'])
-    #app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
+    app.redis = Redis.from_url(app.config['REDIS_URL'])
+    app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
     
 
     from .api import api as api_blueprint
@@ -61,13 +61,13 @@ def createapp(configname):
 
     
     app.register_blueprint(api_blueprint, url_prefix='/api')
-    #app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
+    app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     #app.register_blueprint(errors)
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     @app.route('/')
     def index():
-        return "Hello from News-app"
+        return "Hello from Odaaay-app"
 
     @app.route('/debug-sentry')
     def trigger_error():

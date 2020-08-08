@@ -14,26 +14,55 @@ logindata = apisec.model('Login', {
 })
 
 signupdata = apisec.model('Signup', {
-    'username': fields.String(required=True, description="The username for the application"),
+    'username': fields.String(required=False, description="The username for the application"),
     'phonenumber': fields.String(required=True, description="Users phone number")
 })
 signupdataemail= apisec.model('signup',{
-    'username': fields.String(required=True, description="The username for the application"),
-    'password': fields.String(required=True, description="Users password"),
-    'Email': fields.String(required=True, description="Users Email")
+    'email': fields.String(required=True, description="Users Email")
 })
 verifyemail= apisec.model('verify',{
     'verification_code': fields.String(required=True, description="The username for the application"),
     'Email': fields.String(required=True, description="Users Email")
 })
+channeldata = apisec.model('channel',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True, description="name of channel"),
+    'description': fields.String(required=True, description="description of channel"),
+    'profile_pic': fields.String(required=True, description="profile pic"),
+    'background': fields.String(required=True, description="background image"),
+    'css': fields.String(required=True, description="css to style channel page"),
+    'desc_en': fields.String(required=True, description="description in english"),
+    'desc_es': fields.String(required=True, description="description in spanish"),
+    'desc_ar': fields.String(required=True, description="description in arabic"),
+    'desc_pt': fields.String(required=True, description="description in portuguese"),
+    'desc_fr': fields.String(required=True, description="description in french"),
+    'desc_sw': fields.String(required=True, description="description in swahili"),
+    'desc_ha': fields.String(required=True, description="description in hausa"),
+    'moderator': fields.String(required=True, description="Moderator id")
+})
+
+lang_post = apisec.model('trans_post', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True),
+    'language_id': fields.Integer(required=True)
+})
 
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
+    'uuid': fields.String(required=True),
     'channel_id': fields.Integer(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
-    'uploader_date': fields.DateTime(required=True)
+    'uploader_date': fields.DateTime(required=True),
+    'frposts': fields.List(fields.Nested(lang_post)),
+    'swposts': fields.List(fields.Nested(lang_post)),
+    'haposts': fields.List(fields.Nested(lang_post)),
+    'ptposts': fields.List(fields.Nested(lang_post)),
+    'esposts': fields.List(fields.Nested(lang_post)),
+    'arposts': fields.List(fields.Nested(lang_post)),
+    'enposts': fields.List(fields.Nested(lang_post))
 })
 
 trendingdata = apisec.inherit('trending', postdata, {})
