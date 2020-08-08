@@ -2,7 +2,7 @@ from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from app.models import Users,followers
+from app.models import Users, followers, Setting
 from flask import current_app as app
 from app import db, cache, logging
 
@@ -44,6 +44,17 @@ userdata = user.model('Profile', {
     'user_number': fields.String(required=True),
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
+})
+user_prefs = user.model('Preference', {
+    'id': fields.Integer(required=True),
+    'language_id': fields.Integer(required=True),
+    'users_id': fields.Integer(required=True),
+    'theme': fields.String(required=True),
+    'post': fields.Boolean(required=True),
+    'saves': fields.Boolean(required=True),
+    'channel': fields.Boolean(required=True),
+    'comments': fields.Boolean(required=True),
+    'messages': fields.Boolean(required=True)
 })
 updateuser = user.model('Update',{
     'user_id':fields.String(required=True),
@@ -167,7 +178,6 @@ class Data(Resource):
         else:
               return {'res':'fail'}, 404
     
-
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',
@@ -330,11 +340,39 @@ class User_Block(Resource):
         else:
             return{'res':'fail'},404
 
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @user.route('/user/prefs')
 class Userprefs(Resource):
-    @user.marshal_with(userinfo)
+    @token_required
     def get(self):
-        return {}, 200
+        token = request.headers['API-KEY']
+        if token:
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            user_settings = Setting.query.filter_by(users_id=user.id).first()
+            return {
+                "user": marshal(user, userdata),
+                "user_prefs": marshal(user_settings, user_prefs)
+            }, 200
+        else:
+           return {
+
+           }, 200 
+
     @token_required
     @user.expect(userinfo)
     def post(self, username):

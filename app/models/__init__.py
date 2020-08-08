@@ -178,7 +178,6 @@ class Users(db.Model):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
 
-
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(128), index=True)
@@ -206,7 +205,6 @@ class Message(db.Model):
 
     def __repr__(self):
         return '<Message {}>'.format(self.body)
-
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -296,11 +294,22 @@ class Setting(db.Model):
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
     users_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
+    post = db.Column(db.Boolean, nullable=False, default=False)
+    comments = db.Column(db.Boolean, nullable=False, default=False)
+    saves = db.Column(db.Boolean, nullable=False, default=False)
+    channel = db.Column(db.Boolean, nullable=False, default=False)
+    messages = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, language, users, theme):
+    def __init__(self, language, users, theme, post, messages, channel, saves, comment):
         self.language = language
         self.theme = theme
+        self.post = post
+        self.messages = messages
+        self.channel = channel
+        self.saves = saves
+        self.comment = comment
         self.users = users
+
     def __repr__(self):
         return '<Setting %r>' % self.id
 
@@ -317,7 +326,6 @@ class Rating(db.Model):
 
     def __repr__(self):
         return '<Rating>%r' %self.id
-
 
 class Posts(db.Model):
     __searchable__ = ['title', 'content']
@@ -359,7 +367,7 @@ class Posts(db.Model):
 
     def remove_post(self,channel):
         if self.post_is_channel(channel):
-            self.postchannel.remove(user)
+            self.postchannel.remove(channel)
 
     def __init__(self, uploader, title, posttype, content, uploader_id,picture_url=None,video_url=None):
         self.content = content
@@ -389,7 +397,6 @@ class Posts(db.Model):
     def __repr__(self):
         return '<Post>%r' %self.title
 
-
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     settings = db.relationship('Setting', backref='setting', lazy=True)
@@ -403,7 +410,6 @@ class Language(db.Model):
         self.name = name
     def __repr__(self):
         return '<Language>%r' %self.name
-
 
 class Comment(db.Model):
 
