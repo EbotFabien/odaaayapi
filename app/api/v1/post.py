@@ -55,9 +55,10 @@ post = post1.namespace('/api/post', \
 
 postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
-    'channel': fields.Integer(required=True),
-    'type': fields.String(required=True),
-    'post_url': fields.String(required=False),
+    'channel': fields.List(fields.String(required=True)),
+    'type': fields.Integer(required=True),
+    'post_url': fields.String(required=False, default=None),
+    'thumb': fields.String(required=False, default=None),
     'content': fields.String(required=True)
 })
 
@@ -110,10 +111,7 @@ postreq = post.model('postreq', {
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'count': 'Number results per page',
-            'lang' : 'Language',
-            'title': 'Title of the post',
-            'channel':'channel id of the post',
-            'content':'This is the content of the post'
+            'lang' : 'Language'
             },
     responses={
         200: 'ok',
@@ -219,75 +217,51 @@ class Post(Resource):
               return {'res':'fail'}, 404
               
     @token_required
-    @post.expect(uploader)
     def post(self):
         req_data = request.get_json()
         args = uploader.parse_args()
-        title=request.args.get('title')
-        content=request.args.get('content')
-        channel_id =(request.args.get('channel'))
-        y=np.array(channel_id)
-        ptype =request.args.get('type')
+        title=req_data['title']
+        content=req_data['content']
+        channel_names = req_data['channel']
+        ptype=1
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        print(y)
-        for i in channel_id:
-            if Channels.query.filter_by(id=i):
-              channel=Channels.query.filter_by(id=i)
-
-        for i in channel:
-            if channel[i].subscribed(user) is None:
-                return {
-                    'status': 0,
-                    'res':'You are not subscribed to'+channel[i]+'channel'
-                    }, 404
-
-        if args['file'] is not None:
-            if args['file'].mimetype == 'video/mp4':
-                name = args['name']
-                orig_name = args['file'].filename
-                file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/video/', user.uuid)
-                if not os.path.exists(destination):
-                    os.makedirs(destination)
-                videofile = '%s%s' % (destination+'/', orig_name)
-                file.save(videofile)
-                Type=int('1')
-                new_post = Posts(user.id,title, Type, content, user.id,video_url='/posts/'+'/video/'+user.uuid+'/'+orig_name)
-                db.session.add(new_post)
-                db.session.commit()
-                for i in channel:
-                    new_post.add_post(channel[i])
-                    db.session.commit()
-                return {'res':'success'}, 200
-
-            if args['file'].mimetype == 'image/*':
-                name = args['name']
-                orig_name = args['file'].filename
-                file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'posts/picture/', user.uuid)
-                if not os.path.exists(destination):
-                    os.makedirs(destination)
-                picturefile = '%s%s' % (destination+'/', orig_name)
-                file.save(videofile)
-                Type=int('2')
-                new_post = Posts(user.id,title, Type, content, user.id,picture_url='/posts/'+'/picture/'+user.uuid+'/'+orig_name)
-                db.session.add(new_post)
-                db.session.commit()
-                return {'res':'success'}, 200
-        if channel.subscribed(user):
-            if content is None: 
-                return{'res':'put content'},200
-            if ptype is None:
-                ptype=1
-            new_post = Posts(title, ptype, content, user.id)
-            db.session.add(new_post)
+        channel_list = []
+        for i in channel_names:
+            name = Channels.query.filter_by(name=i).first()
+            if name in user.get_channels():
+                channel_list.append(name)
+        if ptype == 1:
+            newPost = Posts(user.id, title, ptype, content, '1', user.id)
+            db.session.add(newPost)
             db.session.commit()
-            new_post.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            for c in channel_list:
+                c.add_post(newPost)
+                db.session.commit()
+            return {
+                'status': 1,
+                'res': 'Post was made'
+            }, 200
+        if ptype == 4:
+            thumb_url=req_data['thumb'] or None
+            post_url=req_data['post_url'] or None
+            newPost = Posts(user.id, title, ptype, content, '1', user.id,)
+            db.session.add(newPost)
             db.session.commit()
-            return {'res':'success'}, 200
+            newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+            for c in channel_list:
+                c.add_post(newPost)
+                db.session.commit()
+            return {
+                'status': 1,
+                'res': 'Post was made'
+            }, 200
         else:
-            return {'res':'fail'}, 404
-   
-    
+            return {
+                'status': 0,
+                'res': i+' does not exist or you are not subscribed to it'
+            }, 200
+
+

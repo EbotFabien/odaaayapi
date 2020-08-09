@@ -16,7 +16,7 @@ from sqlalchemy import func
 from .v1 import user, info, token, search, post, comment, channel
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
-        Postsw, Postes, Posttype, Rating, Ratingtype
+        Postsw, Postes, Posttype, Rating, Ratingtype, postchannel
 
 # API security
 authorizations = {
@@ -457,11 +457,11 @@ class Article(Resource):
     def get(self, id):
         if id:
             posts_feed = Posts.query.filter_by(uuid = id).first()
-            channel = Channels.query.filter_by(id=posts_feed.channel_id).all()
+            channels = posts_feed.get_post_channels()
             return {
                 "results": {
                     'article': marshal(posts_feed, schema.postdata),
-                    'channels': marshal(channel, schema.channeldata)
+                    'channels': marshal(channels, schema.channeldata)
                 }
             }, 200
         else:
@@ -491,7 +491,6 @@ class Aticle(Resource):
             return {
                 'feed': marshal(posts_feed, schema.postdata)
             }, 200     
-
 
 @message.doc(
     security='KEY',

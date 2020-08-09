@@ -11,7 +11,8 @@ import redis
 import rq
 from flask import current_app as app
 from time import time
-import json, shortuuid
+import json, shortuuid, bleach
+from markdown import markdown
 from werkzeug.utils import secure_filename
 
 channel_langs = db.Table('channel_langs',
@@ -240,14 +241,29 @@ class Channels(db.Model):
         'Users', secondary=subs,
         primaryjoin=(subs.c.channel_id == id),
         secondaryjoin=(subs.c.users_id == Users.id),
-        backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic') 
+        backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
+    postchannel = db.relationship(
+        'Posts',secondary=postchannel,
+        primaryjoin=(postchannel.c.channel_id == id),
+        backref=db.backref('channelpost', lazy='dynamic'), lazy='dynamic')
+
     def subscribed(self,user):
         return  self.query.join(
             subs,(subs.c.channel_id == self.id )).filter(
                 subs.c.users_id == user.id).first()
+
+    def haspost(self,post):
+        return  self.query.join(
+            postchannel,(postchannel.c.channel_id == self.id )).filter(
+                postchannel.c.post_id == post.id).first()
+
     def add_sub(self,user):
         if not self.subscribed(user):
             self.subs.append(user)
+
+    def add_post(self, post):
+        if not self.haspost(post):
+            self.postchannel.append(post)
             
     def remove_sub(self,user):
         if  self.subscribed(user):
@@ -332,9 +348,10 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     uuid = db.Column(db.String)
-    content = db.Column(db.String)
+    content = db.Column(db.Text)
     uploader = db.Column(db.String)
     post_url = db.Column(db.String)
+    thumb_url = db.Column(db.String)
     orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
     uploader_date = db.Column(db.DateTime, nullable=False)
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
@@ -356,6 +373,15 @@ class Posts(db.Model):
         secondaryjoin=(postchannel.c.channel_id == Channels.id),
         backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
 
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p', 'video', 'audio', 'hr']
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+
     def post_is_channel(self,channel):
         return self.query.join(
             postchannel,(postchannel.c.post_id == self.id)).filter(
@@ -369,13 +395,14 @@ class Posts(db.Model):
         if self.post_is_channel(channel):
             self.postchannel.remove(channel)
 
-    def __init__(self, uploader, title, posttype, content, uploader_id,picture_url=None,video_url=None):
+    def __init__(self, uploader, title, posttype, content, lang, uploader_id, picture_url=None, video_url=None, thumb_url=None):
         self.content = content
         self.title = title
-        self.uuid = str(uuid.uuid4())
+        self.uuid = secure_filename(title)+'_'+shortuuid.uuid()
         self.uploader_id = uploader
         self.post_type = posttype
-        self.orig_lang = 1
+        self.orig_lang = lang
+        self.thumb_url = thumb_url
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
         self.picture_url = picture_url
@@ -393,6 +420,11 @@ class Posts(db.Model):
     def get_task_in_progress(self, name):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
+
+    def get_post_channels(self):
+        return Channels.query.join(
+            postchannel,(postchannel.c.post_id == self.id)).filter(
+                postchannel.c.channel_id == Channels.id).all()
 
     def __repr__(self):
         return '<Post>%r' %self.title

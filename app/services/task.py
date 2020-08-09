@@ -77,7 +77,7 @@ def translate_posts(post_id, user_id):
         for sentence in summarizer(parser.document, 4):
             sum_content += '\n'+str(sentence)
     else:
-        parser = PlaintextParser.from_string(post.content, Tokenizer(post_language.name))
+        parser = HtmlParser.from_string(post.content, '', Tokenizer(post_language.name))
         stemmer = Stemmer(post_language.name)
         summarizer = Summarizer(stemmer)
         summarizer.stop_words = get_stop_words(post_language.name)
