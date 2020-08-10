@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import division, print_function, unicode_literals
+
 from flask_restplus import Namespace, Resource, fields, marshal,Api
 import jwt, uuid, os
 from flask_cors import CORS
@@ -11,6 +14,13 @@ from app import db, cache, logging
 import json
 from tqdm import tqdm
 from werkzeug.datastructures import FileStorage
+
+from sumy.parsers.html import HtmlParser
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer as Summarizer
+from sumy.nlp.stemmers import Stemmer
+from sumy.utils import get_stop_words
 
 authorizations = {
     'KEY': {
@@ -103,6 +113,9 @@ postreq = post.model('postreq', {
     'all': fields.Boolean(required=True),
     'channel': fields.Integer(required=True),
     'arg_type': fields.String(required=True),
+})
+Article_verify = post.model('postreq',{
+    "Link":fields.String(required=True)
 })
 
 
@@ -215,7 +228,8 @@ class Post(Resource):
             return {'res':'success'}, 200
         else:
               return {'res':'fail'}, 404
-              
+    
+    @post.expect(postcreationdata)
     @token_required
     def post(self):
         req_data = request.get_json()
@@ -270,4 +284,53 @@ class Post(Resource):
                 'res': 'No channel found'
             }, 200     
 
+
+@post.doc(
+    security='KEY',
+    params={ 
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/post/article_check')
+class Article_check(Resource):
+    @post.expect(Article_verify)
+    @token_required
+    def post(self):
+            req_data = request.get_json()
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            LANGUAGE = "english"
+            SENTENCES_COUNT = 10
+            url= req_data["Link"]
+            try:
+                parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
+                stemmer = Stemmer(LANGUAGE)
+
+                summarizer = Summarizer(stemmer)
+                summarizer.stop_words = get_stop_words(LANGUAGE)
+
+                for sentence in summarizer(parser.document, SENTENCES_COUNT):
+                    print(sentence)
+
+                return {
+                    'status': 1,
+                    'res': "Success"
+                }, 200
+            except:
+                return {
+                        'status': 0,
+                        'res': "This Article does not exist"
+                    }, 404
+                
 
