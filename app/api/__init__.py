@@ -367,7 +367,6 @@ class Home(Resource):
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
             posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(Posts.id.desc()).paginate(int(start), int(count), False)
-            total = (posts_feed.total/int(count))
             next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
             previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
             return {
@@ -377,7 +376,6 @@ class Home(Resource):
                 "next": next_url,
                 "lang": lang,
                 "previous": previous,
-                "totalPages": total,
                 "results": {
                     'feed': marshal(posts_feed.items, schema.postdata)
                 }
