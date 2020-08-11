@@ -307,6 +307,7 @@ class Article_check(Resource):
             LANGUAGE = "english"
             SENTENCES_COUNT = 10
             url= req_data["Link"]
+            sum_content=''
             try:
                 parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
                 stemmer = Stemmer(LANGUAGE)
@@ -315,11 +316,12 @@ class Article_check(Resource):
                 summarizer.stop_words = get_stop_words(LANGUAGE)
 
                 for sentence in summarizer(parser.document, SENTENCES_COUNT):
-                    print(sentence)
+                    sum_content += '\n'+str(sentence)
 
                 return {
                     'status': 1,
-                    'res': "Success"
+                    'res': url,
+                    'content':sum_content
                 }, 200
             except:
                 return {
