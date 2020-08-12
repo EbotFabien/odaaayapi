@@ -141,7 +141,7 @@ class Data(Resource):
             count = request.args.get('count',None)
             next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            comment = Comment.query.filter_by(public == True).order_by(Comment.path).paginate(int(start),int(count), False).items
+            comment = Comment.query.filter_by(Comment.public == True).order_by(Comment.path).paginate(int(start),int(count), False).items
             for comments in comment:
                 print( comments.path)
             return{
@@ -352,7 +352,7 @@ class UsersComment(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         comments1 = Comment.query.filter_by(user_id=user.id).first()
         if user.id == comments1.user_id :
-            comments = Comment.query.filter_by((user_id == user.id) , (public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
+            comments = Comment.query.filter_by((Comment.user_id == user.id) , (Comment.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
             return {
                 "start": start,
                 "limit": limit,
@@ -368,4 +368,5 @@ class UsersComment(Resource):
             }
 
     
+
 
