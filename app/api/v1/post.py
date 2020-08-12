@@ -364,7 +364,7 @@ class UsersPost(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         posts1 = Posts.query.filter_by(uploader_id=user.id).first()
-        if user.id == posts1.id :
+        if user.id == posts1.uploader_id :
             posts = Posts.query.filter_by(uploader_id == user.id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
             return {
                 "start": start,

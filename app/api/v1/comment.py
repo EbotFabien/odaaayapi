@@ -351,7 +351,7 @@ class UsersComment(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         comments1 = Comment.query.filter_by(user_id=user.id).first()
-        if user.id == comments1.id :
+        if user.id == comments1.user_id :
             comments = Comment.query.filter_by((user_id == user.id) , (public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
             return {
                 "start": start,
@@ -368,5 +368,4 @@ class UsersComment(Resource):
             }
 
     
-
 
