@@ -141,7 +141,7 @@ class Data(Resource):
             count = request.args.get('count',None)
             next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            comment = Comment.query.filter_by(public=True).order_by(Comment.path).paginate(int(start),int(count), False).items
+            comment = Comment.query.filter_by(public == True).order_by(Comment.path).paginate(int(start),int(count), False).items
             for comments in comment:
                 print( comments.path)
             return{
@@ -316,3 +316,57 @@ class Searchcomment(Resource):
     @comment.marshal_with(apiinfo)
     def delete(self):
         return {}, 200
+
+
+@comment.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@comment.route('/comment/userComment')
+class UsersComment(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count+"&lang="+lang
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count+"&lang="+lang
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        comments1 = Comment.query.filter_by(user_id=user.id).first()
+        if user.id == comments1.id :
+            comments = Comment.query.filter_by((user_id == user.id) , (public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
+            return {
+                "start": start,
+                "limit": limit,
+                "count": count,
+                "next": next,
+                "previous": previous,
+                "results": marshal(comments, commentdata)
+            }, 200
+        else :
+            return{
+                "status":0,
+                "res":"User does not have post"
+            }
+
+    
+
+
