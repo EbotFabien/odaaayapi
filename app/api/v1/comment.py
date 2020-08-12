@@ -352,7 +352,7 @@ class UsersComment(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         comments1 = Comment.query.filter_by(user_id=user.id).first()
         if user.id == comments1.user_id :
-            comments = Comment.query.filter_by(and_(Comment.user_id == user.id) , (Comment.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
+            comments = Comment.query.filter_by(and_(comments1.user_id) , (comments1.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
             return {
                 "start": start,
                 "limit": limit,
