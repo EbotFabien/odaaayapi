@@ -37,8 +37,7 @@ blocking = db.Table('Blocked',
 )
 sub_moderator = db.Table('sub_moderator',
     db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
-    db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id')),
-    
+    db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
 )
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
