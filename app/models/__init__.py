@@ -327,14 +327,14 @@ class Setting(db.Model):
     messages = db.Column(db.Boolean, nullable=False, default=False)
 
     def __init__(self, language, users, theme, post, messages, channel, saves, comment):
-        self.language = language
+        self.language_id = language
         self.theme = theme
         self.post = post
         self.messages = messages
         self.channel = channel
         self.saves = saves
-        self.comment = comment
-        self.users = users
+        self.comments = comment
+        self.users_id = users
 
     def __repr__(self):
         return '<Setting %r>' % self.id

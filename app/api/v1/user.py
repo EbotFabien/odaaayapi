@@ -45,23 +45,23 @@ userdata = user.model('Profile', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
-#update_settings = user.model('Full_settings',{
-   # 'user_id' :fields.Integer(required=True),
-    #'username':  fields.String(required=True),
-    #'email': fields.String(required=True),
-    #'uuid': fields.String(required=True),
-    #'user_number': fields.String(required=True),
-    #'verified': fields.Boolean(required=True),
-    #'user_visibility': fields.Boolean(required=True),
-    #'setting_id':fields.Integer(required=True),
-    #'language_id': fields.Integer(required=True),
-    # 'theme': fields.String(required=True),
-    #'post': fields.Boolean(required=True),
-    #'saves': fields.Boolean(required=True),
-    #'channel': fields.Boolean(required=True),
-    #'comments': fields.Boolean(required=True),
-    #'messages': fields.Boolean(required=True)
-#})
+update_settings = user.model('Full_settings',{
+    'user_id' :fields.Integer(required=True),
+    'username':  fields.String(required=True),
+    'email': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'user_number': fields.String(required=True),
+    'verified': fields.Boolean(required=True),
+    'user_visibility': fields.Boolean(required=True),
+    'setting_id':fields.Integer(required=True),
+    'language_id': fields.Integer(required=True),
+    'theme': fields.String(required=True),
+    'post': fields.Boolean(required=True),
+    'saves': fields.Boolean(required=True),
+    'channel': fields.Boolean(required=True),
+    'comments': fields.Boolean(required=True),
+    'messages': fields.Boolean(required=True)
+})
 user_prefs = user.model('Preference', {
     'id': fields.Integer(required=True),
     'language_id': fields.Integer(required=True),
@@ -390,16 +390,40 @@ class Userprefs(Resource):
 
            }, 200 
 
-   # @token_required
-   # @user.expect(userinfo)
-   # def put(self, username):
-       # req_data = request.get_json()
-       # token = request.headers['API-KEY']
-       # data = jwt.decode(token, app.config.get('SECRET_KEY'))
-       # user = Users.query.filter_by(uuid=data['uuid']).first()
-       # if user:
-        #    user_data
-        #    new_setting=Setting()
-        #    return {
-        #        
-        #    }, 200
+    @token_required
+    @user.expect(update_settings)
+    def put(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_settings = Setting.query.filter_by(users_id=user.id).first()
+
+        if req_data['user_id'] == user.id:
+            user.username = req_data['username']
+            user.email = req_data['email']
+            user.user_visibility = req_data['user_visibility']
+            db.session.commit()
+            return {
+                "status":1,
+                "res":"User_data updated"
+            }, 200
+        else:
+            return {
+                "status":0,
+                "res":"You not User"
+            }, 200
+        if user_settings:
+            user_settings.language_id = req_data['language']
+            user_settings.theme = req_data['theme']
+            user_settings.post = req_data['post']
+            user_settings.messages = req_data['messages']
+            user_settings.channel = req_data['channel']
+            user_settings.saves = req_data['saves']
+            user_settings.comments =req_data['comment'] 
+            user_settings.users_id =req_data['users'] 
+            db.session.commit()
+            return {
+                "status":1,
+                "res":"User_settings updated"
+            }, 200
