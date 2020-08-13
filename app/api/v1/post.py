@@ -246,37 +246,43 @@ class Post(Resource):
             name = Channels.query.filter_by(name=i).first()
             if name in user.get_channels():
                 channel_list.append(name)
-        if ptype == 1:
-            newPost = Posts(user.id, title, ptype, content, '1', user.id)
-            db.session.add(newPost)
-            db.session.commit()
-            newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-            for c in channel_list:
-                c.add_post(newPost)
+        if len(channel_list) != 0:
+            if ptype == 1:
+                newPost = Posts(user.id, title, ptype, content, '1', user.id)
+                db.session.add(newPost)
                 db.session.commit()
-            return {
-                'status': 1,
-                'res': 'Post was made'
-            }, 200
-        if ptype == 4:
-            thumb_url=req_data['thumb'] or None
-            post_url=req_data['post_url'] or None
-            newPost = Posts(user.id, title, ptype, content, '1', user.id,)
-            db.session.add(newPost)
-            db.session.commit()
-            newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-            for c in channel_list:
-                c.add_post(newPost)
+                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                for c in channel_list:
+                    c.add_post(newPost)
+                    db.session.commit()
+                return {
+                    'status': 1,
+                    'res': 'Post was made'
+                }, 200
+            if ptype == 4:
+                thumb_url=req_data['thumb'] or None
+                post_url=req_data['post_url'] or None
+                newPost = Posts(user.id, title, ptype, content, '1', user.id,)
+                db.session.add(newPost)
                 db.session.commit()
-            return {
-                'status': 1,
-                'res': 'Post was made'
-            }, 200
+                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                for c in channel_list:
+                    c.add_post(newPost)
+                    db.session.commit()
+                return {
+                    'status': 1,
+                    'res': 'Post was made'
+                }, 200
+            else:
+                return {
+                    'status': 0,
+                    'res': i+' does not exist or you are not subscribed to it'
+                }, 200
         else:
-            return {
+           return {
                 'status': 0,
-                'res': i+' does not exist or you are not subscribed to it'
-            }, 200
+                'res': 'No channel found'
+            }, 200     
 
 
 @post.doc(

@@ -41,13 +41,6 @@ channeldata = apisec.model('channel',{
     'moderator': fields.String(required=True, description="Moderator id")
 })
 
-lang_post = apisec.model('trans_post', {
-    'id': fields.Integer(required=True),
-    'title': fields.String(required=True),
-    'content': fields.String(required=True),
-    'language_id': fields.Integer(required=True)
-})
-
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -55,13 +48,15 @@ postdata = apisec.model('postreturndata', {
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
-    'frposts': fields.List(fields.Nested(lang_post)),
-    'swposts': fields.List(fields.Nested(lang_post)),
-    'haposts': fields.List(fields.Nested(lang_post)),
-    'ptposts': fields.List(fields.Nested(lang_post)),
-    'esposts': fields.List(fields.Nested(lang_post)),
-    'arposts': fields.List(fields.Nested(lang_post)),
-    'enposts': fields.List(fields.Nested(lang_post))
+    'thumb_url': fields.String(required=False)
+})
+
+lang_post = apisec.model('trans_post', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True),
+    'language_id': fields.Integer(required=True),
+    'posts': fields.List(fields.Nested(postdata))
 })
 
 trendingdata = apisec.inherit('trending', postdata, {})

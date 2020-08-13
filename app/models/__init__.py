@@ -368,13 +368,6 @@ class Posts(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
-    esposts = db.relationship('Postes', backref='spanish_posts', lazy='dynamic')
-    enposts = db.relationship('Posten', backref='english_posts', lazy='dynamic')
-    ptposts = db.relationship('Postpor', backref='portuguese_posts', lazy='dynamic')
-    swposts = db.relationship('Postsw', backref='swahili_posts', lazy='dynamic')
-    haposts = db.relationship('Posthau', backref='hausa_posts', lazy='dynamic')
-    arposts = db.relationship('Postarb', backref='arabic_posts', lazy='dynamic')
-    frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
     picture_url =db.Column(db.String)
     video_url =db.Column(db.String)
     postchannel = db.relationship(
@@ -521,6 +514,7 @@ class Postarb(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('postarb', lazy='dynamic'))
 
     def __init__(self, id, title, content, lang):
         self.id = id
@@ -534,6 +528,7 @@ class Posten(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('posten', lazy='dynamic'))
 
     def __init__(self, id, title, content, lang):
         self.id = id
@@ -547,6 +542,7 @@ class Postpor(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('postpor', lazy='dynamic'))
 
     def __init__(self, id, title, content, lang):
         self.id = id
@@ -560,6 +556,7 @@ class Postfr(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('postfr', lazy='dynamic'))
     
     def __init__(self, id, title, content, lang):
         self.id = id
@@ -573,6 +570,7 @@ class Posthau(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('posthau', lazy='dynamic'))
 
     def __init__(self, id, title, content, lang):
         self.id = id
@@ -586,6 +584,7 @@ class Postsw(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('postsw', lazy='dynamic'))
 
     def __init__(self, id, title, content, lang):
         self.id = id
@@ -599,6 +598,7 @@ class Postes(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    posts = db.relationship('Posts', backref=db.backref('postes', lazy='dynamic'))
 
     def __init__(self, id, title, content, lang):
         self.id = id
