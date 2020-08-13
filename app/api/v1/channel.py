@@ -55,9 +55,21 @@ channeldata = channel.model('channelreturndata',{
     'description': fields.String(required=True)
 })
 
+channel_post =channel.model('channel_post',{
+    'id': fields.Integer(required=True),
+    'title':fields.String(required=True),
+    'uploader':fields.String(required=True),
+    'uploader_date':fields.String(required=True)
+})
+
+channel_post_final = channel.model('channel_post_final',{
+    'postchannel': fields.List(fields.Nested(channel_post))
+})
+
 channel_list = channel.model('channel_list', {
     'channel': fields.List(fields.Nested(channel_view))
 })
+
 
 channelcreationdata = channel.model('ChannelCreationData', {
     'name': fields.String(required=True),
@@ -367,3 +379,59 @@ class user_is_sub_moderator(Resource):
                     "res":"No request found"
                 }
                 
+
+@channel.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'channel_id':'Input Channel ID'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@channel.route('/channel/all_Post')
+class ALL_channels_post(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            channel=request.args.get('channel_id')
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            channels=Channels.query.filter_by(id=channel).first()
+            if channels:
+                channelspost=Channels.query.filter_by(id=channel).order_by(Channels.id.desc()).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(channelspost, channel_post_final)
+                }, 200
+            else :
+                return{
+                    "status":0,
+                    "res":"Channel does not exist"
+                }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }
