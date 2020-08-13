@@ -362,7 +362,7 @@ class UsersComment(Resource):
                         "previous": previous,
                         "results": marshal(comments, commentdata)
                     }, 200
-                else :
+                else : 
                     return{
                         "status":0,
                         "res":"User does not have post"
