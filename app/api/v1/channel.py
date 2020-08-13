@@ -49,6 +49,12 @@ channel_view = channel.model('channel_view', {
     'background': fields.String(required=True)
 })
 
+channeldata = channel.model('channelreturndata',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True)
+})
+
 channel_list = channel.model('channel_list', {
     'channel': fields.List(fields.Nested(channel_view))
 })
@@ -251,3 +257,113 @@ class sub_channel(Resource):
             return{'res':'success'}
         else:
             return {'res':'You have not subscribed'}, 404
+
+
+@channel.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@channel.route('/channel/user_is_Moderator')
+class user_is_moderator(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            moderator_check = Channels.query.filter_by(moderator=user.id).first()
+            if moderator_check:
+                channel = Channels.query.filter_by(moderator=user.id).order_by(Channels.id.desc()).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(channel, channeldata)
+                }, 200
+            else :
+                return{
+                    "status":0,
+                    "res":"User is not a moderator of any channel"
+                }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }
+
+@channel.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@channel.route('/channel/user_is_sub_Moderator')
+class user_is_sub_moderator(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            channel_sub = user.channel_sub_moderators()
+            if channel_sub :
+                channel_sub_moderators =user.channel_sub_moderators().paginate(int(start),int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(channel_sub_moderators, channeldata)
+                }, 200
+            else :
+                return{
+                    "status":0,
+                    "res":"User is not a moderator of any channel"
+                }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }
+                

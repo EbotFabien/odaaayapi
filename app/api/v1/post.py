@@ -81,11 +81,19 @@ Updatedata = post.model('Updatedata',{
 deletedata =post.model('deletedata',{
     'id':fields.String(required=True)
 })
-    
+
+channelfinal = post.model('channelreturndata',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True)
+})
+channeldata=post.model('channelreturndata',{
+    'channel_id': fields.Integer(required=True),
+})
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
-    'channel_id': fields.Integer(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
@@ -313,6 +321,7 @@ class Article_check(Resource):
             LANGUAGE = "english"
             SENTENCES_COUNT = 10
             url= req_data["Link"]
+            sum_content=''
             try:
                 parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
                 stemmer = Stemmer(LANGUAGE)
@@ -321,16 +330,73 @@ class Article_check(Resource):
                 summarizer.stop_words = get_stop_words(LANGUAGE)
 
                 for sentence in summarizer(parser.document, SENTENCES_COUNT):
-                    print(sentence)
+                    sum_content += '\n'+str(sentence)
 
                 return {
                     'status': 1,
-                    'res': "Success"
+                    'res': url,
+                    'content':sum_content
                 }, 200
             except:
                 return {
                         'status': 0,
-                        'res': "This Article does not exist"
+                        'res': "This Article does not exist" 
                     }, 404
                 
 
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@post.route('/post/users')
+class UsersPost(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            posts1 = Posts.query.filter_by(uploader_id=user.id).first()
+            if user.id == posts1.uploader_id :
+                posts = Posts.query.filter_by(uploader_id=posts1.uploader_id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(posts, postdata)
+                }, 200
+            else :
+                return{
+                    "status":0,
+                    "res":"User does not have post"
+                }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }       
+        
+        
