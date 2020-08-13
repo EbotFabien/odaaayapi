@@ -4,6 +4,7 @@ from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
 from functools import wraps
+from tqdm import tqdm
 from flask import current_app as app
 from datetime import datetime, timedelta
 from app import db, limiter, cache,bycrypt
@@ -366,20 +367,26 @@ class Home(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(Posts.id.desc()).paginate(int(start), int(count), False)
-            next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
-            previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
-            return {
-                "start": start,
-                "limit": limit,
-                "count": count,
-                "next": next_url,
-                "lang": lang,
-                "previous": previous,
-                "results": {
-                    'feed': marshal(posts_feed.items, schema.postdata)
-                }
-            }, 200
+            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            for i in tqdm(language_dict):
+                if i == lang:
+                    table = language_dict.get(i)
+                    posts_feed = table.query.order_by(func.random()).paginate(int(start), int(count), False)
+                    total = (posts_feed.total/int(count))
+                    next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+                    previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+                    return {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next_url,
+                        "lang": lang,
+                        "previous": previous,
+                        "totalPages": total,
+                        "results": {
+                            'feed': marshal(posts_feed.items, schema.lang_post)
+                        }
+                    }, 200
         else:
             posts_trending = Posts.query.limit(10).all()
             posts_feed = Posts.query.limit(10).all()
@@ -396,25 +403,33 @@ class Discover(Resource):
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
+            lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            posts_feed = Posts.query.filter_by(post_type = int(post_type)).order_by(func.random()).paginate(int(start), int(count), False)
-            total = (posts_feed.total/int(count))
-            next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
-            previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
-            return {
-                "start": start,
-                "limit": limit,
-                "count": count,
-                "next": next_url, 
-                "previous": previous,
-                "totalPages": total,
-                "results": {
-                    'feed': marshal(posts_feed.items, schema.postdata)
-                }
-            }, 200
+            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            for i in tqdm(language_dict):
+                if i == lang:
+                    table = language_dict.get(i)
+                    posts_feed = table.query.order_by(func.random()).paginate(int(start), int(count), False)
+                    total = (posts_feed.total/int(count))
+                    next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+                    previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+                    return {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next_url,
+                        "lang": lang,
+                        "previous": previous,
+                        "totalPages": total,
+                        "results": {
+                            'feed': marshal(posts_feed.items, schema.lang_post)
+                        }
+                    }, 200
         else:
+            posts_trending = Posts.query.limit(10).all()
             posts_feed = Posts.query.limit(10).all()
+            posts_discover = Posts.query.limit(10).all()
             return {
                 'feed': marshal(posts_feed, schema.postdata)
             }, 200      
