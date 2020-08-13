@@ -92,7 +92,7 @@ channeldata=post.model('channelreturndata',{
 })
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
-    'uuid':fields.Integer(required=True),
+    'uuid':fields.String(required=True),
     'title': fields.String(required=True),
     'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
