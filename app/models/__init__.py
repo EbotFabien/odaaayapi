@@ -154,7 +154,7 @@ class Users(db.Model):
     def get_channels(self):
         return Channels.query.join(
             subs,(subs.c.users_id == self.id)).filter(
-                subs.c.channel_id == Channels.id).order_by(Channels.id.desc())
+                subs.c.channel_id == Channels.id).all()
 
     
     def passwordhash(self, password_taken):
