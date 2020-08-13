@@ -93,7 +93,7 @@ channel_subscribe = channel.model('channel_subscribe',{
 @channel.route('/channel')
 class Data(Resource):
     @channel.marshal_with(channel_view)
-    @token_required
+    @token_required 
     def get(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
