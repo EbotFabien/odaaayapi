@@ -58,7 +58,8 @@ channeldata = channel.model('channelreturndata',{
 channel_post =channel.model('channel_post',{
     'id': fields.Integer(required=True),
     'title':fields.String(required=True),
-    'uploader':fields.String(required=True)
+    'uploader':fields.String(required=True),
+    'uploader_date':fields.String(required=True)
 })
 
 channel_post_final = channel.model('channel_post_final',{
