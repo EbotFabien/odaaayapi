@@ -351,21 +351,27 @@ class UsersComment(Resource):
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user= Users.query.filter_by(uuid=data['uuid']).first()
             comments1 = Comment.query.filter_by(user_id=user.id).first()
-            if user.id == comments1.user_id :
-                comments = Comment.query.filter_by(and_(user_id=comments1.user_id) , (Comment.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
-                return {
-                    "start": start,
-                    "limit": limit,
-                    "count": count,
-                    "next": next,
-                    "previous": previous,
-                    "results": marshal(comments, commentdata)
-                }, 200
-            else :
-                return{
-                    "status":0,
-                    "res":"User does not have post"
-                }
+            if comments1:
+                if user.id == comments1.user_id :
+                    comments = Comment.query.filter_by(and_(user_id = comments1.user_id) , (Comment.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
+                    return {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next,
+                        "previous": previous,
+                        "results": marshal(comments, commentdata)
+                    }, 200
+                else :
+                    return{
+                        "status":0,
+                        "res":"User does not have post"
+                    }
+            else:
+                 return{
+                        "status":0,
+                        "res":"User does not have Comments"
+                    }
         else:
             return{
                     "status":0,
@@ -373,5 +379,3 @@ class UsersComment(Resource):
                 }
 
     
-
-

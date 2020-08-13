@@ -45,6 +45,23 @@ userdata = user.model('Profile', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
+#update_settings = user.model('Full_settings',{
+   # 'user_id' :fields.Integer(required=True),
+    #'username':  fields.String(required=True),
+    #'email': fields.String(required=True),
+    #'uuid': fields.String(required=True),
+    #'user_number': fields.String(required=True),
+    #'verified': fields.Boolean(required=True),
+    #'user_visibility': fields.Boolean(required=True),
+    #'setting_id':fields.Integer(required=True),
+    #'language_id': fields.Integer(required=True),
+    # 'theme': fields.String(required=True),
+    #'post': fields.Boolean(required=True),
+    #'saves': fields.Boolean(required=True),
+    #'channel': fields.Boolean(required=True),
+    #'comments': fields.Boolean(required=True),
+    #'messages': fields.Boolean(required=True)
+#})
 user_prefs = user.model('Preference', {
     'id': fields.Integer(required=True),
     'language_id': fields.Integer(required=True),
@@ -367,13 +384,22 @@ class Userprefs(Resource):
             return {
                 "user": marshal(user, userdata),
                 "user_prefs": marshal(user_settings, user_prefs)
-            }, 200
+                }, 200
         else:
            return {
 
            }, 200 
 
-    @token_required
-    @user.expect(userinfo)
-    def post(self, username):
-        return {}, 200
+   # @token_required
+   # @user.expect(userinfo)
+   # def put(self, username):
+       # req_data = request.get_json()
+       # token = request.headers['API-KEY']
+       # data = jwt.decode(token, app.config.get('SECRET_KEY'))
+       # user = Users.query.filter_by(uuid=data['uuid']).first()
+       # if user:
+        #    user_data
+        #    new_setting=Setting()
+        #    return {
+        #        
+        #    }, 200

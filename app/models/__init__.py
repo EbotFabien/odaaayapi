@@ -128,6 +128,13 @@ class Users(db.Model):
                 followers.c.follower_id == self.id)        
         own= Posts.query.filter_by(uploader_id=self.id)
         return followed.union(own).order_by(Posts.uploader_date.desc())
+    
+    def channel_sub_moderators(self):
+        return Channels.query.join(
+            sub_moderator,(sub_moderator.c.channel_id == Channels.id)).filter(
+                sub_moderator.c.sub_moderator_id == self.id).order_by(Channels.id.desc())
+        #own= Channels.query.filter_by(user_id=user)
+        #return followed.union(own)
 
     def has_followed(self):
         return Users.query.join(
@@ -148,7 +155,7 @@ class Users(db.Model):
     def get_channels(self):
         return Channels.query.join(
             subs,(subs.c.users_id == self.id)).filter(
-                subs.c.channel_id == Channels.id).all()
+                subs.c.channel_id == Channels.id).order_by(Channels.id.desc())
 
     
     def passwordhash(self, password_taken):
@@ -252,6 +259,7 @@ class Channels(db.Model):
             subs,(subs.c.channel_id == self.id )).filter(
                 subs.c.users_id == user.id).first()
 
+            
     def haspost(self,post):
         return  self.query.join(
             postchannel,(postchannel.c.channel_id == self.id )).filter(
@@ -297,10 +305,12 @@ class Save(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     content = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
     
-    def __init__(self, user, content):
-        self.user = user
+    def __init__(self, user, content,post):
+        self.user_id = user
         self.content = content
+        self.post_id = post
 
     def __repr__(self):
         return '<Save %r>' % self.id

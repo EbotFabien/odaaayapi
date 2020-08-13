@@ -379,3 +379,10 @@ class UsersPost(Resource):
                     "status":0,
                     "res":"User does not have post"
                 }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }       
+        
+        
