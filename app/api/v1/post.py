@@ -81,11 +81,19 @@ Updatedata = post.model('Updatedata',{
 deletedata =post.model('deletedata',{
     'id':fields.String(required=True)
 })
-    
+
+channelfinal = post.model('channelreturndata',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True)
+})
+channeldata=post.model('channelreturndata',{
+    'channel_id': fields.Integer(required=True),
+})
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
-    'postchannel': fields.Integer(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
