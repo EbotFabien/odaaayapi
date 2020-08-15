@@ -35,6 +35,11 @@ blocking = db.Table('Blocked',
     db.Column('blocker_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('blocked_id',db.Integer,db.ForeignKey('users.id')),
 )
+clap = db.Table('clap',
+    db.Column('clap_id',db.Integer, primary_key = True),
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
+    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'), primary_key=True)
+)
 sub_moderator = db.Table('sub_moderator',
     db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
@@ -74,7 +79,8 @@ class Users(db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-        
+
+
     blocked = db.relationship(
         'Users', secondary=blocking,
         primaryjoin=(blocking.c.blocker_id == id),
@@ -92,6 +98,7 @@ class Users(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+
     def is_blocking(self, user):
         return self.blocked.filter(
             blocking.c.blocked_id == user.id).count() > 0
@@ -100,9 +107,9 @@ class Users(db.Model):
         if not self.is_blocking(user):
             self.blocked.append(user)
 
-    def unblock(self,user):
+    def unblock(self,user):#check this line
         if self.is_blocking(user):
-            self.blocked.append(user)
+            self.blocked.remove(user)
 
     def has_blocked(self):
         return Users.query.join(
@@ -374,6 +381,11 @@ class Posts(db.Model):
         primaryjoin=(postchannel.c.post_id == id),
         secondaryjoin=(postchannel.c.channel_id == Channels.id),
         backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
+    clap = db.relationship(
+        'Users',secondary=clap,
+        primaryjoin=(clap.c.post_id == id),
+        secondaryjoin=(clap.c.user_id == Users.id),
+        backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -388,6 +400,19 @@ class Posts(db.Model):
         return self.query.join(
             postchannel,(postchannel.c.post_id == self.id)).filter(
                 postchannel.c.channel_id == channel.id).first()
+
+    def has_clapped(self,user):
+        return self.query.join(
+            clap,(clap.c.post_id == self.id)).filter(
+            clap.c.user_id == user.id).first()
+
+    def add_clap(self,user):
+        if not self.has_clapped(user):
+            self.clap.append(user)
+
+    def remove_clap(self,user):
+        if  self.has_clapped(user):
+            self.clap.remove(user)
 
     def add_post(self,channel):
         if not self.post_is_channel(channel):
