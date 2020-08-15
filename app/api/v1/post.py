@@ -107,7 +107,7 @@ langpostdata = post.model('langpostreturndata', {
     'content': fields.String(required=True),
 })
 
-multiplepost = post.model('',{
+multiplepost = post.model('multiple',{  #check this
     "start": fields.Integer(required=True),
     "limit": fields.Integer(required=True),
     "count": fields.Integer(required=True),
@@ -115,7 +115,17 @@ multiplepost = post.model('',{
     "previous": fields.String(required=True),
     "results": fields.List(fields.Nested(postdata))
 })
-
+Clap_post = post.model('clap',{
+    'Post_id':fields.String(required=True)
+})
+user_clap = post.model('user_clap',{
+    'id':fields.Integer(required=True),
+    'uuid':fields.String(required=True),
+})
+post_clap = post.model('clap',{
+    'id':fields.Integer(required=True),
+    'clap': fields.List(fields.Nested(user_clap))
+})
 
 postreq = post.model('postreq', {
     'arg': fields.String(required=True),
@@ -400,4 +410,95 @@ class UsersPost(Resource):
                     "res":"No request found"
                 }       
         
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'post_id':'Post ID of post'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@post.route('/post/Shout')
+class ShoutPost(Resource):  
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            channel=request.args.get('channel_id')
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            post_id  = request.args.get('post_id', None)
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            posts = Posts.query.filter_by(id=post_id).first()
+            if user:
+                if posts:
+                    clappedpost=Posts.query.filter_by(id=post_id).order_by(Posts.id.desc()).paginate(int(start), int(count), False).items
+                    return  {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(clappedpost, post_clap)
+                }, 200
+                else:
+                    return{
+                        "status":0,
+                        "res":"This post does not have any clap"
+                    }
+
+            else :
+                return{
+                    "status":0,
+                    "res":"Token not found"
+                }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }       
+       
+    @post.expect(Clap_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
         
+        if post.has_clapped(user):
+            return{
+                "status":0,
+                "res":"You have already clapped on this post"
+            }  
+        if user:
+            post.add_clap(user)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"You have clapped on this post"
+            } 
+        else:
+            return{
+                "status":0,
+                "res":"Insert token"
+            } 
+    #delete route to be done
