@@ -8,7 +8,7 @@ from functools import wraps
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
-from app.models import Users, Channels, subs, Posts, Language, Postarb, Posten, Postes, Postfr, \
+from app.models import Save , Users, Channels, subs, Posts, Language, Postarb, Posten, Postes, Postfr, \
     Posthau, Postpor, Postsw
 from app import db, cache, logging
 import json
@@ -115,8 +115,12 @@ multiplepost = post.model('multiple',{  #check this
     "previous": fields.String(required=True),
     "results": fields.List(fields.Nested(postdata))
 })
-Clap_post = post.model('clap',{
+Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
+})
+save_post = post.model('save_post',{
+    'Post_id':fields.String(required=True),
+    'Channel_id':fields.String(required=True)
 })
 user_clap = post.model('user_clap',{
     'id':fields.Integer(required=True),
@@ -270,9 +274,10 @@ class Post(Resource):
                 newPost = Posts(user.id, title, ptype, content, '1', user.id)
                 db.session.add(newPost)
                 db.session.commit()
-                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+               # newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
+                    c.add_notification()
                     db.session.commit()
                 return {
                     'status': 1,
@@ -502,3 +507,62 @@ class ShoutPost(Resource):
                 "res":"Insert token"
             } 
     #delete route to be done
+
+
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'post_id':'Post ID of post'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@post.route('/post/Save')
+class save_post(Resource): 
+    @post.expect(save_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        channel= Channels.query.filter_by(id=req_data['Channel_id']).first()
+        
+        if post and channel:
+            if channel.subscribed(user):
+                if channel.haspost(post):
+                    save= Save(user.id,post.content,post.id)
+                    db.session.add(save)
+                    db.session.commit()
+                    return{
+                        "status":1,
+                        "res":"Post has been saved"
+                    }  
+                else:
+                    return{
+                        "status":0,
+                        "res":"Post does not belong to this channel"
+                    }  
+            else:
+                return{
+                    "status":0,
+                    "res":"you not subscribed to this channel"
+                }
+        else:
+             return{
+                    "status":0,
+                    "res":"Fail"
+                }
