@@ -119,8 +119,7 @@ Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
 })
 save_post = post.model('save_post',{
-    'Post_id':fields.String(required=True),
-    'Channel_id':fields.String(required=True)
+    'Post_id':fields.String(required=True)
 })
 user_clap = post.model('user_clap',{
     'id':fields.Integer(required=True),
@@ -583,28 +582,16 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        channel= Channels.query.filter_by(id=req_data['Channel_id']).first()
         
         if post and channel:
-            if channel.subscribed(user):
-                if channel.haspost(post):
-                    save= Save(user.id,post.content,post.id)
-                    db.session.add(save)
-                    db.session.commit()
-                    return{
-                        "status":1,
-                        "res":"Post has been saved"
-                    }  
-                else:
-                    return{
-                        "status":0,
-                        "res":"Post does not belong to this channel"
-                    }  
-            else:
-                return{
-                    "status":0,
-                    "res":"you not subscribed to this channel"
-                }
+            save= Save(user.id,post.content,post.id)
+            db.session.add(save)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"Post has been saved"
+            }  
+                
         else:
              return{
                     "status":0,
