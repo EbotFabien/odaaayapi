@@ -140,6 +140,11 @@ postreq = post.model('postreq', {
 Article_verify = post.model('postreq',{
     "Link":fields.String(required=True)
 })
+saved = post.model('saved',{
+    "content":fields.String(required=True),
+    "user_id":fields.String(required=True),
+    "post_id":fields.String(required=True)
+})
 
 
 @post.doc(
@@ -514,7 +519,7 @@ class ShoutPost(Resource):
     params={'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'count': 'Number results per page',
-            'post_id':'Post ID of post'
+    
             },
     responses={
         200: 'ok',
@@ -531,7 +536,45 @@ class ShoutPost(Resource):
 
 @post.route('/post/Save')
 class save_post(Resource): 
-    
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            channel=request.args.get('channel_id')
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            if user:
+                user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+                if user_saves:
+                    return  {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next,
+                        "previous": previous,
+                        "results": marshal(user_saves, saved)
+                    }, 200
+                else:
+                    return{
+                        "status":0,
+                        "res":"User does not have saved posts"
+                    }
+            else:
+                 return{
+                        "status":0,
+                        "res":"User does not exist"
+                    }
+        else:
+            return{
+                        "status":0,
+                        "res":"Request failed"
+                    }
     @post.expect(save_post)   
     @token_required
     def post(self):
@@ -567,3 +610,5 @@ class save_post(Resource):
                     "status":0,
                     "res":"Fail"
                 }
+
+    #Delete saves
