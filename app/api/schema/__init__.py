@@ -41,14 +41,22 @@ channeldata = apisec.model('channel',{
     'moderator': fields.String(required=True, description="Moderator id")
 })
 
+element = apisec.model('element', {
+    'id': fields.Integer(required=True)
+})
+
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'uuid': fields.String(required=True),
     'uploader': fields.String(required=True),
+    'post_type': fields.Integer(required=True),
     'content': fields.String(required=True),
+    'audio_url': fields.String(required=True),
+    'video_url': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
-    'thumb_url': fields.String(required=False)
+    'thumb_url': fields.String(required=False),
+    'clap': fields.List(fields.Nested(element))
 })
 
 lang_post = apisec.model('trans_post', {

@@ -375,7 +375,15 @@ class Posts(db.Model):
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
     picture_url =db.Column(db.String)
+    audio_url =db.Column(db.String)
     video_url =db.Column(db.String)
+    esposts = db.relationship('Postes', backref='spanish_posts', lazy='dynamic')
+    enposts = db.relationship('Posten', backref='english_posts', lazy='dynamic')
+    ptposts = db.relationship('Postpor', backref='portuguese_posts', lazy='dynamic')
+    swposts = db.relationship('Postsw', backref='swahili_posts', lazy='dynamic')
+    haposts = db.relationship('Posthau', backref='hausa_posts', lazy='dynamic')
+    arposts = db.relationship('Postarb', backref='arabic_posts', lazy='dynamic')
+    frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
     postchannel = db.relationship(
         'Channels',secondary=postchannel,
         primaryjoin=(postchannel.c.post_id == id),

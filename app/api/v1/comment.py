@@ -232,7 +232,6 @@ class Data(Resource):
             return {'res':'success'}, 200
         else:
             return {'res':'fail'},404
-
     @token_required
     @comment.expect(commentupdate)
     def patch(self):

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, Response
+from flask import Flask, Response, send_file
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
@@ -68,6 +68,10 @@ def createapp(configname):
     @app.route('/')
     def index():
         return "Hello from Odaaay-app"
+
+    @app.route('/file/<name>')
+    def filename(name):
+        return send_file('./static/files/'+str(name), attachment_filename=str(name))
 
     @app.route('/debug-sentry')
     def trigger_error():
