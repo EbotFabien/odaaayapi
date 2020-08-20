@@ -531,6 +531,7 @@ class ShoutPost(Resource):
 
 @post.route('/post/Save')
 class save_post(Resource): 
+    
     @post.expect(save_post)   
     @token_required
     def post(self):
