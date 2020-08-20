@@ -119,8 +119,7 @@ Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
 })
 save_post = post.model('save_post',{
-    'Post_id':fields.String(required=True),
-    'Channel_id':fields.String(required=True)
+    'Post_id':fields.String(required=True)
 })
 user_clap = post.model('user_clap',{
     'id':fields.Integer(required=True),
@@ -139,6 +138,11 @@ postreq = post.model('postreq', {
 })
 Article_verify = post.model('postreq',{
     "Link":fields.String(required=True)
+})
+saved = post.model('saved',{
+    "content":fields.String(required=True),
+    "user_id":fields.String(required=True),
+    "post_id":fields.String(required=True)
 })
 
 
@@ -514,7 +518,7 @@ class ShoutPost(Resource):
     params={'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'count': 'Number results per page',
-            'post_id':'Post ID of post'
+    
             },
     responses={
         200: 'ok',
@@ -531,6 +535,45 @@ class ShoutPost(Resource):
 
 @post.route('/post/Save')
 class save_post(Resource): 
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            channel=request.args.get('channel_id')
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            if user:
+                user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+                if user_saves:
+                    return  {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next,
+                        "previous": previous,
+                        "results": marshal(user_saves, saved)
+                    }, 200
+                else:
+                    return{
+                        "status":0,
+                        "res":"User does not have saved posts"
+                    }
+            else:
+                 return{
+                        "status":0,
+                        "res":"User does not exist"
+                    }
+        else:
+            return{
+                        "status":0,
+                        "res":"Request failed"
+                    }
     @post.expect(save_post)   
     @token_required
     def post(self):
@@ -539,30 +582,20 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        channel= Channels.query.filter_by(id=req_data['Channel_id']).first()
         
         if post and channel:
-            if channel.subscribed(user):
-                if channel.haspost(post):
-                    save= Save(user.id,post.content,post.id)
-                    db.session.add(save)
-                    db.session.commit()
-                    return{
-                        "status":1,
-                        "res":"Post has been saved"
-                    }  
-                else:
-                    return{
-                        "status":0,
-                        "res":"Post does not belong to this channel"
-                    }  
-            else:
-                return{
-                    "status":0,
-                    "res":"you not subscribed to this channel"
-                }
+            save= Save(user.id,post.content,post.id)
+            db.session.add(save)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"Post has been saved"
+            }  
+                
         else:
              return{
                     "status":0,
                     "res":"Fail"
                 }
+
+    #Delete saves
