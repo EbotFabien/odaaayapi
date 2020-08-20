@@ -25,7 +25,9 @@ postchannel = db.Table('postchannel',
 )
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
-    db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('notif', db.Boolean, default=True),
+
 )
 followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
@@ -79,7 +81,13 @@ class Users(db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-
+        
+        
+    #subs = db.relationship(
+    #    'Channels', secondary=subs,
+    #    primaryjoin=(subs.c.channel_id == id),
+    #    secondaryjoin=(subs.c.users_id == Users.id),
+    #    backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
 
     blocked = db.relationship(
         'Users', secondary=blocking,
@@ -227,6 +235,11 @@ class Notification(db.Model):
     timestamp = db.Column(db.Float, index=True, default=time)
     payload_json = db.Column(db.Text)
 
+    def __init__(self, name, user):
+        self.name = name
+        self.user_id = user
+        
+
     def get_data(self):
         return json.loads(str(self.payload_json))
 
@@ -259,6 +272,21 @@ class Channels(db.Model):
         'Posts',secondary=postchannel,
         primaryjoin=(postchannel.c.channel_id == id),
         backref=db.backref('channelpost', lazy='dynamic'), lazy='dynamic')
+
+    
+    def notified(self):
+        return  self.query.join(
+            subs,(subs.c.channel_id == self.id )).filter(
+                subs.c.notif == True).all()
+
+    def add_notification(self):
+        if not self.notified():
+            notif =db.session.query(subs).filter(subs.c.user_id == self.id).first()
+            notif.notif = True
+    
+    def remove_notification(self):
+        if self.notified():
+            self.subs.append('False')
 
     def subscribed(self,user):
         return  self.query.join(
@@ -307,19 +335,7 @@ class Channels(db.Model):
     def __repr__(self):
         return'<Channels>%r' %self.name 
 
-class Save(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    content = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    
-    def __init__(self, user, content,post):
-        self.user_id = user
-        self.content = content
-        self.post_id = post
 
-    def __repr__(self):
-        return '<Save %r>' % self.id
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -638,3 +654,16 @@ class Postes(db.Model):
         self.content= content
         self.language_id = lang
  
+class Save(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    content = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
+    
+    def __init__(self, user, content,post):
+        self.user_id = user
+        self.content = content
+        self.post_id = post
+
+    def __repr__(self):
+        return '<Save %r>' % self.id
