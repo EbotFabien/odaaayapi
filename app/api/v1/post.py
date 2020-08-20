@@ -583,7 +583,7 @@ class save_post(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
         
-        if post and channel:
+        if post:
             save= Save(user.id,post.content,post.id)
             db.session.add(save)
             db.session.commit()
