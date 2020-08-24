@@ -170,43 +170,41 @@ class Data(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post_id_real=Posts.query.get(int(post_id))
-        channel = Channels.query.filter_by(id=post_id_real.channel_id).first()
-        if channel.subscribed(user) is None:
-           return {'res':'You are not subscribed to this channel'}, 404
-       
-        if post_id and  args['file'] is not None: 
-             if args['file'].mimetype == 'audio/mpeg':
-                name = args['name']
-                orig_name = secure_filename(args['file'].filename)
-                file = args['file']
-                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'comments/' ,user.uuid)
-                if not os.path.exists(destination):
-                    os.makedirs(destination)
-                audiofile = '%s%s' % (destination+'/', orig_name)
-                file.save(audiofile)
+        
+        if comment_type == "audio":
+            if post_id and  args['file'] is not None: 
+                if args['file'].mimetype == 'audio/mpeg':
+                    name = args['name']
+                    orig_name = secure_filename(args['file'].filename)
+                    file = args['file']
+                    destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'comments/' ,user.uuid)
+                    if not os.path.exists(destination):
+                        os.makedirs(destination)
+                    audiofile = '%s%s' % (destination+'/', orig_name)
+                    file.save(audiofile)
+                    if parent_id is None :
+                        new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True)
+                        new_comment.save()
+                    else:
+                        new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True,parent_id=parent_id)
+                        new_comment.save()
+                        
+                    return{'res':new_comment.id},200
+                if args['file'].mimetype == 'picture/jpeg':
+                    return {'res':'This is a picture'}
+            else:
+                return {'res':'fail'},400
+        if comment_type == "text":       
+            if  content and post_id:
                 if parent_id is None :
-                    new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True)
+                    new_comment=Comment(int(1),user.id, post_id, content, comment_type,public=True)
                     new_comment.save()
                 else:
-                    new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True,parent_id=parent_id)
+                    new_comment=Comment(int(1),user.id, post_id,content, 'text',True,parent_id=parent_id)
                     new_comment.save()
-                       
-                return{'res':new_comment.id},200
-             if args['file'].mimetype == 'picture/jpeg':
-                 return {'res':'This is a picture'}
-        else:
-            return {'res':'fail'},400
-                
-        if  content and post_id:
-            if parent_id is None :
-                new_comment=Comment(int(1),user.id, post_id, content, comment_type,public=True)
-                new_comment.save()
+                return{'res':'success'},200
             else:
-                new_comment=Comment(int(1),user.id, post_id,'/comments/'+user.uuid+'/'+orig_name, 'audio',True,parent_id=parent_id)
-                new_comment.save()
-            return{'res':'success'},200
-        else:
-            return {'res':'fail'},400
+                return {'res':'fail'},400
         
     @token_required
     @comment.expect(commentupdate)

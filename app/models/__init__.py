@@ -57,6 +57,7 @@ class Users(db.Model):
     password_hash = db.Column(db.String(256),nullable=True)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
+    profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     user_saves = db.relationship('Save', backref="save", lazy=True )
@@ -95,10 +96,11 @@ class Users(db.Model):
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'), lazy='dynamic')
         
-    def __init__(self, username,user_visibility,email=None,number=None):
+    def __init__(self, username,user_visibility,profile_picture,email=None,number=None):
         self.username = username
         self.uuid = str(uuid.uuid4())
         self.user_number = number
+        self.profile_picture = profile_picture
         self.user_visibility = user_visibility
         self.email =email
 
