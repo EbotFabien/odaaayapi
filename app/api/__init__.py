@@ -342,6 +342,7 @@ class email_verification(Resource):
     security='KEY',
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
+            'lang': 'i18n',
             'count': 'Number results per page',
             'id': 'Article id'},
     responses={
