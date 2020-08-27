@@ -24,7 +24,7 @@ authorizations = {
     'KEY': {
         'type': 'apiKey',
         'in': 'header',
-        'name': 'API-KEY'
+        'name': 'API-KEY'55
     }
 }
 

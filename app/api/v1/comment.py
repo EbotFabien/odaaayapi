@@ -200,7 +200,7 @@ class Data(Resource):
                     new_comment=Comment(int(1),user.id, post_id, content, comment_type,public=True)
                     new_comment.save()
                 else:
-                    new_comment=Comment(int(1),user.id, post_id,content, 'text',True,parent_id=parent_id)
+                    new_comment=Comment(int(1),user.id, post_id,"This is insane", 'text',True,parent_id=parent_id)
                     new_comment.save()
                 return{'res':'success'},200
             else:
