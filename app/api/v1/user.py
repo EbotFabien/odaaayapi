@@ -110,6 +110,10 @@ messagedata = user.model('message_data',{
     'recipient_id':fields.String(required=True),
     'content':fields.String(required=True)
 })
+reaction =  user.model('reaction',{
+    'reaction':fields.String(required=True),
+    'comment':fields.String(required=True)
+})
 
 @user.doc(
     security='KEY',
@@ -577,7 +581,8 @@ class Usermessage(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @user.route('/user/reaction')
-@token_required
+class User_reaction(Resource):
+    @token_required
     @user.expect(reaction)
     def post(self):
         req_data = request.get_json()
