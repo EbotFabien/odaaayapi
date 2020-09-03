@@ -281,7 +281,7 @@ class Post(Resource):
                # newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
-                    c.add_notification()
+                    #c.add_notification()
                     db.session.commit()
                 return {
                     'status': 1,

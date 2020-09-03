@@ -2,7 +2,7 @@ from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from app.models import Users, followers, Setting
+from app.models import Users, followers, Setting,Channels,Message,Reaction
 from flask import current_app as app
 from app import db, cache, logging
 
@@ -96,6 +96,24 @@ following_followers = user.model('following',{
 })
 fanbase =user.model('Fanbase',{
     'subject':fields.String(required=True),  
+})
+user_notify = user.model('notify',{
+    'channel_id':fields.String(required=True)
+})
+user_messaging =  user.model('messaging',{
+    'recipient_id':fields.String(required=True),
+    'content':fields.String(required=True)
+
+})
+messagedata = user.model('message_data',{
+    'sender_id':fields.String(required=True),
+    'timestamp':fields.String(required=True),
+    'recipient_id':fields.String(required=True),
+    'content':fields.String(required=True)
+})
+reaction =  user.model('reaction',{
+    'reaction':fields.String(required=True),
+    'comment':fields.String(required=True)
 })
 
 @user.doc(
@@ -428,3 +446,194 @@ class Userprefs(Resource):
                 "status":1,
                 "res":"User_settings updated"
             }, 200
+
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/notification')
+class Usernotify(Resource):
+    @token_required
+    @user.expect(user_notify)
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        channel =Channels.query.filter_by(id= int(req_data['channel_id'])).first()
+        print(channel.id)
+        if channel.subscribed(user) is None:
+            return {
+                "status":0,
+                "res":"You not subscribed to this channel"
+            }, 200
+        else:
+            user.add_notification(channel)
+            db.session.commit()
+            #sur pause
+
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/message')
+class Usermessage(Resource):
+    @token_required
+    def get(self):
+         if request.args:
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            if user:
+                messages = Message.query.filter_by(recipient_id=user.id).order_by(Message.timestamp).paginate(int(start),int(count), False).items
+                return{
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(messages,messagedata)
+            }, 200
+            else:
+                return{
+                    "status":0,
+                    "res":"This user does not exist"
+                }
+         else:
+             return{
+                    "status":0,
+                    "res":"request did not go through"
+                }
+    @token_required
+    @user.expect(user_messaging)
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        content =req_data['content']
+        sender = Users.query.filter_by(uuid=data['uuid']).first()
+        receiver = Users.query.filter_by(id=req_data['recipient_id']).first()
+        
+        if sender and receiver:
+            msg = Message(author=sender, recipient=receiver,body=content)
+            db.session.add(msg)
+            db.session.commit()
+            return {
+                "status":1,
+                "res":"Message sent"
+            }, 200
+        else:
+            return {
+                "status":0,
+                "res":"Users are not found"
+            }, 404
+#delete later
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/reaction')
+class User_reaction(Resource):
+    @token_required
+    @user.expect(reaction)
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        reaction = req_data['reaction']
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        comment = Comment.query.filter_by(id=req_data['comment']).first()
+
+        if user:
+            if comment:
+                if reaction == ":smile:" :
+                    Reactions =Reaction(comment.id,reaction)
+                    db.session.add(Reactions)
+                    db.session.commit()
+                    return{
+                        "status":1,
+                        "res":"smile reaction posted"
+                    }
+                if reaction == ":angry:":
+                    Reactions =Reaction(comment.id,reaction)
+                    db.session.add(Reactions)
+                    db.session.commit()
+                    return{
+                        "status":1,
+                        "res":"anger reaction posted"
+                    }
+                if reaction == ":disappointed_relieved:":
+                    Reactions =Reaction(comment.id,reaction)
+                    db.session.add(Reactions)
+                    db.session.commit()
+                    return{
+                        "status":1,
+                        "res":"sad reaction posted"
+                    }
+                else:
+                     return{
+                        "status":1,
+                        "res":"this reaction is not  available"
+                    }
+            else:
+                return{
+                    "status":0,
+                    "res":"comment not found"
+                }
+                
+        else:
+            return{
+                "status":0,
+                "res":"Users are not found"
+            }
+            #getmethod
+            #deletemethod

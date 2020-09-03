@@ -49,6 +49,28 @@ sub_moderator = db.Table('sub_moderator',
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    body = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<Message {}>'.format(self.body)
+
+class Reaction(db.Model):
+    id = db.Column(db.Integer,primary_key=True)
+    comment = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    reaction = db.Column(db.String, nullable=False)
+
+    def __init__(self, comment,reaction):
+        self.comment = comment
+        self.reaction = reaction
+
+    def __repr__(self):
+        return '<Reaction {}>'.format(self.reaction)
+        
 class Users(db.Model):
     __searchable__ = ['username']
     id = db.Column(db.Integer, primary_key = True)
@@ -57,7 +79,7 @@ class Users(db.Model):
     password_hash = db.Column(db.String(256),nullable=True)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
-    profile_picture =  db.Column(db.String, nullable=True)
+    #profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     user_saves = db.relationship('Save', backref="save", lazy=True )
@@ -76,6 +98,7 @@ class Users(db.Model):
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
+    
 
     followed = db.relationship(
         'Users', secondary=followers,
@@ -83,12 +106,12 @@ class Users(db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
         
-        
-    #subs = db.relationship(
-    #    'Channels', secondary=subs,
-    #    primaryjoin=(subs.c.channel_id == id),
-    #    secondaryjoin=(subs.c.users_id == Users.id),
-    #    backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
+    subs =  db.relationship(
+        'Channels', secondary=subs,
+        primaryjoin=(subs.c.users_id == id),
+        backref=db.backref('notify', lazy='dynamic'), lazy='dynamic')
+
+   
 
     blocked = db.relationship(
         'Users', secondary=blocking,
@@ -96,11 +119,11 @@ class Users(db.Model):
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'), lazy='dynamic')
         
-    def __init__(self, username,user_visibility,profile_picture,email=None,number=None):
+    def __init__(self, username,user_visibility,email=None,number=None):
         self.username = username
         self.uuid = str(uuid.uuid4())
         self.user_number = number
-        self.profile_picture = profile_picture
+        #self.profile_picture = profile_picture
         self.user_visibility = user_visibility
         self.email =email
 
@@ -108,6 +131,20 @@ class Users(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+    def notified(self,channel):
+        user=  self.query.join(
+            subs,( subs.c.users_id == self.id))
+
+        return user.filter(subs.c.notif == True).all()
+
+    def add_notification(self,channel):
+        if not self.notified(channel):
+            notif =db.session.query(subs).filter(subs.c.users_id == self.id).first()
+            notif.notif = True 
+
+    def remove_notification(self):
+        if self.notified(channel):
+            self.subs.append('False')
 
     def is_blocking(self, user):
         return self.blocked.filter(
@@ -156,7 +193,7 @@ class Users(db.Model):
         return Users.query.join(
             followers,(followers.c.followed_id == Users.id)).filter(
                 followers.c.follower_id == self.id)
-
+ 
     def followers(self):
         return Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
@@ -183,11 +220,11 @@ class Users(db.Model):
     def verify_phone(self, phone):
         return check_password_hash(self.user_number, phone)
 
-    def add_notification(self, name, data):
-        self.notifications.filter_by(name=name).delete()
-        n = Notification(name=name, payload_json=json.dumps(data), user=self)
-        db.session.add(n)
-        return n
+    #def add_notification(self, name, data):
+      #  self.notifications.filter_by(name=name).delete()
+      #  n = Notification(name=name, payload_json=json.dumps(data), user=self)
+      #  db.session.add(n)
+      #  return n
 
     def launch_task(self, name, description, *args, **kwargs):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, *args, **kwargs)
@@ -201,6 +238,11 @@ class Users(db.Model):
     def get_task_in_progress(self, name):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
+    
+    def new_messages(self):
+        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
+        return Message.query.filter_by(recipient=self).filter(
+            Message.timestamp > last_read_time).count()
 
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -220,15 +262,7 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def __repr__(self):
-        return '<Message {}>'.format(self.body)
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -269,27 +303,14 @@ class Channels(db.Model):
         'Users', secondary=subs,
         primaryjoin=(subs.c.channel_id == id),
         secondaryjoin=(subs.c.users_id == Users.id),
-        backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('get_subscribers', lazy='dynamic'), lazy='dynamic')
+
     postchannel = db.relationship(
         'Posts',secondary=postchannel,
         primaryjoin=(postchannel.c.channel_id == id),
         backref=db.backref('channelpost', lazy='dynamic'), lazy='dynamic')
 
     
-    def notified(self):
-        return  self.query.join(
-            subs,(subs.c.channel_id == self.id )).filter(
-                subs.c.notif == True).all()
-
-    def add_notification(self):
-        if not self.notified():
-            notif =db.session.query(subs).filter(subs.c.user_id == self.id).first()
-            notif.notif = True
-    
-    def remove_notification(self):
-        if self.notified():
-            self.subs.append('False')
-
     def subscribed(self,user):
         return  self.query.join(
             subs,(subs.c.channel_id == self.id )).filter(
@@ -406,7 +427,7 @@ class Posts(db.Model):
         'Channels',secondary=postchannel,
         primaryjoin=(postchannel.c.post_id == id),
         secondaryjoin=(postchannel.c.channel_id == Channels.id),
-        backref=db.backref('subscribers', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('post_channel', lazy='dynamic'), lazy='dynamic')
     clap = db.relationship(
         'Users',secondary=clap,
         primaryjoin=(clap.c.post_id == id),
@@ -669,3 +690,5 @@ class Save(db.Model):
 
     def __repr__(self):
         return '<Save %r>' % self.id
+
+    
