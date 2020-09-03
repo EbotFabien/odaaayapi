@@ -39,6 +39,7 @@ userinfo = user.model('Profile', {
 userdata = user.model('Profile', {
     'id': fields.Integer(required=True),
     'username': fields.String(required=True),
+    'profile_picture': fields.String(required=True),
     'email': fields.String(required=True),
     'uuid': fields.String(required=True),
     'user_number': fields.String(required=True),
