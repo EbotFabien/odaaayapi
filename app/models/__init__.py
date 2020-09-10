@@ -524,6 +524,9 @@ class Comment(db.Model):
     public =db.Column(db.Boolean, nullable= False, default=True)
     path = db.Column(db.Text, index=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    post__data = db.relationship("Posts", 
+        primaryjoin=(post_id == Posts.id),
+        backref=db.backref('post_data', uselist=False), uselist=False)
     replies = db.relationship(
         'Comment', backref=db.backref('parent', remote_side=[id]),
         lazy='dynamic')
