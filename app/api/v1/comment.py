@@ -366,7 +366,7 @@ class UsersComment(Resource):
             comments1 = Comment.query.filter_by(user_id=user.id).first()
             if comments1:
                 if user.id == comments1.user_id :
-                    comments = Comment.query.filter_by(and_(user_id = comments1.user_id , public = True)).order_by(Comment.path).paginate(int(start), int(count), False).items
+                    comments = Comment.query.filter(and_(Comment.user_id == comments1.user_id , Comment.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
                     return {
                         "start": start,
                         "limit": limit,
