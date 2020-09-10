@@ -42,6 +42,11 @@ clap = db.Table('clap',
     db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
     db.Column('post_id',db.Integer,db.ForeignKey('posts.id'), primary_key=True)
 )
+shout = db.Table('shout',
+    db.Column('shout_id',db.Integer,autoincrement=True, primary_key = True),
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
+    db.Column('comment_id',db.Integer,db.ForeignKey('comment.id'), primary_key=True)
+)
 sub_moderator = db.Table('sub_moderator',
     db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
@@ -49,15 +54,7 @@ sub_moderator = db.Table('sub_moderator',
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def __repr__(self):
-        return '<Message {}>'.format(self.body)
 
 class Reaction(db.Model):
     id = db.Column(db.Integer,primary_key=True)
@@ -79,6 +76,7 @@ class Users(db.Model):
     password_hash = db.Column(db.String(256),nullable=True)
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
+    #user_handle = db.Column(db.String, nullable=False)
     #profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
@@ -123,6 +121,7 @@ class Users(db.Model):
         self.username = username
         self.uuid = str(uuid.uuid4())
         self.user_number = number
+        #self.user_handle = user_handle
         #self.profile_picture = profile_picture
         self.user_visibility = user_visibility
         self.email =email
@@ -142,7 +141,7 @@ class Users(db.Model):
             notif =db.session.query(subs).filter(subs.c.users_id == self.id).first()
             notif.notif = True 
 
-    def remove_notification(self):
+    def remove_notification(self,channel):
         if self.notified(channel):
             self.subs.append('False')
 
@@ -209,6 +208,7 @@ class Users(db.Model):
         return Channels.query.join(
             subs,(subs.c.users_id == self.id)).filter(
                 subs.c.channel_id == Channels.id).all() 
+
 
     
     def passwordhash(self, password_taken):
@@ -370,6 +370,7 @@ class Setting(db.Model):
     saves = db.Column(db.Boolean, nullable=False, default=False)
     channel = db.Column(db.Boolean, nullable=False, default=False)
     messages = db.Column(db.Boolean, nullable=False, default=False)
+    N_S_F_W = db.Column(db.Boolean, nullable=False, default=False)
 
     def __init__(self, language, users, theme, post, messages, channel, saves, comment):
         self.language_id = language
@@ -425,7 +426,7 @@ class Posts(db.Model):
         primaryjoin=(clap.c.post_id == id),
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
-
+    
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
@@ -526,7 +527,25 @@ class Comment(db.Model):
     replies = db.relationship(
         'Comment', backref=db.backref('parent', remote_side=[id]),
         lazy='dynamic')
-    
+    shout =db.relationship(
+        'Users',secondary=shout,
+        primaryjoin=(shout.c.comment_id == id),
+        secondaryjoin=(shout.c.user_id == Users.id),
+        backref=db.backref('shout', lazy='dynamic'), lazy='dynamic')
+
+    def has_shouted(self,user):
+        return self.query.join(
+            shout,(shout.c.comment_id == self.id)).filter(
+            shout.c.user_id == user.id).first()
+
+    def add_shout(self,user):
+        if not self.has_shouted(user):
+            self.shout.append(user)
+
+    def remove_shout(self,user):
+        if  self.has_shouted(user):
+            self.shout.remove(user)
+            
     def __init__(self, language, user, post, content, comment_type, public,parent_id=None):
         self.content = content
         self.user_id = user
@@ -683,4 +702,19 @@ class Save(db.Model):
     def __repr__(self):
         return '<Save %r>' % self.id
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    sender__name = db.relationship("Users", 
+        primaryjoin=(sender_id == Users.id),
+        backref=db.backref('sender_name', uselist=False), uselist=False)
+    recipient__name = db.relationship("Users", 
+        primaryjoin=(recipient_id == Users.id),
+        backref=db.backref('recipient_name', uselist=False), uselist=False)
+    body = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<Message {}>'.format(self.body)
     

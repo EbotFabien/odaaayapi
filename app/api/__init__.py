@@ -233,7 +233,7 @@ class Signup(Resource):
     def post(self):
         signup_data = request.get_json()
         number = signup_data['phonenumber']
-        exuser = Users.query.filter_by(user_number=number).first()
+        exuser = Users.query.filter_by(user_number=number).first() #filter also by userhandle
         if signup_data:
             if exuser:
                 return { 
@@ -274,7 +274,7 @@ class Signup_email(Resource):
     def post(self):
         signup_data = request.get_json()
         email = signup_data['email']
-        user = Users.query.filter_by(email=email).first()
+        user = Users.query.filter_by(email=email).first() #filter by user handle
         if signup_data:
             if user:
                 return { 
