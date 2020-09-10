@@ -9,6 +9,7 @@ from app import db,cache
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import werkzeug
+from sqlalchemy import or_,and_
 
 authorizations = {
     'KEY': {
@@ -92,7 +93,20 @@ commentupdate =comment.model('Update',{
 })  
 commentdelete =comment.model('Update',{
     'Comment_id':fields.String(required=True),
-    'post_id': fields.String(required=True),
+    'post_id': fields.String(required=True)
+})  
+user_clap = comment.model('user_clap',{
+    'id':fields.Integer(required=True),
+    'uuid':fields.String(required=True),
+})
+Clapping_post = comment.model('Clapping_post',{
+    'id':fields.Integer(required=True),
+    'shout': fields.List(fields.Nested(user_clap))
+   
+})  
+comment_clap =  comment.model('comment_clap',{
+    'Post_id':fields.String(required=True),
+   
 })  
 commentdata =comment.model('commentdata',{
     'user_id':fields.String(required=True),
@@ -101,6 +115,7 @@ commentdata =comment.model('commentdata',{
     'path':fields.String(required=True),
     
 })
+
 
 
 
@@ -350,7 +365,7 @@ class UsersComment(Resource):
             comments1 = Comment.query.filter_by(user_id=user.id).first()
             if comments1:
                 if user.id == comments1.user_id :
-                    comments = Comment.query.filter_by(and_(user_id = comments1.user_id) , (Comment.public == True)).order_by(Comment.path).paginate(int(start), int(count), False).items
+                    comments = Comment.query.filter_by(and_(user_id = comments1.user_id , public = True)).order_by(Comment.path).paginate(int(start), int(count), False).items
                     return {
                         "start": start,
                         "limit": limit,
@@ -370,9 +385,146 @@ class UsersComment(Resource):
                         "res":"User does not have Comments"
                     }
         else:
-            return{
+            return
+            {
                     "status":0,
                     "res":"No request found"
                 }
 
+
+@comment.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'posts_id':'The post id'
     
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@comment.route('/comment/post_comment')
+class posts_Comment(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            posts  = request.args.get('posts_id')
+            channel =  Comment.query.filter_by(post_id=posts).count()
+
+            if channel:
+                return{
+                    'number of comments':channel,
+                    
+                },200
+            else:
+                return{
+                    "status":0,
+                    "res":"Fail"
+                },400
+        else:
+            return{
+                    "status":0,
+                    "res":"Bad request"
+                },400
+
+@comment.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'comment_id':'Comment ID of post'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@comment.route('/comment/clap')
+class Clapcomment(Resource):  
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            comment_id  = request.args.get('comment_id', None)
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            comment = Comment.query.filter_by(id=comment_id).first()
+            if user:
+                if comment:
+                    clappedcomment=Comment.query.filter_by(id=comment_id).order_by(Comment.path).paginate(int(start), int(count), False).items
+                    return  {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(clappedcomment, comment_clap)
+                }, 200
+                else:
+                    return{
+                        "status":0,
+                        "res":"This post does not have any clap"
+                    }
+
+            else :
+                return{
+                    "status":0,
+                    "res":"Token not found"
+                }
+        else:
+            return{
+                    "status":0,
+                    "res":"No request found"
+                }       
+    @comment.expect(Clapping_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        comment= Comment.query.filter_by(id=req_data['Post_id']).first()
+        
+        if comment.has_shouted(user):
+            return{
+                "status":0,
+                "res":"You have already clapped on this comment"
+            }  
+        if user:
+            comment.add_shout(user)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"You have clapped on this post"
+            } 
+        else:
+            return{
+                "status":0,
+                "res":"Insert token"
+            } 
+            #delete to be done

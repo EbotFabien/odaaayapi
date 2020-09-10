@@ -100,6 +100,16 @@ postdata = post.model('postreturndata', {
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)
 })
+user_post_sav = post.model('postreturnuserdata', {
+    'id': fields.Integer(required=True),
+    'uuid':fields.String(required=True),
+    'title': fields.String(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal)),
+    'post_url': fields.String(required=True),
+    'uploader': fields.String(required=True),
+    'content': fields.String(required=True),
+    'uploader_date': fields.DateTime(required=True)
+})
 
 langpostdata = post.model('langpostreturndata', {
     'id': fields.Integer(required=True),
@@ -448,7 +458,6 @@ class ShoutPost(Resource):
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
-            channel=request.args.get('channel_id')
             next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
             previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
             post_id  = request.args.get('post_id', None)
@@ -599,3 +608,55 @@ class save_post(Resource):
                 }, 200
 
     #Delete saves
+
+
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'posts_id':'The post id'
+    
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@post.route('/post/user_Save')
+class user_save_post(Resource): 
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    @post.marshal_with(user_post_sav)
+    def get(self):
+        if request.args:
+            posts_id=request.args.get('posts_id')
+            req_data = request.get_json()
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            posts_saved = Posts.query.filter_by(id=posts_id)
+            user_post_saved = Posts.query.join(
+                Save,(Save.user_id == user.id)).filter(
+                    Save.post_id == posts_saved.id).first()
+            if user_post_saved:
+                return user_post_saved,200
+            else:
+                return{
+                    "status":0,
+                    "res":"Fail"
+                },400
+        else:
+            return{
+                    "status":0,
+                    "res":"Bad request"
+                },400
+#Not tested

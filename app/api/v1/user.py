@@ -2,9 +2,10 @@ from flask_restplus import Namespace, Resource, fields,marshal
 import jwt, uuid, os
 from functools import wraps
 from flask import abort, request, session
-from app.models import Users, followers, Setting,Channels,Message,Reaction
+from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
 from app import db, cache, logging
+from sqlalchemy import or_,and_
 
 # The token decorator to protect my routes
 def token_required(f):
@@ -61,7 +62,9 @@ update_settings = user.model('Full_settings',{
     'saves': fields.Boolean(required=True),
     'channel': fields.Boolean(required=True),
     'comments': fields.Boolean(required=True),
-    'messages': fields.Boolean(required=True)
+    'messages': fields.Boolean(required=True),
+    'N_S_F_W': fields.Boolean(required=True),
+    
 })
 user_prefs = user.model('Preference', {
     'id': fields.Integer(required=True),
@@ -72,7 +75,8 @@ user_prefs = user.model('Preference', {
     'saves': fields.Boolean(required=True),
     'channel': fields.Boolean(required=True),
     'comments': fields.Boolean(required=True),
-    'messages': fields.Boolean(required=True)
+    'messages': fields.Boolean(required=True),
+    'N_S_F_W': fields.Boolean(required=True),
 })
 updateuser = user.model('Update',{
     'user_id':fields.String(required=True),
@@ -105,11 +109,15 @@ user_messaging =  user.model('messaging',{
     'content':fields.String(required=True)
 
 })
+user_name = user.model('user_clap',{
+    'id':fields.Integer(required=True),
+    'username':fields.String(required=True),
+})
 messagedata = user.model('message_data',{
-    'sender_id':fields.String(required=True),
+    'sender__name':fields.List(fields.Nested(user_name)),
     'timestamp':fields.String(required=True),
-    'recipient_id':fields.String(required=True),
-    'content':fields.String(required=True)
+    'recipient__name':fields.List(fields.Nested(user_name)),
+    'body':fields.String(required=True)
 })
 reaction =  user.model('reaction',{
     'reaction':fields.String(required=True),
@@ -504,7 +512,7 @@ class Usernotify(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/message')
+@user.route('/user/user_messages')
 class Usermessage(Resource):
     @token_required
     def get(self):
@@ -518,7 +526,7 @@ class Usermessage(Resource):
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user = Users.query.filter_by(uuid=data['uuid']).first()
             if user:
-                messages = Message.query.filter_by(recipient_id=user.id).order_by(Message.timestamp).paginate(int(start),int(count), False).items
+                messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id) ).order_by(Message.timestamp).paginate(int(start),int(count), False).items
                 return{
                 "start":start,
                 "limit":limit,
@@ -562,6 +570,62 @@ class Usermessage(Resource):
             }, 404
 #delete later
 
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id_2': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/message_conversation')
+class Usermessage_sender(Resource):
+    @token_required
+    def get(self):
+         if request.args:
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            user2 = request.args.get('user_id_2')
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            user_2= Users.query.filter_by(id=user2).first()
+            print(user_2.id)
+            if user:
+                messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))) .order_by(Message.timestamp).paginate(int(start),int(count), False).items
+                return{
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(messages,messagedata)
+            }, 200
+            else:
+                return{
+                    "status":0,
+                    "res":"This user does not exist"
+                }
+         else:
+             return{
+                    "status":0,
+                    "res":"request did not go through"
+                }
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',

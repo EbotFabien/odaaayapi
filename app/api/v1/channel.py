@@ -5,6 +5,7 @@ from flask import abort, request, session
 from app.models import Users, Channels, subs
 from app import db
 from flask import current_app as app
+from  sqlalchemy.sql.expression import func
 
 
 # The token decorator to protect my routes
@@ -42,6 +43,13 @@ okresponse = channel.model('Okresponse', {
 })
 
 channel_view = channel.model('channel_view', {
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True),
+    'profile_pic': fields.String(required=True),
+    'background': fields.String(required=True)
+})
+channel_R_data = channel.model('channel_R_data', {
     'id': fields.Integer(required=True),
     'name': fields.String(required=True),
     'description': fields.String(required=True),
@@ -122,7 +130,10 @@ class Data(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         channels = Channels.query.filter_by(name=req_data['name']).first()
+        channel_user = Channels.query.filter_by(moderator=user.id).first()
         if user:
+            if channel_user:
+                 return {'res':'user already has channel'}, 404
             if channels is None:
                 new_channel = Channels(req_data['name'],req_data['description'], req_data['profile_pic'], \
                 req_data['background'], user.id, req_data['css'])
@@ -144,6 +155,49 @@ class Data(Resource):
         return {}, 200
 
 
+@channel.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@channel.route('/channel/random')
+class random(Resource):
+    def get(self):
+        if request.args:
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            channel = Channels.query.order_by(func.random()).paginate(int(start),int(count), False).items
+            return{
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(channel,channel_R_data)
+            }, 200
+        else:
+            return{
+                "res":"return request",
+                "status":0,
+                
+            }, 404
 @channel.doc(
     security='KEY',
     params={ 'username': 'Specify the username associated with the person' },
