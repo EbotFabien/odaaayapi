@@ -104,15 +104,22 @@ Clapping_post = comment.model('Clapping_post',{
     'shout': fields.List(fields.Nested(user_clap))
    
 })  
+post_name = comment.model('post_name',{
+    'id':fields.String(required=True),
+    'title':fields.String(required=True),
+    'uuid':fields.String(required=True),
+   
+})  
 comment_clap =  comment.model('comment_clap',{
     'Post_id':fields.String(required=True),
    
 })  
 commentdata =comment.model('commentdata',{
     'user_id':fields.String(required=True),
-    'post_id':fields.String(required=True),
+    'post__data': fields.List(fields.Nested(user_clap)),
     'content':fields.String(required=True),
     'path':fields.String(required=True),
+    'timestamp':fields.String(required=True)
     
 })
 
