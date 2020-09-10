@@ -116,7 +116,7 @@ comment_clap =  comment.model('comment_clap',{
 })  
 commentdata =comment.model('commentdata',{
     'user_id':fields.String(required=True),
-    'post__data': fields.List(fields.Nested(user_clap)),
+    'post__data': fields.List(fields.Nested(post_name)),
     'content':fields.String(required=True),
     'path':fields.String(required=True),
     'timestamp':fields.String(required=True)
