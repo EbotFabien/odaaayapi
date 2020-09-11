@@ -118,6 +118,11 @@ messagedata = user.model('message_data',{
     'recipient__name':fields.List(fields.Nested(user_name)),
     'body':fields.String(required=True)
 })
+messagedata1 =  user.model('message_data1',{
+    'sender__name':fields.List(fields.Nested(user_name)),
+    'timestamp':fields.String(required=True),
+    'recipient__name':fields.List(fields.Nested(user_name)),
+})
 reaction =  user.model('reaction',{
     'reaction':fields.String(required=True),
     'comment':fields.String(required=True)
@@ -515,35 +520,20 @@ class Usernotify(Resource):
 class Usermessage(Resource):
     @token_required
     def get(self):
-         if request.args:
-            start = request.args.get('start',None)
-            limit = request.args.get('limit',None)
-            count = request.args.get('count',None)
-            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
-            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            user = Users.query.filter_by(uuid=data['uuid']).first()
-            if user:
-                messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id) ).order_by(Message.timestamp).paginate(int(start),int(count), False).items
-                return{
-                "start":start,
-                "limit":limit,
-                "count":count,
-                "next":next,
-                "previous":previous,
-                "results":marshal(messages,messagedata)
-            }, 200
-            else:
-                return{
-                    "status":0,
-                    "res":"This user does not exist"
-                }
-         else:
-             return{
-                    "status":0,
-                    "res":"request did not go through"
-                }
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if user:
+            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct().all()
+            return{
+            "results":marshal(messages,messagedata1)
+        }, 200
+        else:
+            return{
+                "status":0,
+                "res":"This user does not exist"
+            }
+        
     @token_required
     @user.expect(user_messaging)
     def post(self):
@@ -593,38 +583,22 @@ class Usermessage(Resource):
 class Usermessage_sender(Resource):
     @token_required
     def get(self):
-         if request.args:
-            start = request.args.get('start',None)
-            limit = request.args.get('limit',None)
-            count = request.args.get('count',None)
-            user2 = request.args.get('user_id_2')
-            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
-            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            user = Users.query.filter_by(uuid=data['uuid']).first()
-            user_2= Users.query.filter_by(id=user2).first()
-            print(user_2.id)
-            if user:
-                messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))) .order_by(Message.timestamp).paginate(int(start),int(count), False).items
-                return{
-                "start":start,
-                "limit":limit,
-                "count":count,
-                "next":next,
-                "previous":previous,
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        user_2= Users.query.filter_by(id=user2).first()
+        if user:
+            messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))).all()
+
+            return{
                 "results":marshal(messages,messagedata)
             }, 200
-            else:
-                return{
-                    "status":0,
-                    "res":"This user does not exist"
-                }
-         else:
-             return{
-                    "status":0,
-                    "res":"request did not go through"
-                }
+        else:
+            return{
+                "status":0,
+                "res":"This user does not exist"
+            }
+        
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',
