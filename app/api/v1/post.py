@@ -150,9 +150,14 @@ Article_verify = post.model('postreq',{
     "Link":fields.String(required=True)
 })
 saved = post.model('saved',{
-    "content":fields.String(required=True),
-    "user_id":fields.String(required=True),
-    "post_id":fields.String(required=True)
+    'id': fields.Integer(required=True),
+    'uuid':fields.String(required=True),
+    'title': fields.String(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal)),
+    'post_url': fields.String(required=True),
+    'uploader': fields.String(required=True),
+    'content': fields.String(required=True),
+    'uploader_date': fields.DateTime(required=True)
 })
 
 
