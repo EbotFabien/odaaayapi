@@ -152,7 +152,7 @@ Article_verify = post.model('postreq',{
 saved = post.model('saved',{
     "content":fields.String(required=True),
     "user_id":fields.String(required=True),
-    "post___id":fields.List(fields.Nested(user_post_sav)),
+    "post___data":fields.List(fields.Nested(user_post_sav)),
 })
 
 
