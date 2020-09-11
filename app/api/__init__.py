@@ -274,6 +274,7 @@ class Signup_email(Resource):
     def post(self):
         signup_data = request.get_json()
         email = signup_data['email']
+        
         user = Users.query.filter_by(email=email).first() #filter by user handle
         if signup_data:
             if user:
