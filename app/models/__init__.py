@@ -704,7 +704,9 @@ class Save(db.Model):
     content = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    
+    post___data=db.relationship('Posts', 
+        primaryjoin=(post_id == Posts.id),
+        backref=db.backref('postsdat_a', uselist=False), uselist=False)
     def __init__(self, user, content,post):
         self.user_id = user
         self.content = content
