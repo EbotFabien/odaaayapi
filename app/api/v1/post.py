@@ -150,9 +150,14 @@ Article_verify = post.model('postreq',{
     "Link":fields.String(required=True)
 })
 saved = post.model('saved',{
-    "content":fields.String(required=True),
-    "user_id":fields.String(required=True),
-    "post_id":fields.String(required=True)
+    'id': fields.Integer(required=True),
+    'uuid':fields.String(required=True),
+    'title': fields.String(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal)),
+    'post_url': fields.String(required=True),
+    'uploader': fields.String(required=True),
+    'content': fields.String(required=True),
+    'uploader_date': fields.DateTime(required=True)
 })
 
 
@@ -643,7 +648,7 @@ class user_save_post(Resource):
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user= Users.query.filter_by(uuid=data['uuid']).first()
-            posts_saved = Posts.query.filter_by(id=posts_id)
+            posts_saved = Posts.query.filter_by(id=posts_id).first()
             user_post_saved = Posts.query.join(
                 Save,(Save.user_id == user.id)).filter(
                     Save.post_id == posts_saved.id).first()
