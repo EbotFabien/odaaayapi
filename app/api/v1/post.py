@@ -21,6 +21,9 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
+import requests
+from bs4 import BeautifulSoup
+from sqlalchemy import or_,and_
 
 authorizations = {
     'KEY': {
@@ -355,6 +358,11 @@ class Article_check(Resource):
             try:
                 parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
                 stemmer = Stemmer(LANGUAGE)
+                x = requests.get(url)
+
+                soup = BeautifulSoup(x.text, 'html.parser')    
+
+                title=soup.find('title').get_text()
 
                 summarizer = Summarizer(stemmer)
                 summarizer.stop_words = get_stop_words(LANGUAGE)
@@ -365,7 +373,9 @@ class Article_check(Resource):
                 return {
                     'status': 1,
                     'res': url,
+                    'title':title,
                     'content':sum_content
+
                 }, 200
             except:
                 return {
@@ -591,7 +601,13 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        saved=Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id )).first()
         
+        if saved:
+            return{
+                "status":0,
+                "res":"Post has already been saved"
+            } 
         if post:
             save= Save(user.id,post.content,post.id)
             db.session.add(save)
@@ -660,3 +676,4 @@ class user_save_post(Resource):
                     "res":"Bad request"
                 },400
 #Not tested
+
