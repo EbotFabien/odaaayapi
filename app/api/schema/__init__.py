@@ -41,6 +41,9 @@ channeldata = apisec.model('channel',{
     'moderator': fields.String(required=True, description="Moderator id")
 })
 
+user_saved_datas = apisec.model('user_saved_datas', {
+    'id': fields.Integer(required=True),
+})
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -48,7 +51,8 @@ postdata = apisec.model('postreturndata', {
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
-    'thumb_url': fields.String(required=False)
+    'thumb_url': fields.String(required=False),
+    'posts_saved_': fields.List(fields.Nested(user_saved_datas))
 })
 
 lang_post = apisec.model('trans_post', {
@@ -65,10 +69,13 @@ feeddata = apisec.model('feed', postdata, {})
 
 discoverdata = apisec.model('discover', postdata, {})
 
+
+
 homedata = apisec.model('Home', {
     'trending': fields.List(fields.Nested(trendingdata)),
     'feed': fields.List(fields.Nested(feeddata)),
-    'discover': fields.List(fields.Nested(discoverdata))
+    'discover': fields.List(fields.Nested(discoverdata)),
+
 })
 
 send_verification = apisec.model('send_verification', {

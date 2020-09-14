@@ -51,6 +51,12 @@ sub_moderator = db.Table('sub_moderator',
     db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
 )
+
+Save = db.Table('Save',
+    db.Column('id',db.Integer,autoincrement=True, primary_key = True),
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
+    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'), primary_key=True)
+)
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -426,7 +432,13 @@ class Posts(db.Model):
         primaryjoin=(clap.c.post_id == id),
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
+    posts_saved_ = db.relationship(
+        'Users',secondary=Save,
+        primaryjoin=(Save.c.post_id == id),
+        secondaryjoin=(Save.c.user_id == Users.id),
+        backref=db.backref('post_saved_', lazy='dynamic'), lazy='dynamic')
     
+   
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
@@ -691,21 +703,7 @@ class Postes(db.Model):
         self.content= content
         self.language_id = lang
  
-class Save(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    content = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    post___data=db.relationship('Posts', 
-        primaryjoin=(post_id == Posts.id),
-        backref=db.backref('postsdat_a', uselist=False), uselist=False)
-    def __init__(self, user, content,post):
-        self.user_id = user
-        self.content = content
-        self.post_id = post
 
-    def __repr__(self):
-        return '<Save %r>' % self.id
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
