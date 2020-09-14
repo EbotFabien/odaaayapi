@@ -112,6 +112,7 @@ user_messaging =  user.model('messaging',{
 user_name = user.model('user_clap',{
     'id':fields.Integer(required=True),
     'username':fields.String(required=True),
+    'profile_picture':fields.String(required=True),
 })
 messagedata = user.model('message_data',{
     'sender__name':fields.List(fields.Nested(user_name)),
@@ -120,8 +121,8 @@ messagedata = user.model('message_data',{
     'body':fields.String(required=True)
 })
 messagedata1 =  user.model('message_data1',{
-    'sender__name':fields.List(fields.Nested(user_name)),
     'timestamp':fields.String(required=True),
+    'sender__name':fields.List(fields.Nested(user_name)),
     'recipient__name':fields.List(fields.Nested(user_name)),
 })
 reaction =  user.model('reaction',{
@@ -525,10 +526,11 @@ class Usermessage(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user:
-            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).all()
+            messages =Message.query.filter(or_(Message.sender_id==user.id, Message.recipient_id==user.id)).all()
+            print(messages)
             return{
-            "results":marshal(messages,messagedata1)
-        }, 200
+                "results":marshal(messages,messagedata1)
+            }, 200
         else:
             return{
                 "status":0,
