@@ -528,7 +528,11 @@ class Usermessage(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user:
 <<<<<<< HEAD
+<<<<<<< HEAD
             messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct().all()
+=======
+            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).all()
+>>>>>>> parent of a48396b... Merging with classic
 =======
             messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).all()
 >>>>>>> parent of a48396b... Merging with classic
