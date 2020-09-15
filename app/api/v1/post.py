@@ -381,7 +381,7 @@ class Article_check(Resource):
                 return {
                         'status': 0,
                         'res': "This Article does not exist" 
-                    }, 404
+                    }, 200
                 
 
 @post.doc(
