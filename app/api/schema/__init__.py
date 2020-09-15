@@ -48,6 +48,7 @@ element = apisec.model('element', {
 user_saved_datas = apisec.model('user_saved_datas', {
     'id': fields.Integer(required=True),
 })
+
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -62,6 +63,8 @@ postdata = apisec.model('postreturndata', {
     'clap': fields.List(fields.Nested(element)),
     'posts_saved_': fields.List(fields.Nested(user_saved_datas))
 })
+
+
 
 lang_post = apisec.model('trans_post', {
     'id': fields.Integer(required=True),
