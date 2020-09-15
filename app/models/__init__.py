@@ -437,11 +437,11 @@ class Posts(db.Model):
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
 
-    posts_saved_ = db.relationship(
+    Save = db.relationship(
         'Users',secondary=Save,
         primaryjoin=(Save.c.post_id == id),
         secondaryjoin=(Save.c.user_id == Users.id),
-        backref=db.backref('post_saved_', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('Save', lazy='dynamic'), lazy='dynamic')
     
    
     @staticmethod
@@ -475,7 +475,7 @@ class Posts(db.Model):
     def remove_save(self,user):
         if  self.has_saved(user):
             self.Save.remove(user)
-            
+
     def add_clap(self,user):
         if not self.has_clapped(user):
             self.clap.append(user)
