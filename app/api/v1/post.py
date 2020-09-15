@@ -132,7 +132,7 @@ Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
 })
 save_post = post.model('save_post',{
-    'Post_id':fields.String(required=True)
+    'Post_id':fields.Integer(required=True)
 })
 user_clap = post.model('user_clap',{
     'id':fields.Integer(required=True),
@@ -381,7 +381,7 @@ class Article_check(Resource):
                 return {
                         'status': 0,
                         'res': "This Article does not exist" 
-                    }, 404
+                    }, 200
                 
 
 @post.doc(
@@ -490,18 +490,18 @@ class ShoutPost(Resource):
                     return{
                         "status":0,
                         "res":"This post does not have any clap"
-                    }
+                    }, 200
 
             else :
                 return{
                     "status":0,
                     "res":"Token not found"
-                }
+                }, 200
         else:
             return{
                     "status":0,
                     "res":"No request found"
-                }       
+                }, 200    
        
     @post.expect(Clap_post)   
     @token_required
@@ -516,19 +516,19 @@ class ShoutPost(Resource):
             return{
                 "status":0,
                 "res":"You have already clapped on this post"
-            }  
+            }, 200
         if user:
             post.add_clap(user)
             db.session.commit()
             return{
                 "status":1,
                 "res":"You have clapped on this post"
-            } 
+            }, 200
         else:
             return{
                 "status":0,
                 "res":"Insert token"
-            } 
+            }, 200 
     #delete route to be done
 
 
@@ -582,17 +582,17 @@ class save_post(Resource):
                     return{
                         "status":0,
                         "res":"User does not have saved posts"
-                    }
+                    }, 200
             else:
                  return{
                         "status":0,
                         "res":"User does not exist"
-                    }
+                    }, 200
         else:
             return{
                         "status":0,
                         "res":"Request failed"
-                    }
+                    }, 200
     @post.expect(save_post)   
     @token_required
     def post(self):
@@ -614,13 +614,13 @@ class save_post(Resource):
             return{
                 "status":1,
                 "res":"Post has been saved"
-            }  
+            }, 200  
                 
         else:
              return{
                     "status":0,
                     "res":"Fail"
-                }
+                }, 200
 
     #Delete saves
 
@@ -663,7 +663,7 @@ class user_save_post(Resource):
                 Save,(Save.c.user_id == user.id)).filter(
                     Save.c.post_id == posts_saved.id).first()
             if user_post_saved:
-                return user_post_saved,200
+                return {user_post_saved},200
             else:
                 return{
                     "status":0,

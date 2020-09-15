@@ -83,7 +83,7 @@ class Users(db.Model):
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
-    #profile_picture =  db.Column(db.String, nullable=True)
+    profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     #user_saves = db.relationship('Save', backref="save", lazy=True )
@@ -268,8 +268,6 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
-
-
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
@@ -364,8 +362,6 @@ class Channels(db.Model):
     def __repr__(self):
         return'<Channels>%r' %self.name 
 
-
-
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
@@ -421,7 +417,15 @@ class Posts(db.Model):
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
     picture_url =db.Column(db.String)
+    audio_url =db.Column(db.String)
     video_url =db.Column(db.String)
+    esposts = db.relationship('Postes', backref='spanish_posts', lazy='dynamic')
+    enposts = db.relationship('Posten', backref='english_posts', lazy='dynamic')
+    ptposts = db.relationship('Postpor', backref='portuguese_posts', lazy='dynamic')
+    swposts = db.relationship('Postsw', backref='swahili_posts', lazy='dynamic')
+    haposts = db.relationship('Posthau', backref='hausa_posts', lazy='dynamic')
+    arposts = db.relationship('Postarb', backref='arabic_posts', lazy='dynamic')
+    frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
     postchannel = db.relationship(
         'Channels',secondary=postchannel,
         primaryjoin=(postchannel.c.post_id == id),
