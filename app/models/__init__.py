@@ -83,7 +83,7 @@ class Users(db.Model):
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
-    profile_picture =  db.Column(db.String, nullable=True)
+    #profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     #user_saves = db.relationship('Save', backref="save", lazy=True )
@@ -268,6 +268,8 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
+
+
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
@@ -361,6 +363,8 @@ class Channels(db.Model):
 
     def __repr__(self):
         return'<Channels>%r' %self.name 
+
+
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
