@@ -528,12 +528,7 @@ class Usermessage(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user:
-<<<<<<< HEAD
-            messages =Message.query.filter(or_(Message.sender_id==user.id, Message.recipient_id==user.id)).all()
-            print(messages)
-=======
             messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct().all()
->>>>>>> 0fbcb669480a5c0d0972eb0804a1d6b82f1e7459
             return{
                 "results":marshal(messages,messagedata1)
             }, 200

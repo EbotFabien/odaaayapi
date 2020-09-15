@@ -86,7 +86,7 @@ class Users(db.Model):
     profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
-    user_saves = db.relationship('Save', backref="save", lazy=True )
+    #user_saves = db.relationship('Save', backref="save", lazy=True )
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)

@@ -41,16 +41,13 @@ channeldata = apisec.model('channel',{
     'moderator': fields.String(required=True, description="Moderator id")
 })
 
-<<<<<<< HEAD
 element = apisec.model('element', {
     'id': fields.Integer(required=True)
 })
 
-=======
 user_saved_datas = apisec.model('user_saved_datas', {
     'id': fields.Integer(required=True),
 })
->>>>>>> 0fbcb669480a5c0d0972eb0804a1d6b82f1e7459
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -62,11 +59,8 @@ postdata = apisec.model('postreturndata', {
     'video_url': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
-<<<<<<< HEAD
-    'clap': fields.List(fields.Nested(element))
-=======
+    'clap': fields.List(fields.Nested(element)),
     'posts_saved_': fields.List(fields.Nested(user_saved_datas))
->>>>>>> 0fbcb669480a5c0d0972eb0804a1d6b82f1e7459
 })
 
 lang_post = apisec.model('trans_post', {
