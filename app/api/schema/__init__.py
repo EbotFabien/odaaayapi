@@ -53,7 +53,7 @@ postdata = apisec.model('postreturndata', {
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
-    'posts_saved_': fields.List(fields.Nested(user_saved_datas))
+    'Save': fields.List(fields.Nested(user_saved_datas))
 })
 
 
