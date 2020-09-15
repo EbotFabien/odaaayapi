@@ -60,6 +60,7 @@ postdata = apisec.model('postreturndata', {
     'video_url': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
+    'clap': fields.List(fields.Nested(element)),
     'Save': fields.List(fields.Nested(user_saved_datas))
 })
 
