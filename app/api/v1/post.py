@@ -72,7 +72,8 @@ postcreationdata = post.model('postcreationdata', {
     'type': fields.Integer(required=True),
     'post_url': fields.String(required=False, default=None),
     'thumb': fields.String(required=False, default=None),
-    'content': fields.String(required=True)
+    'content': fields.String(required=True),
+    'lang':fields.String(required=True),
 })
 
 Updatedata = post.model('Updatedata',{
@@ -278,9 +279,11 @@ class Post(Resource):
         content=req_data['content']
         channel_names = req_data['channel']
         ptype=1
+        got_language = req_data['lang']
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
+        language=Language.query.filter_by(lang_type=got_language).first()
         channel_list = []
         for i in channel_names:
             name = Channels.query.filter_by(name=i).first()
@@ -288,7 +291,7 @@ class Post(Resource):
                 channel_list.append(name)
         if len(channel_list) != 0:
             if ptype == 1:
-                newPost = Posts(user.id, title, ptype, content, '1', user.id)
+                newPost = Posts(user.id, title, ptype, content, language.id, user.id)
                 db.session.add(newPost)
                 db.session.commit()
                # newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
@@ -303,7 +306,7 @@ class Post(Resource):
             if ptype == 4:
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
-                newPost = Posts(user.id, title, ptype, content, '1', user.id,)
+                newPost = Posts(user.id, title, ptype, content, language.id, user.id,)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.post_url=post_url_
