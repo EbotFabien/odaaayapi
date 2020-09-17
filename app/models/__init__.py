@@ -80,7 +80,7 @@ class Users(db.Model):
     #profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
-    user_saves = db.relationship('Save', backref="save", lazy=True )
+    #user_saves = db.relationship('Save', backref="save", lazy=True )
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)
@@ -220,11 +220,11 @@ class Users(db.Model):
     def verify_phone(self, phone):
         return check_password_hash(self.user_number, phone)
 
-    #def add_notification(self, name, data):
-      #  self.notifications.filter_by(name=name).delete()
-      #  n = Notification(name=name, payload_json=json.dumps(data), user=self)
-      #  db.session.add(n)
-      #  return n
+    def add_prog_notification(self, name, data):
+        self.notifications.filter_by(name=name).delete()
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        db.session.add(n)
+        return n
 
     def launch_task(self, name, description, *args, **kwargs):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, *args, **kwargs)
@@ -435,6 +435,7 @@ class Posts(db.Model):
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
     
+   
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
@@ -714,6 +715,7 @@ class Save(db.Model):
 
     def __repr__(self):
         return '<Save %r>' % self.id
+
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)

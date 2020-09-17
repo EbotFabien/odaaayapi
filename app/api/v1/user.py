@@ -5,7 +5,8 @@ from flask import abort, request, session
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
 from app import db, cache, logging
-from sqlalchemy import or_,and_
+from sqlalchemy import or_,and_,distinct
+
 
 # The token decorator to protect my routes
 def token_required(f):
@@ -435,6 +436,7 @@ class Userprefs(Resource):
             user.username = req_data['username']
             user.email = req_data['email']
             user.user_visibility = req_data['user_visibility']
+            user.N_S_F_W =req_data['N_S_F_W']
             db.session.commit()
             return {
                 "status":1,
@@ -525,7 +527,7 @@ class Usermessage(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user:
-            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).all()
+            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct().all()
             return{
             "results":marshal(messages,messagedata1)
         }, 200
@@ -602,11 +604,12 @@ class Usermessage_sender(Resource):
         
 @user.doc(
     security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person',
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
-              },
+    params={ 
+        'user_id': 'Specify the user_id associated with the person',
+        'start': 'Value to start from ',
+        'limit': 'Total limit of the query',
+        'count': 'Number results per page',
+    },
     responses={
         200: 'ok',
         201: 'created',

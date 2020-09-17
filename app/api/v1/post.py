@@ -21,6 +21,9 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
+import requests
+from bs4 import BeautifulSoup
+from sqlalchemy import or_,and_
 
 authorizations = {
     'KEY': {
@@ -288,10 +291,9 @@ class Post(Resource):
                 newPost = Posts(user.id, title, ptype, content, '1', user.id)
                 db.session.add(newPost)
                 db.session.commit()
-               # newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
-                    #c.add_notification()
                     db.session.commit()
                 return {
                     'status': 1,
@@ -355,6 +357,11 @@ class Article_check(Resource):
             try:
                 parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
                 stemmer = Stemmer(LANGUAGE)
+                x = requests.get(url)
+
+                soup = BeautifulSoup(x.text, 'html.parser')    
+
+                title=soup.find('title').get_text()
 
                 summarizer = Summarizer(stemmer)
                 summarizer.stop_words = get_stop_words(LANGUAGE)
@@ -365,13 +372,15 @@ class Article_check(Resource):
                 return {
                     'status': 1,
                     'res': url,
+                    'title':title,
                     'content':sum_content
+
                 }, 200
             except:
                 return {
                         'status': 0,
                         'res': "This Article does not exist" 
-                    }, 404
+                    }, 200
                 
 
 @post.doc(
@@ -606,7 +615,6 @@ class save_post(Resource):
                     "status":0,
                     "res":"Fail"
                 }, 200
-
     #Delete saves
 
 
@@ -645,8 +653,8 @@ class user_save_post(Resource):
             user= Users.query.filter_by(uuid=data['uuid']).first()
             posts_saved = Posts.query.filter_by(id=posts_id).first()
             user_post_saved = Posts.query.join(
-                Save,(Save.user_id == user.id)).filter(
-                    Save.post_id == posts_saved.id).first()
+                Save,(Save.c.user_id == user.id)).filter(
+                    Save.c.post_id == posts_saved.id).first()
             if user_post_saved:
                 return {user_post_saved},200
             else:
@@ -660,3 +668,4 @@ class user_save_post(Resource):
                     "res":"Bad request"
                 },400
 #Not tested
+

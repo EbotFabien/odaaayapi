@@ -45,6 +45,10 @@ element = apisec.model('element', {
     'id': fields.Integer(required=True)
 })
 
+user_saved_datas = apisec.model('user_saved_datas', {
+    'id': fields.Integer(required=True),
+})
+
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -56,8 +60,10 @@ postdata = apisec.model('postreturndata', {
     'video_url': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
-    'clap': fields.List(fields.Nested(element))
+    'clap': fields.List(fields.Nested(element)),
 })
+
+
 
 lang_post = apisec.model('trans_post', {
     'id': fields.Integer(required=True),
@@ -73,10 +79,12 @@ feeddata = apisec.model('feed', postdata, {})
 
 discoverdata = apisec.model('discover', postdata, {})
 
+
+
 homedata = apisec.model('Home', {
     'trending': fields.List(fields.Nested(trendingdata)),
     'feed': fields.List(fields.Nested(feeddata)),
-    'discover': fields.List(fields.Nested(discoverdata))
+    'discover': fields.List(fields.Nested(discoverdata)),
 })
 
 send_verification = apisec.model('send_verification', {
