@@ -453,6 +453,7 @@ class Posts(db.Model):
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
 
+   
     def post_is_channel(self,channel):
         return self.query.join(
             postchannel,(postchannel.c.post_id == self.id)).filter(

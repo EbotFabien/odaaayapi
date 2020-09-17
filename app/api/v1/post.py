@@ -306,6 +306,8 @@ class Post(Resource):
                 newPost = Posts(user.id, title, ptype, content, '1', user.id,)
                 db.session.add(newPost)
                 db.session.commit()
+                newPost.post_url=post_url
+                db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
@@ -361,7 +363,11 @@ class Article_check(Resource):
                 x = requests.get(url)
 
                 soup = BeautifulSoup(x.text, 'html.parser')    
+                metas=soup.findAll('meta')
 
+                for i in metas:
+                    if i.get('property') == "og:image":
+                        thumbnail=i.get('content')
                 title=soup.find('title').get_text()
 
                 summarizer = Summarizer(stemmer)
@@ -374,6 +380,7 @@ class Article_check(Resource):
                     'status': 1,
                     'res': url,
                     'title':title,
+                    'thumbnail':thumbnail,
                     'content':sum_content
 
                 }, 200

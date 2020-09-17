@@ -2,6 +2,7 @@
 import scrapy
 from ..items import AliceminiItem  
 import json
+import itertools
 
 class WebscraperSpider(scrapy.Spider):
     name = 'webscraper'

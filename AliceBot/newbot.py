@@ -14,18 +14,18 @@ import urllib.request
 import json
 from time import sleep
 
-lb = open('Naija.txt','r')
-urls=list(lb)
-finals=[]
-url="https://metro.co.uk/sport/feed/"
-for url in urls:
-        if( url==urls[-1]):
-            urllast=url
-            finals.append(urllast)            
-        else:
-            urll = url[:-1]
-            finals.append(urll)
-print(finals)            
+#lb = open('Naija.txt','r')
+#urls=list(lb)
+#finals=[]
+#url="https://metro.co.uk/sport/feed/"
+##for url in urls:
+       # if( url==urls[-1]):
+        #    urllast=url
+        #    finals.append(urllast)            
+        #else:
+            #urll = url[:-1]
+            #finals.append(urll)
+#print(finals)            
 
 
 
@@ -44,8 +44,7 @@ def Json(url):
    
        
 def XML(url):
-    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    uXML=urlopen(req)
+    uXML=requests.get(url)
     try:
         xmldoc = parse(uXML)#parse Xml file
         u="https://api.rss2json.com/v1/api.json?rss_url=" + url
@@ -70,6 +69,7 @@ def XML(url):
 #XML bot is ready ,tried testing other xml sites from  the bot file but i get a 403 response not opening.
 #Currently working on the HTML bot        
 
+XML('https://www.lindaikejisblog.com/')
 #if __name__=='__main__':
     #for url in finals:
    # p1 = Process(target = XML(url))
