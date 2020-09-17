@@ -301,12 +301,13 @@ class Post(Resource):
                     'res': 'Post was made'
                 }, 200
             if ptype == 4:
-                thumb_url=req_data['thumb'] or None
-                post_url=req_data['post_url'] or None
+                thumb_url_=req_data['thumb'] or None
+                post_url_=req_data['post_url'] or None
                 newPost = Posts(user.id, title, ptype, content, '1', user.id,)
                 db.session.add(newPost)
                 db.session.commit()
-                newPost.post_url=post_url
+                newPost.post_url=post_url_
+                newPost.thumb_url=thumb_url_
                 db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
@@ -368,6 +369,7 @@ class Article_check(Resource):
                 for i in metas:
                     if i.get('property') == "og:image":
                         thumbnail=i.get('content')
+
                 title=soup.find('title').get_text()
 
                 summarizer = Summarizer(stemmer)
