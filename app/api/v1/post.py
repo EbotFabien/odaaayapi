@@ -362,15 +362,11 @@ class Article_check(Resource):
                 x = requests.get(url)
 
                 soup = BeautifulSoup(x.text, 'html.parser')    
-<<<<<<< HEAD
-
-=======
                 metas=soup.findAll('meta')
 
                 for i in metas:
                     if i.get('property') == "og:image":
                         thumbnail=i.get('content')
->>>>>>> 5e6f47ab62661f491fcb184bd004dab37d61cb2f
                 title=soup.find('title').get_text()
 
                 summarizer = Summarizer(stemmer)
@@ -383,10 +379,7 @@ class Article_check(Resource):
                     'status': 1,
                     'res': url,
                     'title':title,
-<<<<<<< HEAD
-=======
                     'thumbnail':thumbnail,
->>>>>>> 5e6f47ab62661f491fcb184bd004dab37d61cb2f
                     'content':sum_content
 
                 }, 200

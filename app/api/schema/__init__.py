@@ -61,10 +61,6 @@ postdata = apisec.model('postreturndata', {
     'uploader_date': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
     'clap': fields.List(fields.Nested(element)),
-<<<<<<< HEAD
-=======
-    'Save': fields.List(fields.Nested(user_saved_datas))
->>>>>>> 5e6f47ab62661f491fcb184bd004dab37d61cb2f
 })
 
 
@@ -89,10 +85,6 @@ homedata = apisec.model('Home', {
     'trending': fields.List(fields.Nested(trendingdata)),
     'feed': fields.List(fields.Nested(feeddata)),
     'discover': fields.List(fields.Nested(discoverdata)),
-<<<<<<< HEAD
-=======
-
->>>>>>> 5e6f47ab62661f491fcb184bd004dab37d61cb2f
 })
 
 send_verification = apisec.model('send_verification', {
