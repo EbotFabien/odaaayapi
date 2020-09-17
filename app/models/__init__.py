@@ -51,6 +51,12 @@ sub_moderator = db.Table('sub_moderator',
     db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
 )
+
+Save = db.Table('Save',
+    db.Column('id',db.Integer,autoincrement=True, primary_key = True),
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
+    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'), primary_key=True)
+)
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -77,7 +83,7 @@ class Users(db.Model):
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
-    #profile_picture =  db.Column(db.String, nullable=True)
+    profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     #user_saves = db.relationship('Save', backref="save", lazy=True )
@@ -262,8 +268,6 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
-
-
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
@@ -358,8 +362,6 @@ class Channels(db.Model):
     def __repr__(self):
         return'<Channels>%r' %self.name 
 
-
-
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
@@ -434,6 +436,12 @@ class Posts(db.Model):
         primaryjoin=(clap.c.post_id == id),
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
+
+    Save = db.relationship(
+        'Users',secondary=Save,
+        primaryjoin=(Save.c.post_id == id),
+        secondaryjoin=(Save.c.user_id == Users.id),
+        backref=db.backref('Save', lazy='dynamic'), lazy='dynamic')
     
    
     @staticmethod
@@ -445,6 +453,7 @@ class Posts(db.Model):
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
 
+   
     def post_is_channel(self,channel):
         return self.query.join(
             postchannel,(postchannel.c.post_id == self.id)).filter(
@@ -454,6 +463,19 @@ class Posts(db.Model):
         return self.query.join(
             clap,(clap.c.post_id == self.id)).filter(
             clap.c.user_id == user.id).first()
+
+    def has_saved(self,user):
+        return self.query.join(
+            Save,(Save.c.post_id == self.id)).filter(
+            Save.c.user_id == user.id).first()
+
+    def add_save(self,user):
+        if not self.has_saved(user):
+                 self.Save.append(user)
+
+    def remove_save(self,user):
+        if  self.has_saved(user):
+            self.Save.remove(user)
 
     def add_clap(self,user):
         if not self.has_clapped(user):
@@ -700,21 +722,7 @@ class Postes(db.Model):
         self.content= content
         self.language_id = lang
  
-class Save(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    content = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    post___data=db.relationship('Posts', 
-        primaryjoin=(post_id == Posts.id),
-        backref=db.backref('postsdat_a', uselist=False), uselist=False)
-    def __init__(self, user, content,post):
-        self.user_id = user
-        self.content = content
-        self.post_id = post
 
-    def __repr__(self):
-        return '<Save %r>' % self.id
 
 
 class Message(db.Model):

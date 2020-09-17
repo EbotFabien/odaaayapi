@@ -305,6 +305,8 @@ class Post(Resource):
                 newPost = Posts(user.id, title, ptype, content, '1', user.id,)
                 db.session.add(newPost)
                 db.session.commit()
+                newPost.post_url=post_url
+                db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
@@ -360,7 +362,15 @@ class Article_check(Resource):
                 x = requests.get(url)
 
                 soup = BeautifulSoup(x.text, 'html.parser')    
+<<<<<<< HEAD
 
+=======
+                metas=soup.findAll('meta')
+
+                for i in metas:
+                    if i.get('property') == "og:image":
+                        thumbnail=i.get('content')
+>>>>>>> 5e6f47ab62661f491fcb184bd004dab37d61cb2f
                 title=soup.find('title').get_text()
 
                 summarizer = Summarizer(stemmer)
@@ -373,6 +383,10 @@ class Article_check(Resource):
                     'status': 1,
                     'res': url,
                     'title':title,
+<<<<<<< HEAD
+=======
+                    'thumbnail':thumbnail,
+>>>>>>> 5e6f47ab62661f491fcb184bd004dab37d61cb2f
                     'content':sum_content
 
                 }, 200
@@ -601,9 +615,14 @@ class save_post(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
         
+        
+        if post.has_saved(user):
+            return{
+                "status":0,
+                "res":"Post has already been saved"
+            } 
         if post:
-            save= Save(user.id,post.content,post.id)
-            db.session.add(save)
+            post.add_save(user)
             db.session.commit()
             return{
                 "status":1,
