@@ -52,11 +52,7 @@ sub_moderator = db.Table('sub_moderator',
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
 )
 
-Save = db.Table('Save',
-    db.Column('id',db.Integer,autoincrement=True, primary_key = True),
-    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
-    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'), primary_key=True)
-)
+
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -740,3 +736,19 @@ class Message(db.Model):
     def __repr__(self):
         return '<Message {}>'.format(self.body)
     
+class Save(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    def __init__(self, user_id,post_id):
+        self.id = id
+        self.user_id = user_id
+        self.post_id = post_id
+      
+
+
+
+
+
+
