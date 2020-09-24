@@ -78,7 +78,7 @@ class Users(db.Model):
     uuid = db.Column(db.String, nullable=False)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
-    #profile_picture =  db.Column(db.String, nullable=True)
+    profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
     #user_saves = db.relationship('Save', backref="save", lazy=True )
@@ -459,8 +459,8 @@ class Posts(db.Model):
 
     def has_saved(self,user):
         return self.query.join(
-            Save,(Save.c.post_id == self.id)).filter(
-            Save.c.user_id == user.id).first()
+            Save,(Save.post_id == self.id)).filter(
+            Save.user_id == user.id).first()
 
     def add_save(self,user):
         if not self.has_saved(user):
@@ -486,7 +486,7 @@ class Posts(db.Model):
         if self.post_is_channel(channel):
             self.postchannel.remove(channel)
 
-    def __init__(self, uploader, title, posttype, content, lang, uploader_id, picture_url=None, video_url=None, thumb_url=None):
+    def __init__(self, uploader, title, posttype, content, lang, uploader_id, post_url=None, video_url=None, thumb_url=None):
         self.content = content
         self.title = title
         self.uuid = secure_filename(title)+'_'+shortuuid.uuid()
@@ -496,7 +496,7 @@ class Posts(db.Model):
         self.thumb_url = thumb_url
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
-        self.picture_url = picture_url
+        self.post_url = post_url
         self.video_url = video_url   
     
     def launch_translation_task(self, name, userid, descr):
