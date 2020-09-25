@@ -19,7 +19,7 @@ from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
 
-urls= ['https://www.premiumtimesng.com/feed/','https://www.pmnewsnigeria.com/feed/','https://www.withinnigeria.com/feed/']
+urls= ['https://www.channelstv.com/feed/']
 for url in urls:
     response=requests.get(url,verify = False)
     soup=BeautifulSoup(response.content,features="xml")
@@ -124,7 +124,7 @@ for url in urls:
                     "content":sum_content,
                     "lang":"en",
                 }
-                requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post/",data=json.dumps(params),headers=headers,verify=False)
+                requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
                 
             else:
                 params = { 
@@ -136,8 +136,10 @@ for url in urls:
                     "lang":"en",
                    
                 }
+                
                 requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
                 
 #for item in xmldoc.iterfind('feed/item'):
     #print(item.findtext('title'))
    #'https://www.nairaland.com/feed','https://guardian.ng/category/news/nigeria/feed/','https://www.channelstv.com/feed/'
+   #'https://www.premiumtimesng.com/feed/','https://www.pmnewsnigeria.com/feed','https://www.withinnigeria.com/feed/','https://www.nairaland.com/feed','https://guardian.ng/category/news/nigeria/feed/',
