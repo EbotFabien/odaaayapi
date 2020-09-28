@@ -433,11 +433,11 @@ class Posts(db.Model):
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
 
-    Save = db.relationship(
-        'Users',secondary=Save,
-        primaryjoin=(Save.c.post_id == id),
-        secondaryjoin=(Save.c.user_id == Users.id),
-        backref=db.backref('Save', lazy='dynamic'), lazy='dynamic')
+    #Save = db.relationship(
+        #'Users',secondary=Save,
+        #primaryjoin=(Save.c.post_id == id),
+        #secondaryjoin=(Save.c.user_id == Users.id),
+       # backref=db.backref('Save', lazy='dynamic'), lazy='dynamic')
     
    
     @staticmethod
@@ -459,19 +459,6 @@ class Posts(db.Model):
         return self.query.join(
             clap,(clap.c.post_id == self.id)).filter(
             clap.c.user_id == user.id).first()
-
-    def has_saved(self,user):
-        return self.query.join(
-            Save,(Save.c.post_id == self.id)).filter(
-            Save.c.user_id == user.id).first()
-
-    def add_save(self,user):
-        if not self.has_saved(user):
-                 self.Save.append(user)
-
-    def remove_save(self,user):
-        if  self.has_saved(user):
-            self.Save.remove(user)
 
     def add_clap(self,user):
         if not self.has_clapped(user):

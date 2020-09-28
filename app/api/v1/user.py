@@ -1,13 +1,24 @@
-from flask_restplus import Namespace, Resource, fields,marshal
+from flask_restplus import Namespace, Resource, fields,marshal,Api
 import jwt, uuid, os
+from flask_cors import CORS
 from functools import wraps
-from flask import abort, request, session
+from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
 from app import db, cache, logging
 from sqlalchemy import or_,and_,distinct
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
+import werkzeug
+import colorgram
 
-
+authorizations = {
+    'KEY': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'API-KEY'
+    }
+}
 # The token decorator to protect my routes
 def token_required(f):
     @wraps(f)
@@ -26,7 +37,17 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-user = Namespace('/api/user', \
+api = Blueprint('api',__name__, template_folder='../templates')
+user1=Api( app=api, doc='/docs',version='1.4',title='News API.',\
+description='', authorizations=authorizations)
+#from app.api import schema
+CORS(api, resources={r"/api/*": {"origins": "*"}})
+
+uploader = user1.parser()
+uploader.add_argument('file', location='files', type=FileStorage, required=False, help="You must parse a file")
+uploader.add_argument('name', location='form', type=str, required=False, help="Name cannot be blank")
+
+user = user1.namespace('/api/user', \
     description= "All routes under this section of the documentation are the open routes bots can perform CRUD action \
     on the application.", \
     path = '/v1/')
@@ -725,3 +746,63 @@ class User_ip_address(Resource):
             }
 
 #test
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/upload_profile_pic')
+class User_upload_profile_pic(Resource):
+    @token_required
+    @user.expect(uploader)
+    def post(self):
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        args = uploader.parse_args()
+        if user and  args['file'] is not None: 
+
+            if args['file'].mimetype == 'image/jpeg':
+                name = args['name']
+                orig_name = secure_filename(args['file'].filename)
+                file = args['file']
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'profilepic/' ,user.uuid)
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
+                profilepic_ = '%s%s' % (destination+'/', orig_name)
+                file.save(profilepic_)
+                user.profile_picture ='/profilepic/'+user.uuid+'/'+orig_name
+                db.session.commit()
+                colors = colorgram.extract(profilepic_, 3)
+
+                first_color = colors[0]
+                RGB=first_color.rgb
+                return {
+                    'status':1,
+                    'res':'picture uploaded',
+                    'pic':RGB
+                }
+            else:
+                return{
+                    'status':0,
+                    'res':'please put jpeg format'
+                }
+        else:
+            return{
+                'status':0,
+                'res':"user doesn't exist"
+            }

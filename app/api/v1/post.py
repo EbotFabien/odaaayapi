@@ -24,8 +24,7 @@ from sumy.utils import get_stop_words
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import or_,and_
-from colorthief import ColorThief
-import requests as req
+
 
 authorizations = {
     'KEY': {
@@ -318,26 +317,10 @@ class Post(Resource):
                 for c in channel_list:
                     c.add_post(newPost)
                     db.session.commit()
-                local_filename = post_url_.split('/')[-1]
-
-                r = req.get(post_url_, stream=True)
-
-                with open(local_filename, 'wb') as f:
-
-                    for chunk in r.iter_content(chunk_size=1024):
-
-                        f.write(chunk)
-                color_thief = ColorThief(local_filename)
-                # get the dominant color
-                dominant_color = color_thief.get_color(quality=1)
-                # build a color palette
-                palette = color_thief.get_palette(color_count=6)
 
                 return {
                     'status': 1,
                     'res': 'Post was made'
-                    'thumbnail_dominant_color':dominant_color
-                    'palette_thumbnail':palette
                 }, 200
             else:
                 return {
