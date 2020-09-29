@@ -105,6 +105,15 @@ updateuser = user.model('Update',{
     'username': fields.String(required=True),
     'email':fields.String(required=False),
     'number':fields.String(required=False),
+    'profile_picture':fields.String(required=False),
+    'user_visibility':fields.String(required=False),
+})
+User_R_data = user.model('User_R_data',{
+    'user_id':fields.String(required=True),
+    'username': fields.String(required=True),
+    'email':fields.String(required=False),
+    'number':fields.String(required=False),
+    'profile_picture':fields.String(required=False),
     'user_visibility':fields.String(required=False),
 })
 deleteuser = user.model('deleteuser',{
@@ -134,7 +143,6 @@ user_messaging =  user.model('messaging',{
 user_name = user.model('user_clap',{
     'id':fields.Integer(required=True),
     'username':fields.String(required=True),
-    'profile_picture':fields.String(required=True),
 })
 messagedata = user.model('message_data',{
     'sender__name':fields.List(fields.Nested(user_name)),
@@ -143,8 +151,8 @@ messagedata = user.model('message_data',{
     'body':fields.String(required=True)
 })
 messagedata1 =  user.model('message_data1',{
-    'timestamp':fields.String(required=True),
     'sender__name':fields.List(fields.Nested(user_name)),
+    'timestamp':fields.String(required=True),
     'recipient__name':fields.List(fields.Nested(user_name)),
 })
 reaction =  user.model('reaction',{
@@ -551,7 +559,7 @@ class Usermessage(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user:
-            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct().all()
+            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).all()
             return{
                 "results":marshal(messages,messagedata1)
             }, 200
@@ -629,11 +637,12 @@ class Usermessage_sender(Resource):
         
 @user.doc(
     security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person',
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
-              },
+    params={ 
+        'user_id': 'Specify the user_id associated with the person',
+        'start': 'Value to start from ',
+        'limit': 'Total limit of the query',
+        'count': 'Number results per page',
+    },
     responses={
         200: 'ok',
         201: 'created',
@@ -730,14 +739,14 @@ class User_ip_address(Resource):
         req_data = request.get_json()
        # token = request.headers['API-KEY']
         #data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        ip_address = req_data['ip_address']
+        ip_address = req_data['address']
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
         if ip_address:
-            response=request.get(ip_info)
+            response=rqs.get(ip_info)
             return{
                 'status':1,
-                'res':response.content
+                'res': json.loads(response.content)
             }
         else:
             return{
@@ -806,3 +815,47 @@ class User_upload_profile_pic(Resource):
                 'status':0,
                 'res':"user doesn't exist"
             }
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/Random_users')
+class User_Random(Resource):
+     def get(self):
+        if request.args:
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            channel = Users.query.order_by(func.random()).paginate(int(start),int(count), False).items
+            return{
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(channel,User_R_data)
+            }, 200
+        else:
+            return{
+                "res":"return request",
+                "status":0,
+                
+            }, 404

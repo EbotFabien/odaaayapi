@@ -52,7 +52,6 @@ sub_moderator = db.Table('sub_moderator',
     db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
 )
 
-
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
@@ -222,11 +221,11 @@ class Users(db.Model):
     def verify_phone(self, phone):
         return check_password_hash(self.user_number, phone)
 
-    #def add_notification(self, name, data):
-      #  self.notifications.filter_by(name=name).delete()
-      #  n = Notification(name=name, payload_json=json.dumps(data), user=self)
-      #  db.session.add(n)
-      #  return n
+    def add_prog_notification(self, name, data):
+        self.notifications.filter_by(name=name).delete()
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        db.session.add(n)
+        return n
 
     def launch_task(self, name, description, *args, **kwargs):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, *args, **kwargs)
@@ -263,6 +262,8 @@ class Task(db.Model):
     def get_progress(self):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
+
+
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -357,6 +358,8 @@ class Channels(db.Model):
 
     def __repr__(self):
         return'<Channels>%r' %self.name 
+
+
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -476,7 +479,7 @@ class Posts(db.Model):
         if self.post_is_channel(channel):
             self.postchannel.remove(channel)
 
-    def __init__(self, uploader, title, posttype, content, lang, uploader_id, picture_url=None, video_url=None, thumb_url=None):
+    def __init__(self, uploader, title, posttype, content, lang, uploader_id, post_url=None, video_url=None, thumb_url=None):
         self.content = content
         self.title = title
         self.uuid = secure_filename(title)+'_'+shortuuid.uuid()
@@ -486,7 +489,7 @@ class Posts(db.Model):
         self.thumb_url = thumb_url
         self.uploader = Users.query.filter_by(id=uploader_id).first().username
         self.uploader_date = datetime.utcnow()
-        self.picture_url = picture_url
+        self.post_url = post_url
         self.video_url = video_url   
     
     def launch_translation_task(self, name, userid, descr):
@@ -707,6 +710,7 @@ class Postes(db.Model):
  
 
 
+
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -724,17 +728,21 @@ class Message(db.Model):
         return '<Message {}>'.format(self.body)
     
 class Save(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    id = db.Column(db.Integer, primary_key = True)
+    content = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
+    post___data=db.relationship('Posts', 
+        primaryjoin=(post_id == Posts.id),
+        backref=db.backref('postsdat_a', uselist=False), uselist=False)
+    def __init__(self, user, content,post):
+        self.user_id = user
+        self.content = content
+        self.post_id = post
 
-    def __init__(self, user_id,post_id):
-        self.id = id
-        self.user_id = user_id
-        self.post_id = post_id
+    def __repr__(self):
+        return '<Save %r>' % self.id
       
-
-
 
 
 

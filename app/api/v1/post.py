@@ -159,6 +159,9 @@ saved = post.model('saved',{
     "user_id":fields.String(required=True),
     "post___data":fields.List(fields.Nested(user_post_sav)),
 })
+view_post =  post.model('view_post',{
+    'Post_id':fields.Integer(required=True)
+})
 
 
 @post.doc(
@@ -279,12 +282,12 @@ class Post(Resource):
         title=req_data['title']
         content=req_data['content']
         channel_names = req_data['channel']
-        ptype=1
+        ptype= req_data['type']
         got_language = req_data['lang']
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        language=Language.query.filter_by(lang_type=got_language).first()
+        language=Language.query.filter_by(code=got_language).first()
         channel_list = []
         for i in channel_names:
             name = Channels.query.filter_by(name=i).first()
@@ -295,10 +298,9 @@ class Post(Resource):
                 newPost = Posts(user.id, title, ptype, content, language.id, user.id)
                 db.session.add(newPost)
                 db.session.commit()
-               # newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
-                    #c.add_notification()
                     db.session.commit()
                 return {
                     'status': 1,
@@ -307,7 +309,7 @@ class Post(Resource):
             if ptype == 4:
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
-                newPost = Posts(user.id, title, ptype, content, language.id, user.id,)
+                newPost = Posts(user.id, title, ptype, content, language.id, user.id, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.post_url=post_url_
@@ -602,17 +604,17 @@ class save_post(Resource):
                     return{
                         "status":0,
                         "res":"User does not have saved posts"
-                    }, 200
+                    }
             else:
                  return{
                         "status":0,
                         "res":"User does not exist"
-                    }, 200
+                    }
         else:
             return{
                         "status":0,
                         "res":"Request failed"
-                    }, 200
+                    }
     @post.expect(save_post)   
     @token_required
     def post(self):
@@ -622,28 +624,20 @@ class save_post(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
         
-        
-        if post.has_saved(user):
-            return{
-                "status":0,
-                "res":"Post has already been saved"
-            } 
         if post:
-            post.add_save(user)
+            save= Save(user.id,post.content,post.id)
+            db.session.add(save)
             db.session.commit()
             return{
                 "status":1,
                 "res":"Post has been saved"
-            }, 200  
+            }  
                 
         else:
              return{
                     "status":0,
                     "res":"Fail"
-                }, 200
-
-    #Delete saves
-
+                }
 
 @post.doc(
     security='KEY',
@@ -696,3 +690,51 @@ class user_save_post(Resource):
                 },400
 #Not tested
 
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'posts_id':'The post id'
+    
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+ 
+@post.route('/post/user_views_post')
+class views_post(Resource):
+    @post.expect(view_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        
+        if user.id == post.uploader_id :
+            return{
+                "status":1,
+                "res":"user is viewing his own posts"
+            }  
+        if user.id != post.uploader_id:
+             return{
+                "status":1,
+                "res":"user is viewing user"+uploader_id+"post"
+            }  
+                
+        else:
+             return{
+                    "status":0,
+                    "res":"Fail"
+                }
