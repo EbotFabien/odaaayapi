@@ -364,11 +364,21 @@ class Article_check(Resource):
             url= req_data["Link"]
             sum_content=''
             try:
-                parser = HtmlParser.from_url(url, Tokenizer(LANGUAGE))
-                stemmer = Stemmer(LANGUAGE)
                 x = requests.get(url)
+                soup = BeautifulSoup(x.content, 'html.parser')   
+                allowed_tags = ['a', 'abbr', 'acronym', 'address', 'b', 'br', 'div', 'dl', 'dt',
+                    'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
+                    'li', 'ol', 'p', 'pre', 'q', 's', 'small', 'strike', 'strong',
+                    'span', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th',
+                    'thead', 'tr', 'tt', 'u', 'ul']
 
-                soup = BeautifulSoup(x.text, 'html.parser')    
+                allowed_attrs = {
+                        'a': ['href', 'target', 'title'],
+                        'img': ['src', 'alt', 'width', 'height'],
+                    } 
+                bleaching=bleach.clean(soup.prettify(),tags=allowed_tags,attributes=allowed_attrs,strip=True)
+                tree = BeautifulSoup(a, "lxml")
+
                 metas=soup.findAll('meta')
 
                 for i in metas:
@@ -377,18 +387,14 @@ class Article_check(Resource):
 
                 title=soup.find('title').get_text()
 
-                summarizer = Summarizer(stemmer)
-                summarizer.stop_words = get_stop_words(LANGUAGE)
-
-                for sentence in summarizer(parser.document, SENTENCES_COUNT):
-                    sum_content += '\n'+str(sentence)
+               
 
                 return {
                     'status': 1,
                     'res': url,
                     'title':title,
                     'thumbnail':thumbnail,
-                    'content':sum_content
+                    'content':str(tree)
 
                 }, 200
             except:
