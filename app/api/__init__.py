@@ -508,7 +508,7 @@ class Related(Resource):
             for i in language_dict:
                 if i == lang:
                     table = language_dict.get(i)
-                    posts_feed = table.query.join(Posts).order_by(func.random()).filter(Posts.post_type==1, Posts.thumb_url != None).paginate(int(start), int(count), False)
+                    posts_feed = table.query.join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 

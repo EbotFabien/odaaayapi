@@ -593,17 +593,17 @@ class save_post(Resource):
                     return{
                         "status":0,
                         "res":"User does not have saved posts"
-                    }, 200
+                    }
             else:
                  return{
                         "status":0,
                         "res":"User does not exist"
-                    }, 200
+                    }
         else:
             return{
                         "status":0,
                         "res":"Request failed"
-                    }, 200
+                    }
     @post.expect(save_post)   
     @token_required
     def post(self):
@@ -613,27 +613,20 @@ class save_post(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
         
-        
-        if post.has_saved(user):
-            return{
-                "status":0,
-                "res":"Post has already been saved"
-            } 
         if post:
-            post.add_save(user)
+            save= Save(user.id,post.content,post.id)
+            db.session.add(save)
             db.session.commit()
             return{
                 "status":1,
                 "res":"Post has been saved"
-            }, 200  
+            }  
                 
         else:
              return{
                     "status":0,
                     "res":"Fail"
-                }, 200
-    #Delete saves
-
+                }
 
 @post.doc(
     security='KEY',

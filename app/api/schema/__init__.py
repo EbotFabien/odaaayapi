@@ -56,6 +56,7 @@ postdata = apisec.model('postreturndata', {
     'uploader': fields.String(required=True),
     'post_type': fields.Integer(required=True),
     'content': fields.String(required=True),
+    'post_url': fields.String(required=True),
     'audio_url': fields.String(required=True),
     'video_url': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True),

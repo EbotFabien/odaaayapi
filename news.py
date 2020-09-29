@@ -14,6 +14,7 @@ import unittest
 import os
 from app.services.task import app
 
+
 manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
@@ -41,6 +42,7 @@ def recreate_db():
         # db.drop_all()
         db.create_all()
         db.session.commit()
+
 
 def seed():
     with app.app_context():

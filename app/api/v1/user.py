@@ -1,6 +1,7 @@
 from flask_restplus import Namespace, Resource, fields,marshal
-import jwt, uuid, os
+import jwt, uuid, os, json
 from functools import wraps
+import requests as rqs
 from flask import abort, request, session
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
@@ -129,7 +130,9 @@ reaction =  user.model('reaction',{
     'reaction':fields.String(required=True),
     'comment':fields.String(required=True)
 })
-
+ip_data = user.model('address',{
+    'address':fields.String(required=True)
+})
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',
@@ -586,6 +589,7 @@ class Usermessage(Resource):
 class Usermessage_sender(Resource):
     @token_required
     def get(self):
+        #'user_id_2'
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
@@ -678,3 +682,47 @@ class User_reaction(Resource):
             }
             #getmethod
             #deletemethod
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/ip_address_data')
+class User_ip_address(Resource):
+     #@token_required
+    @user.expect(ip_data)
+    def post(self):
+        req_data = request.get_json()
+       # token = request.headers['API-KEY']
+        #data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        ip_address = req_data['address']
+       # user = Users.query.filter_by(uuid=data['uuid']).first()
+        ip_info="http://ip-api.com/json/"+ip_address 
+        if ip_address:
+            response=rqs.get(ip_info)
+            return{
+                'status':1,
+                'res': json.loads(response.content)
+            }
+        else:
+            return{
+                'status':0,
+                'res':"input IP"
+            }
+
+#test
