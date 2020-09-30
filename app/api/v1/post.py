@@ -159,8 +159,8 @@ saved = post.model('saved',{
     "user_id":fields.String(required=True),
     "post___data":fields.List(fields.Nested(user_post_sav)),
 })
-view_post =  post.model('view_post',{
-    'Post_id':fields.Integer(required=True)
+users_post =  post.model('users_post',{
+    'User_id':fields.Integer(required=True)
 })
 
 
@@ -711,30 +711,49 @@ class user_save_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/user_views_post')
+@post.route('/post/user_post')
 class views_post(Resource):
-    @post.expect(view_post)   
+    @post.expect(users_post)   
     @token_required
     def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        
-        if user.id == post.uploader_id :
-            return{
-                "status":1,
-                "res":"user is viewing his own posts"
-            }  
-        if user.id != post.uploader_id:
-             return{
-                "status":1,
-                "res":"user is viewing user"+uploader_id+"post"
-            }  
-                
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            req_data = request.get_json()
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            user_actual= Users.query.filter_by(id=req_data['User_id']).first()
+            post= Posts.query.filter_by(id=req_data['Post_id']).first()
+
+            if user_actual.is_blocking(user) :
+                return{
+                    "status":1,
+                    "res":"user is not found"
+                }  
+            if user_actual:
+                _user_post=Posts.query.filter_by(uploader_id=user_actual.id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(_user_post, postdata)
+                }, 200
+            
+                    
+            else:
+                return{
+                        "status":0,
+                        "res":"Fail"
+                    }
         else:
-             return{
+            return{
                     "status":0,
                     "res":"Fail"
                 }
