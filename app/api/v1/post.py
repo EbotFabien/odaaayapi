@@ -160,7 +160,7 @@ saved = post.model('saved',{
     "post___data":fields.List(fields.Nested(user_post_sav)),
 })
 users_post =  post.model('users_post',{
-    'User_id':fields.Integer(required=True)
+    'User_name':fields.Integer(required=True)
 })
 
 
@@ -727,7 +727,7 @@ class views_post(Resource):
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user= Users.query.filter_by(uuid=data['uuid']).first()
-            user_actual= Users.query.filter_by(id=req_data['User_id']).first()
+            user_actual= Users.query.filter_by(username=req_data['User_name']).first()
             post= Posts.query.filter_by(id=req_data['Post_id']).first()
 
             if user_actual.is_blocking(user) :
