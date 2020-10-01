@@ -5,6 +5,7 @@ from flask_restplus import Namespace, Resource, fields, marshal,Api
 import jwt, uuid, os
 from flask_cors import CORS
 from functools import wraps
+from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
@@ -161,10 +162,11 @@ saved = post.model('saved',{
     "post___data":fields.List(fields.Nested(user_post_sav)),
 })
 users_post =  post.model('users_post',{
-    'User_name':fields.Integer(required=True)
+    'User_name':fields.String(required=True),
 })
 Report_post = post.model('Report_post',{
-    'User_name':fields.Integer(required=True)
+    'post_id':fields.String(required=True),
+    'reason':fields.String(required=True),
 })
 
 @post.doc(
@@ -821,21 +823,21 @@ class Report_post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
-        if Save:
+        post= Posts.query.filter_by(id=req_data['post_id']).first()
+
+        if user is None:
             return{
-                "status":0,
-                "res":"Post has already been saved"
-            } 
+                    "status":0,
+                    "res":"Fail"
+                }
         if post:
-            save= Save(user.id,post.content,post.id)
-            db.session.add(save)
-            db.session.commit()
+            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id)
+            mail.Report(user.email,req_data['reason'])
             return{
                 "status":1,
-                "res":"Post has been saved"
-            }  
+                "res":"Post has been reported"
+            } 
+
                 
         else:
              return{
