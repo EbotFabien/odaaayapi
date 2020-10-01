@@ -623,7 +623,12 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        
+        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+        if Save:
+            return{
+                "status":0,
+                "res":"Post has already been saved"
+            } 
         if post:
             save= Save(user.id,post.content,post.id)
             db.session.add(save)
@@ -638,7 +643,24 @@ class save_post(Resource):
                     "status":0,
                     "res":"Fail"
                 }
+    @post.expect(save_post)   #we using save_post because it will help us for this delete
+    @token_required
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
 
+        if Save:
+            db.session.delete(Save)
+            db.session.commit()
+        else:
+           return{
+                    "status":0,
+                    "res":"Fail"
+                } 
 @post.doc(
     security='KEY',
     params={'start': 'Value to start from ',
@@ -674,8 +696,8 @@ class user_save_post(Resource):
             user= Users.query.filter_by(uuid=data['uuid']).first()
             posts_saved = Posts.query.filter_by(id=posts_id).first()
             user_post_saved = Posts.query.join(
-                Save,(Save.c.user_id == user.id)).filter(
-                    Save.c.post_id == posts_saved.id).first()
+                Save,(Save.user_id == user.id)).filter(
+                    Save.post_id == posts_saved.id).first()
             if user_post_saved:
                 return {user_post_saved},200
             else:
