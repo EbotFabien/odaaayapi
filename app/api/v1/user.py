@@ -6,7 +6,7 @@ from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
 from app import db, cache, logging
-from sqlalchemy import or_,and_,distinct
+from sqlalchemy import or_, and_, distinct, func
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import werkzeug
@@ -65,6 +65,7 @@ userdata = user.model('Profile', {
     'profile_picture': fields.String(required=True),
     'email': fields.String(required=True),
     'uuid': fields.String(required=True),
+    'bio': fields.String(required=False),
     'user_number': fields.String(required=True),
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
@@ -113,6 +114,7 @@ User_R_data = user.model('User_R_data',{
     'username': fields.String(required=True),
     'email':fields.String(required=False),
     'number':fields.String(required=False),
+    'bio':fields.String(required=False),
     'profile_picture':fields.String(required=False),
     'user_visibility':fields.String(required=False),
 })

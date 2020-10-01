@@ -76,6 +76,7 @@ class Users(db.Model):
     email = db.Column(db.String(120),unique=True, nullable=True)
     password_hash = db.Column(db.String(256),nullable=True)
     uuid = db.Column(db.String, nullable=False)
+    bio = db.Column(db.String(350), nullable=True)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
     profile_picture =  db.Column(db.String, nullable=True)
