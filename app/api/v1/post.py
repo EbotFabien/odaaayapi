@@ -5,6 +5,7 @@ from flask_restplus import Namespace, Resource, fields, marshal,Api
 import jwt, uuid, os
 from flask_cors import CORS
 from functools import wraps
+from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
@@ -23,6 +24,7 @@ from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
 import requests
 from bs4 import BeautifulSoup
+import bleach
 from sqlalchemy import or_,and_
 
 
@@ -135,7 +137,7 @@ multiplepost = post.model('multiple',{  #check this
 Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
 })
-save_post = post.model('save_post',{
+saves_post = post.model('saves_post',{
     'Post_id':fields.Integer(required=True)
 })
 user_clap = post.model('user_clap',{
@@ -161,10 +163,13 @@ saved = post.model('saved',{
     "user_id":fields.String(required=True),
     "post___data":fields.List(fields.Nested(user_post_sav)),
 })
-view_post =  post.model('view_post',{
-    'Post_id':fields.Integer(required=True)
+users_post =  post.model('users_post',{
+    'User_name':fields.String(required=True),
 })
-
+Report_post = post.model('Report_post',{
+    'post_id':fields.String(required=True),
+    'reason':fields.String(required=True),
+})
 
 @post.doc(
     security='KEY',
@@ -367,8 +372,9 @@ class Article_check(Resource):
             SENTENCES_COUNT = 10
             url= req_data["Link"]
             sum_content=''
-            try:
-                x = requests.get(url)
+            x = requests.get(url)
+            if x is not None:
+                
                 soup = BeautifulSoup(x.content, 'html.parser')   
                 allowed_tags = ['a', 'abbr', 'acronym', 'address', 'b', 'br', 'div', 'dl', 'dt',
                     'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
@@ -381,7 +387,7 @@ class Article_check(Resource):
                         'img': ['src', 'alt', 'width', 'height'],
                     } 
                 bleaching=bleach.clean(soup.prettify(),tags=allowed_tags,attributes=allowed_attrs,strip=True)
-                tree = BeautifulSoup(a, "lxml")
+                tree = BeautifulSoup(bleaching, "lxml")
 
                 metas=soup.findAll('meta')
 
@@ -401,7 +407,7 @@ class Article_check(Resource):
                     'content':str(tree)
 
                 }, 200
-            except:
+            else:
                 return {
                         'status': 0,
                         'res': "This Article does not exist" 
@@ -620,7 +626,27 @@ class save_post(Resource):
                         "status":0,
                         "res":"Request failed"
                     }
-    @post.expect(save_post)   
+
+    @post.expect(saves_post) 
+    @token_required
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+
+        if Save:
+            db.session.delete(Save)
+            db.session.commit()
+        else:
+           return{
+                    "status":0,
+                    "res":"Fail"
+                }      
+
+    @post.expect(saves_post)   
     @token_required
     def post(self):
         req_data = request.get_json()
@@ -628,7 +654,12 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        
+        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+        if Save:
+            return{
+                "status":0,
+                "res":"Post has already been saved"
+            } 
         if post:
             save= Save(user.id,post.content,post.id)
             db.session.add(save)
@@ -639,10 +670,13 @@ class save_post(Resource):
             }  
                 
         else:
-             return{
+            return{
                     "status":0,
                     "res":"Fail"
                 }
+
+                
+       
 
 @post.doc(
     security='KEY',
@@ -679,8 +713,8 @@ class user_save_post(Resource):
             user= Users.query.filter_by(uuid=data['uuid']).first()
             posts_saved = Posts.query.filter_by(id=posts_id).first()
             user_post_saved = Posts.query.join(
-                Save,(Save.c.user_id == user.id)).filter(
-                    Save.c.post_id == posts_saved.id).first()
+                Save,(Save.user_id == user.id)).filter(
+                    Save.post_id == posts_saved.id).first()
             if user_post_saved:
                 return {user_post_saved},200
             else:
@@ -716,27 +750,99 @@ class user_save_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/user_views_post')
+@post.route('/post/user_post')
 class views_post(Resource):
-    @post.expect(view_post)   
+    @post.expect(users_post)   
+    @token_required
+    def post(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            req_data = request.get_json()
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            user_actual= Users.query.filter_by(username=req_data['User_name']).first()
+            post= Posts.query.filter_by(id=req_data['Post_id']).first()
+
+            if user_actual.is_blocking(user) :
+                return{
+                    "status":1,
+                    "res":"user is not found"
+                }  
+            if user_actual:
+                _user_post=Posts.query.filter_by(uploader_id=user_actual.id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(_user_post, postdata)
+                }, 200
+            
+                    
+            else:
+                return{
+                        "status":0,
+                        "res":"Fail"
+                    }
+        else:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                }
+
+
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'posts_id':'The post id'
+    
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+ 
+@post.route('/post/Report_post')
+class Report_post(Resource):
+    @post.expect(Report_post)   
     @token_required
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        
-        if user.id == post.uploader_id :
+        post= Posts.query.filter_by(id=req_data['post_id']).first()
+
+        if user is None:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                }
+        if post:
+            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id)
+            mail.Report(user.email,req_data['reason'])
             return{
                 "status":1,
-                "res":"user is viewing his own posts"
-            }  
-        if user.id != post.uploader_id:
-             return{
-                "status":1,
-                "res":"user is viewing user"+uploader_id+"post"
-            }  
+                "res":"Post has been reported"
+            } 
+
                 
         else:
              return{

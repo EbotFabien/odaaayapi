@@ -22,6 +22,12 @@ def send_email(recipients, text_body,
     else:
         Thread(target=send_async_email,
             args=(current_app._get_current_object(), msg)).start()
+
+def Report(sender_u,text_body):
+    msg = Message(subject="Report", sender=sender_u, recipients=current_app.config['ADMINS'][0])
+    msg.body = text_body
+    mail.send(msg)
+    
 '''
 def send_password_reset_email(user):
     token = user.get_reset_password_token()
