@@ -744,6 +744,23 @@ class Save(db.Model):
         return '<Save %r>' % self.id
       
 
+class Report(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    reason = db.Column(db.String)
+    email = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
+    uploader_id=db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-
+    def __init__(self, reason, email, user_id,post,uploader_id):
+        self.reason = reason
+        self.email = email
+        self.user_id = user_id
+        self.post_id = post
+        self.uploader_id = uploader_id
+    
+     
+    def __repr__(self):
+        return '<Report %r>' % self.id
 

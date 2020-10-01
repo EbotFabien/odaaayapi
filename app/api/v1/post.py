@@ -23,6 +23,7 @@ from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
 import requests
 from bs4 import BeautifulSoup
+import bleach
 from sqlalchemy import or_,and_
 
 
@@ -133,7 +134,7 @@ multiplepost = post.model('multiple',{  #check this
 Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
 })
-save_post = post.model('save_post',{
+saves_post = post.model('saves_post',{
     'Post_id':fields.Integer(required=True)
 })
 user_clap = post.model('user_clap',{
@@ -162,7 +163,9 @@ saved = post.model('saved',{
 users_post =  post.model('users_post',{
     'User_name':fields.Integer(required=True)
 })
-
+Report_post = post.model('Report_post',{
+    'User_name':fields.Integer(required=True)
+})
 
 @post.doc(
     security='KEY',
@@ -365,8 +368,9 @@ class Article_check(Resource):
             SENTENCES_COUNT = 10
             url= req_data["Link"]
             sum_content=''
-            try:
-                x = requests.get(url)
+            x = requests.get(url)
+            if x is not None:
+                
                 soup = BeautifulSoup(x.content, 'html.parser')   
                 allowed_tags = ['a', 'abbr', 'acronym', 'address', 'b', 'br', 'div', 'dl', 'dt',
                     'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
@@ -379,7 +383,7 @@ class Article_check(Resource):
                         'img': ['src', 'alt', 'width', 'height'],
                     } 
                 bleaching=bleach.clean(soup.prettify(),tags=allowed_tags,attributes=allowed_attrs,strip=True)
-                tree = BeautifulSoup(a, "lxml")
+                tree = BeautifulSoup(bleaching, "lxml")
 
                 metas=soup.findAll('meta')
 
@@ -399,7 +403,7 @@ class Article_check(Resource):
                     'content':str(tree)
 
                 }, 200
-            except:
+            else:
                 return {
                         'status': 0,
                         'res': "This Article does not exist" 
@@ -615,7 +619,27 @@ class save_post(Resource):
                         "status":0,
                         "res":"Request failed"
                     }
-    @post.expect(save_post)   
+
+    @post.expect(saves_post) 
+    @token_required
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+
+        if Save:
+            db.session.delete(Save)
+            db.session.commit()
+        else:
+           return{
+                    "status":0,
+                    "res":"Fail"
+                }      
+
+    @post.expect(saves_post)   
     @token_required
     def post(self):
         req_data = request.get_json()
@@ -639,28 +663,14 @@ class save_post(Resource):
             }  
                 
         else:
-             return{
+            return{
                     "status":0,
                     "res":"Fail"
                 }
-    @post.expect(save_post)   #we using save_post because it will help us for this delete
-    @token_required
-    def delete(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
 
-        if Save:
-            db.session.delete(Save)
-            db.session.commit()
-        else:
-           return{
-                    "status":0,
-                    "res":"Fail"
-                } 
+                
+       
+
 @post.doc(
     security='KEY',
     params={'start': 'Value to start from ',
@@ -776,6 +786,59 @@ class views_post(Resource):
                     }
         else:
             return{
+                    "status":0,
+                    "res":"Fail"
+                }
+
+
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'posts_id':'The post id'
+    
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+ 
+@post.route('/post/Report_post')
+class Report_post(Resource):
+    @post.expect(Report_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+        if Save:
+            return{
+                "status":0,
+                "res":"Post has already been saved"
+            } 
+        if post:
+            save= Save(user.id,post.content,post.id)
+            db.session.add(save)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"Post has been saved"
+            }  
+                
+        else:
+             return{
                     "status":0,
                     "res":"Fail"
                 }
