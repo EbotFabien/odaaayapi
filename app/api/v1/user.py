@@ -785,7 +785,7 @@ class User_upload_profile_pic(Resource):
         args = uploader.parse_args()
         if user and  args['file'] is not None: 
 
-            if args['file'].mimetype == 'image/x-citrix-jpeg':
+            if args['file'].mimetype == 'image/jpeg':
                 name = args['name']
                 orig_name = secure_filename(args['file'].filename)
                 file = args['file']
