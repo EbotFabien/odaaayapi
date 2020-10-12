@@ -785,7 +785,27 @@ class User_upload_profile_pic(Resource):
         args = uploader.parse_args()
         if user and  args['file'] is not None: 
 
-            if args['file'].mimetype == 'image/jpeg':
+            if args['file'].mimetype == 'image/x-citrix-jpeg':
+                name = args['name']
+                orig_name = secure_filename(args['file'].filename)
+                file = args['file']
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'profilepic/' ,user.uuid)
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
+                profilepic_ = '%s%s' % (destination+'/', orig_name)
+                file.save(profilepic_)
+                user.profile_picture ='/profilepic/'+user.uuid+'/'+orig_name
+                db.session.commit()
+                colors = colorgram.extract(profilepic_, 3)
+
+                first_color = colors[0]
+                RGB=first_color.rgb
+                return {
+                    'status':1,
+                    'res':'picture uploaded',
+                    'pic':RGB
+                }
+            if args['file'].mimetype == 'image/png':
                 name = args['name']
                 orig_name = secure_filename(args['file'].filename)
                 file = args['file']
@@ -808,7 +828,7 @@ class User_upload_profile_pic(Resource):
             else:
                 return{
                     'status':0,
-                    'res':'please put jpeg format'
+                    'res':'please put image format'
                 }
         else:
             return{
