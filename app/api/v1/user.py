@@ -495,42 +495,6 @@ class Userprefs(Resource):
             }, 200
 
 
-@user.doc(
-    security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person' },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/notification')
-class Usernotify(Resource):
-    @token_required
-    @user.expect(user_notify)
-    def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        channel =Channels.query.filter_by(id= int(req_data['channel_id'])).first()
-        print(channel.id)
-        if channel.subscribed(user) is None:
-            return {
-                "status":0,
-                "res":"You not subscribed to this channel"
-            }, 200
-        else:
-            user.add_notification(channel)
-            db.session.commit()
-            #sur pause
-
 
 @user.doc(
     security='KEY',

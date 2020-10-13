@@ -10,7 +10,7 @@ from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
 from app.models import Save , Users, Channels, subs, Posts, Language, Postarb, Posten, Postes, Postfr, \
-    Posthau, Postpor, Postsw
+    Posthau, Postpor, Postsw,Report,Notification
 from app import db, cache, logging
 import json
 from tqdm import tqdm
@@ -294,6 +294,7 @@ class Post(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language=Language.query.filter_by(code=got_language).first()
         channel_list = []
+        followers_ =user.followers()
         for i in channel_names:
             name = Channels.query.filter_by(name=i).first()
             if name in user.get_channels():
@@ -324,6 +325,14 @@ class Post(Resource):
                 for c in channel_list:
                     c.add_post(newPost)
                     db.session.commit()
+                for i in followers_:
+                    notif_add = Notification("user" + user.name + "has made a post Titled"+title,i.uuid)
+                    db.session.add(notif_add)
+                for i in channel_names:
+                    names = Channels.query.filter_by(name=i).first()
+                    Mod =names.moderator
+                    notif_add1 = Notification("user" + user.name + "has uploaded a post to "+names.name,Mod)
+                    db.session.add(notif_add1)
 
                 return {
                     'status': 1,
@@ -630,10 +639,10 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+        Saves= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
 
-        if Save:
-            db.session.delete(Save)
+        if Saves:
+            db.session.delete(Saves)
             db.session.commit()
         else:
            return{
@@ -649,8 +658,8 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
-        if Save:
+        Saves= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
+        if Saves:
             return{
                 "status":0,
                 "res":"Post has already been saved"
@@ -795,9 +804,7 @@ class views_post(Resource):
 
 @post.doc(
     security='KEY',
-    params={'start': 'Value to start from ',
-            'limit': 'Total limit of the query',
-            'count': 'Number results per page',
+    params={
             'posts_id':'The post id'
     
             },
@@ -840,7 +847,8 @@ class Report_post(Resource):
 
                 
         else:
-             return{
-                    "status":0,
-                    "res":"Fail"
-                }
+            return{
+                "status":0,
+                "res":"Fail"
+            }
+            #fff
