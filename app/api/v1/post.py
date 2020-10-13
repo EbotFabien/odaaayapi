@@ -635,7 +635,7 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
+        Save= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
 
         if Save:
             db.session.delete(Save)
@@ -654,8 +654,8 @@ class save_post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        Save= Saves.query.filter(and_(Saves.user_id == user.id , Saves.post_id == post.id)).first()
-        if Save:
+        save= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
+        if save:
             return{
                 "status":0,
                 "res":"Post has already been saved"
