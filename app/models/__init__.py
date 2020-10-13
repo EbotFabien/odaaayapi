@@ -187,16 +187,20 @@ class Users(db.Model):
                 sub_moderator.c.sub_moderator_id == self.id).order_by(Channels.id.desc())
         #own= Channels.query.filter_by(user_id=user)
         #return followed.union(own)
+    def sub_mods(self,channel):
+         return Users.query.join(
+             sub_moderator,(sub_moderator.c.sub_moderator_id == self.id)).filter(
+                sub_moderator.c.channel_id == channel.id).all() 
 
     def has_followed(self):
         return Users.query.join(
             followers,(followers.c.followed_id == Users.id)).filter(
-                followers.c.follower_id == self.id).all()
+                followers.c.follower_id == self.id).all() 
  
     def followers(self):
         return Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
-                followers.c.followed_id == self.id).all()
+                followers.c.followed_id == self.id).all() 
 
         
     def is_moderator(self):

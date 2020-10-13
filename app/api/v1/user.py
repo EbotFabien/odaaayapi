@@ -479,42 +479,6 @@ class Userprefs(Resource):
             }, 200
 
 
-@user.doc(
-    security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person' },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/notification')
-class Usernotify(Resource):
-    @token_required
-    @user.expect(user_notify)
-    def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        channel =Channels.query.filter_by(id= int(req_data['channel_id'])).first()
-        print(channel.id)
-        if channel.subscribed(user) is None:
-            return {
-                "status":0,
-                "res":"You not subscribed to this channel"
-            }, 200
-        else:
-            user.add_notification(channel)
-            db.session.commit()
-            #sur pause
-
 
 @user.doc(
     security='KEY',
@@ -789,10 +753,30 @@ class User_upload_profile_pic(Resource):
                     'res':'picture uploaded',
                     'pic':RGB
                 }
+            if args['file'].mimetype == 'image/png':
+                name = args['name']
+                orig_name = secure_filename(args['file'].filename)
+                file = args['file']
+                destination = os.path.join(app.config.get('UPLOAD_FOLDER'),'profilepic/' ,user.uuid)
+                if not os.path.exists(destination):
+                    os.makedirs(destination)
+                profilepic_ = '%s%s' % (destination+'/', orig_name)
+                file.save(profilepic_)
+                user.profile_picture ='/profilepic/'+user.uuid+'/'+orig_name
+                db.session.commit()
+                colors = colorgram.extract(profilepic_, 3)
+
+                first_color = colors[0]
+                RGB=first_color.rgb
+                return {
+                    'status':1,
+                    'res':'picture uploaded',
+                    'pic':RGB
+                }
             else:
                 return{
                     'status':0,
-                    'res':'please put jpeg format'
+                    'res':'please put image format'
                 }
         else:
             return{
