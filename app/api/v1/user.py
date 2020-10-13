@@ -6,7 +6,7 @@ from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
 from app import db, cache, logging
-from sqlalchemy import or_,and_,distinct
+from sqlalchemy import or_, and_, distinct, func
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import werkzeug
@@ -65,6 +65,7 @@ userdata = user.model('Profile', {
     'profile_picture': fields.String(required=True),
     'email': fields.String(required=True),
     'uuid': fields.String(required=True),
+    'bio': fields.String(required=False),
     'user_number': fields.String(required=True),
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
@@ -113,6 +114,7 @@ User_R_data = user.model('User_R_data',{
     'username': fields.String(required=True),
     'email':fields.String(required=False),
     'number':fields.String(required=False),
+    'bio':fields.String(required=False),
     'profile_picture':fields.String(required=False),
     'user_visibility':fields.String(required=False),
 })
@@ -126,8 +128,10 @@ Postfollowed = user.model('Postfollowed',{
     
 })
 following_followers = user.model('following',{
-    'id':fields.Integer(required=True),
-    'username':fields.String(required=True)
+    'username': fields.String(required=True),
+    'profile_picture': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'bio': fields.String(required=False),
 })
 fanbase =user.model('Fanbase',{
     'subject':fields.String(required=True),  
@@ -287,43 +291,23 @@ class User_following(Resource):
     def get(self):  
         if request.args:
             fan_base =  request.args.get('fan_base')
-            start = request.args.get('start',None)
-            limit = request.args.get('limit',None)
-            count = request.args.get('count',None)
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
-        previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
         user= Users.query.filter_by(uuid=data['uuid']).first()
-        posts=user.followed_posts().paginate(int(start),int(count), False).items
-        following=user.has_followed().paginate(int(start),int(count), False).items
-        followers=user.followers().paginate(int(start),int(count),False).items
         if fan_base == 'post':
+            posts=user.followed_posts()
             return {
-                "start":start,
-                "limit":limit,
-                "count":count,
-                "next":next,
-                "previous":previous,
                 "results":marshal(posts,Postfollowed)
             }, 200
     
         if fan_base == 'following':
+            following=user.has_followed()
             return {
-                "start":start,
-                "limit":limit,
-                "count":count,
-                "next":next,
-                "previous":previous,
                 "results":marshal(following,following_followers)
             }, 200
         if fan_base == 'followers':
+            followers=user.followers()
             return {
-                "start":start,
-                "limit":limit,
-                "count":count,
-                "next":next,
-                "previous":previous,
                 "results":marshal(followers,following_followers)
             }, 200
        

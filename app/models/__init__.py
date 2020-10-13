@@ -26,8 +26,6 @@ postchannel = db.Table('postchannel',
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('notif', db.Boolean, default=True),
-
 )
 followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
@@ -76,6 +74,7 @@ class Users(db.Model):
     email = db.Column(db.String(120),unique=True, nullable=True)
     password_hash = db.Column(db.String(256),nullable=True)
     uuid = db.Column(db.String, nullable=False)
+    bio = db.Column(db.String(350), nullable=True)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
     profile_picture =  db.Column(db.String, nullable=True)
@@ -267,8 +266,6 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
-
-
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
@@ -362,8 +359,6 @@ class Channels(db.Model):
 
     def __repr__(self):
         return'<Channels>%r' %self.name 
-
-
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -712,9 +707,6 @@ class Postes(db.Model):
         self.content= content
         self.language_id = lang
  
-
-
-
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -747,7 +739,6 @@ class Save(db.Model):
     def __repr__(self):
         return '<Save %r>' % self.id
       
-
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     reason = db.Column(db.String)

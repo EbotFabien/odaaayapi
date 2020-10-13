@@ -101,11 +101,12 @@ postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
     'uuid':fields.String(required=True),
     'title': fields.String(required=True),
-    'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
-    'uploader_date': fields.DateTime(required=True)
+    'thumb_url': fields.String(required=False),
+    'uploader_date': fields.DateTime(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal))
 })
 user_post_sav = post.model('postreturnuserdata', {
     'id': fields.Integer(required=True),
@@ -113,6 +114,7 @@ user_post_sav = post.model('postreturnuserdata', {
     'title': fields.String(required=True),
     'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
+    'thumb_url': fields.String(required=True),
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'uploader_date': fields.DateTime(required=True)
@@ -387,7 +389,7 @@ class Article_check(Resource):
                     'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
                     'li', 'ol', 'p', 'pre', 'q', 's', 'small', 'strike', 'strong',
                     'span', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th',
-                    'thead', 'tr', 'tt', 'u', 'ul']
+                    'thead', 'tr', 'tt', 'u', 'ul', 'video', 'audio']
 
                 allowed_attrs = {
                         'a': ['href', 'target', 'title'],
@@ -449,20 +451,23 @@ class UsersPost(Resource):
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
-            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
-            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            next = "/api/v1/post/users?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post/users?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user= Users.query.filter_by(uuid=data['uuid']).first()
             posts1 = Posts.query.filter_by(uploader_id=user.id).first()
             if user.id == posts1.uploader_id :
-                posts = Posts.query.filter_by(uploader_id=posts1.uploader_id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
+                pgPosts = Posts.query.filter_by(uploader_id=posts1.uploader_id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False)
+                posts = pgPosts.items
+                total = pgPosts.total
                 return {
                     "start": start,
                     "limit": limit,
                     "count": count,
                     "next": next,
                     "previous": previous,
+                    "totalPages": total,
                     "results": marshal(posts, postdata)
                 }, 200
             else :

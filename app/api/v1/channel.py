@@ -92,7 +92,7 @@ channel_sub_moderator = channel.model('channel_sub_moderator',{
     'user_id': fields.Integer(required=True),
 })
 channel_subscribe = channel.model('channel_subscribe',{
-    'channel_id': fields.String(required=True)
+    'channel_id': fields.Integer(required=True)
 })
 
 @channel.doc(
@@ -294,13 +294,22 @@ class sub_channel(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         channel = Channels.query.filter_by(id=req_data['channel_id']).first()
         if user is None:
-            return {'res':'fail'}, 404
+            return {
+                'status': 0,
+                'res':'fail'
+            }, 404
         if  user and channel :
             channel.add_sub(user)
             db.session.commit()
-            return{'res':'success'}
+            return{
+                'status': 1,
+                'res':'success'
+            }
         else:
-            return {'res':'You have not subscribed'}, 404
+            return {
+                'status': 0,
+                'res':'You have not subscribed'
+            }, 404
     @token_required
     @channel.expect()
     def put(self):
@@ -317,13 +326,14 @@ class sub_channel(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         channel = Channels.query.filter_by(id=req_data['channel_id']).first()
         if user is None:
-            return {'res':'fail'}, 404
+            return {'status': 0, 'res':'fail'}, 404
         if  user and channel :
             channel.remove_sub(user)
             db.session.commit()
-            return{'res':'success'}
+            return{'status': 1,
+            'res':'success'}
         else:
-            return {'res':'You have not subscribed'}, 404
+            return {'status': 0, 'res':'You have not subscribed'}, 404
 
 
 @channel.doc(
