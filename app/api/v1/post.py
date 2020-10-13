@@ -380,7 +380,7 @@ class Article_check(Resource):
                     'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
                     'li', 'ol', 'p', 'pre', 'q', 's', 'small', 'strike', 'strong',
                     'span', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th',
-                    'thead', 'tr', 'tt', 'u', 'ul']
+                    'thead', 'tr', 'tt', 'u', 'ul', 'video', 'audio']
 
                 allowed_attrs = {
                         'a': ['href', 'target', 'title'],

@@ -26,8 +26,6 @@ postchannel = db.Table('postchannel',
 subs = db.Table('subs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
     db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('notif', db.Boolean, default=True),
-
 )
 followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
@@ -193,12 +191,12 @@ class Users(db.Model):
     def has_followed(self):
         return Users.query.join(
             followers,(followers.c.followed_id == Users.id)).filter(
-                followers.c.follower_id == self.id)
+                followers.c.follower_id == self.id).all()
  
     def followers(self):
         return Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
-                followers.c.followed_id == self.id)
+                followers.c.followed_id == self.id).all()
 
         
     def is_moderator(self):
@@ -263,8 +261,6 @@ class Task(db.Model):
     def get_progress(self):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
-
-
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -359,8 +355,6 @@ class Channels(db.Model):
 
     def __repr__(self):
         return'<Channels>%r' %self.name 
-
-
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -709,9 +703,6 @@ class Postes(db.Model):
         self.content= content
         self.language_id = lang
  
-
-
-
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -744,7 +735,6 @@ class Save(db.Model):
     def __repr__(self):
         return '<Save %r>' % self.id
       
-
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     reason = db.Column(db.String)
