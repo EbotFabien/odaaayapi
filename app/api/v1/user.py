@@ -139,7 +139,7 @@ user_notify = user.model('notify',{
     'channel_id':fields.String(required=True)
 })
 user_messaging =  user.model('messaging',{
-    'recipient_id':fields.String(required=True),
+    'uuid':fields.String(required=True),
     'content':fields.String(required=True)
 
 })
@@ -381,7 +381,7 @@ class User_Block(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_to_block =Users.query.get(req_data['user_id'])
+        user_to_block =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_block is None:
             return {'res':'fail'},404
         if user_to_block:
@@ -395,7 +395,7 @@ class User_Block(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_to_unblock = Users.query.get(req_data['user_id'])
+        user_to_unblock = Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unblock is None:
             return {'res':'fail'},404
         if user_to_unblock:
@@ -524,7 +524,7 @@ class Usermessage(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         content =req_data['content']
         sender = Users.query.filter_by(uuid=data['uuid']).first()
-        receiver = Users.query.filter_by(id=req_data['recipient_id']).first()
+        receiver = Users.query.filter_by(uuid=req_data['uuid']).first()
         
         if sender and receiver:
             msg = Message(author=sender, recipient=receiver,body=content)
@@ -544,7 +544,7 @@ class Usermessage(Resource):
 
 @user.doc(
     security='KEY',
-    params={ 'user_id_2': 'Specify the user_id associated with the person',
+    params={ 'uuid': 'Specify the uuid associated with the person',
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
              'count': 'Number results per page',
@@ -566,11 +566,11 @@ class Usermessage_sender(Resource):
     @token_required
     def get(self):
         if request.args:
-            user_id_2 =request.args.get('user_id_2', None)
+            user_id_2 =request.args.get('uuid', None)
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            user_2= Users.query.filter_by(id=user_id_2).first()
+            user_2= Users.query.filter_by(uuid=user_id_2).first()
             if user:
                 messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))).all()
 

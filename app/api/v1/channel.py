@@ -92,7 +92,8 @@ channel_sub_moderator = channel.model('channel_sub_moderator',{
     'user_id': fields.Integer(required=True),
 })
 channel_subscribe = channel.model('channel_subscribe',{
-    'channel_id': fields.Integer(required=True)
+    'channel_id': fields.Integer(required=True),
+    'delete':fields.String(required=True),
 })
 
 @channel.doc(
@@ -292,19 +293,29 @@ class sub_channel(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
+        delete_status =req_data['delete']
         channel = Channels.query.filter_by(id=req_data['channel_id']).first()
         if user is None:
             return {
                 'status': 0,
                 'res':'fail'
             }, 404
-        if  user and channel :
-            channel.add_sub(user)
-            db.session.commit()
-            return{
-                'status': 1,
-                'res':'success'
-            }
+        if delete_status == 'false':
+            if  user and channel :
+                channel.add_sub(user)
+                db.session.commit()
+                return{
+                    'status': 1,
+                    'res':'success'
+                }
+        if delete_status == 'true':
+            if  user and channel :
+                channel.remove_sub(user)
+                db.session.commit()
+                return{
+                    'status': 1,
+                    'res':'success'
+                }
         else:
             return {
                 'status': 0,
@@ -317,23 +328,7 @@ class sub_channel(Resource):
     @token_required
     def patch(self):
         return {}, 200
-    @token_required
-    @channel.expect(channel_subscribe)
-    def delete(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        channel = Channels.query.filter_by(id=req_data['channel_id']).first()
-        if user is None:
-            return {'status': 0, 'res':'fail'}, 404
-        if  user and channel :
-            channel.remove_sub(user)
-            db.session.commit()
-            return{'status': 1,
-            'res':'success'}
-        else:
-            return {'status': 0, 'res':'You have not subscribed'}, 404
+   
 
 
 @channel.doc(
