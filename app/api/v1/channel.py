@@ -93,7 +93,7 @@ channel_sub_moderator = channel.model('channel_sub_moderator',{
 })
 channel_subscribe = channel.model('channel_subscribe',{
     'channel_id': fields.Integer(required=True),
-    'delete':fields.String(required=True),
+    'delete':fields.Boolean(required=True),
 })
 
 @channel.doc(
@@ -300,7 +300,7 @@ class sub_channel(Resource):
                 'status': 0,
                 'res':'fail'
             }, 404
-        if delete_status == 'false':
+        if delete_status == False:
             if  user and channel :
                 channel.add_sub(user)
                 db.session.commit()
@@ -308,7 +308,7 @@ class sub_channel(Resource):
                     'status': 1,
                     'res':'success'
                 }
-        if delete_status == 'true':
+        if delete_status == True:
             if  user and channel :
                 channel.remove_sub(user)
                 db.session.commit()
