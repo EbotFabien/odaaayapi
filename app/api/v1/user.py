@@ -1,7 +1,8 @@
 from flask_restplus import Namespace, Resource, fields,marshal,Api
-import jwt, uuid, os
+import jwt, uuid, os, json
 from flask_cors import CORS
 from functools import wraps
+import requests as rqs
 from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
 from flask import current_app as app
@@ -696,7 +697,7 @@ class User_ip_address(Resource):
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
         if ip_address:
-            response=request.get(ip_info)
+            response=rqs.get(ip_info)
             return{
                 'status':1,
                 'res': json.loads(response.content)
@@ -706,6 +707,7 @@ class User_ip_address(Resource):
                 'status':0,
                 'res':"input IP"
             }
+
 
 #test
 @user.doc(
