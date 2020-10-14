@@ -119,7 +119,7 @@ User_R_data = user.model('User_R_data',{
     'user_visibility':fields.String(required=False),
 })
 deleteuser = user.model('deleteuser',{
-    'user_id':fields.String(required=True)
+    'uuid':fields.String(required=True)
 })
 Postfollowed = user.model('Postfollowed',{
     'id': fields.Integer(required=True),
@@ -321,7 +321,7 @@ class User_following(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_to_follow =Users.query.get(req_data['user_id'])
+        user_to_follow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_follow is None :
             return {'res':'fail'}, 404
         if user_to_follow:
@@ -337,7 +337,7 @@ class User_following(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_to_unfollow =Users.query.get(req_data['user_id'])
+        user_to_unfollow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unfollow is None :
             return {'res':'fail'}, 404
         if user.is_following(user_to_unfollow) is None:
@@ -566,22 +566,28 @@ class Usermessage(Resource):
 class Usermessage_sender(Resource):
     @token_required
     def get(self):
-        #'user_id_2'
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_2= Users.query.filter_by(id=user2).first()
-        if user:
-            messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))).all()
+        if request.args:
+            user_id_2 =request.args.get('user_id_2', None)
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            user_2= Users.query.filter_by(id=user_id_2).first()
+            if user:
+                messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))).all()
 
-            return{
-                "results":marshal(messages,messagedata)
-            }, 200
+                return{
+                    "results":marshal(messages,messagedata)
+                }, 200
+            else:
+                return{
+                    "status":0,
+                    "res":"This user does not exist"
+                }
         else:
-            return{
-                "status":0,
-                "res":"This user does not exist"
-            }
+                return{
+                    "status":0,
+                    "res":"Request failed"
+                }
         
 @user.doc(
     security='KEY',
@@ -691,7 +697,7 @@ class User_ip_address(Resource):
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
         if ip_address:
-            response=rqs.get(ip_info)
+            response=request.get(ip_info)
             return{
                 'status':1,
                 'res': json.loads(response.content)
