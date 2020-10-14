@@ -11,6 +11,8 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import werkzeug
 import colorgram
+import requests
+import json
 
 authorizations = {
     'KEY': {
@@ -697,7 +699,7 @@ class User_ip_address(Resource):
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
         if ip_address:
-            response=request.get(ip_info)
+            response=requests.get(ip_info)
             return{
                 'status':1,
                 'res': json.loads(response.content)
