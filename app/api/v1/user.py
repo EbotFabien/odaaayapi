@@ -323,13 +323,13 @@ class User_following(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_follow =Users.query.get(req_data['user_id'])
         if user_to_follow is None :
-            return {'res':'fail'}, 404
+            return {'status': 0,'res':'fail'}, 200
         if user_to_follow:
             user.follow(user_to_follow)
             db.session.commit()
-            return{'res':'success'},200
+            return{'status': 1, 'res':'success'},200
         else:
-            return {'res':'fail'},404
+            return {'status': 0, 'res':'fail'},200
     @token_required
     @user.expect(deleteuser)#This is the following route but we will use the deleteuser model since we just need the user ID        
     def delete(self):
@@ -337,17 +337,17 @@ class User_following(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_to_unfollow =Users.query.get(req_data['user_id'])
+        user_to_unfollow =Users.query.filter_by(uuid=req_data['user_id'])
         if user_to_unfollow is None :
-            return {'res':'fail'}, 404
-        if user.is_following(user_to_unfollow) is None:
-            return {'res':'fail'}, 404
+            return {'status': 0, 'res':'fail'}, 200
+        if user.is_following(user_to_unfollow):
+            return {'status': 0, 'res':'fail'}, 200
         if user.is_following(user_to_unfollow):
             user.unfollow(user_to_unfollow)
             db.session.commit()
-            return{'res':'success'},200
+            return{'status': 1, 'res':'success'},200
         else:
-            return {'res':'fail'},404
+            return {'status': 0, 'res':'fail'},200
 
 @user.route('/user/Block')
 class User_Block(Resource):
