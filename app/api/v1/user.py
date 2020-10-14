@@ -110,7 +110,6 @@ updateuser = user.model('Update',{
     'user_visibility':fields.String(required=False),
 })
 User_R_data = user.model('User_R_data',{
-    'user_id':fields.String(required=True),
     'username': fields.String(required=True),
     'email':fields.String(required=False),
     'number':fields.String(required=False),
@@ -337,14 +336,10 @@ class User_following(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-<<<<<<< HEAD
-        user_to_unfollow =Users.query.filter_by(uuid=req_data['user_id'])
-=======
         user_to_unfollow =Users.query.filter_by(uuid=req_data['uuid']).first()
->>>>>>> 90ef1db99e8fe133e92c6db717abc440143c57e3
         if user_to_unfollow is None :
             return {'status': 0, 'res':'fail'}, 200
-        if user.is_following(user_to_unfollow):
+        if user.is_following(user_to_unfollow) is None:
             return {'status': 0, 'res':'fail'}, 200
         if user.is_following(user_to_unfollow):
             user.unfollow(user_to_unfollow)
@@ -588,10 +583,10 @@ class Usermessage_sender(Resource):
                     "res":"This user does not exist"
                 }
         else:
-                return{
-                    "status":0,
-                    "res":"Request failed"
-                }
+            return{
+                "status":0,
+                "res":"Request failed"
+            }
         
 @user.doc(
     security='KEY',
