@@ -296,7 +296,7 @@ class Post(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language=Language.query.filter_by(code=got_language).first()
         channel_list = []
-        followers_ =user.followers()
+        followers_=user.is_followers()
         for i in channel_names:
             name = Channels.query.filter_by(name=i).first()
             if name in user.get_channels():
@@ -328,13 +328,15 @@ class Post(Resource):
                     c.add_post(newPost)
                     db.session.commit()
                 for i in followers_:
-                    notif_add = Notification("user" + user.name + "has made a post Titled"+title,i.uuid)
+                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
+                    db.session.commit()
                 for i in channel_names:
                     names = Channels.query.filter_by(name=i).first()
                     Mod =names.moderator
-                    notif_add1 = Notification("user" + user.name + "has uploaded a post to "+names.name,Mod)
+                    notif_add1 = Notification("user" + user.username + "has uploaded a post to "+names.name,Mod)
                     db.session.add(notif_add1)
+                    db.session.commit()
 
                 return {
                     'status': 1,
