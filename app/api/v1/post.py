@@ -15,6 +15,7 @@ from app import db, cache, logging
 import json
 from tqdm import tqdm
 from werkzeug.datastructures import FileStorage
+from breadability.readable import Article
 
 from sumy.parsers.html import HtmlParser
 from sumy.parsers.plaintext import PlaintextParser
@@ -387,18 +388,8 @@ class Article_check(Resource):
             if x is not None:
                 
                 soup = BeautifulSoup(x.content, 'html.parser')   
-                allowed_tags = ['a', 'abbr', 'acronym', 'address', 'b', 'br', 'div', 'dl', 'dt',
-                    'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
-                    'li', 'ol', 'p', 'pre', 'q', 's', 'small', 'strike', 'strong',
-                    'span', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th',
-                    'thead', 'tr', 'tt', 'u', 'ul', 'video', 'audio']
 
-                allowed_attrs = {
-                        'a': ['href', 'target', 'title'],
-                        'img': ['src', 'alt', 'width', 'height'],
-                    } 
-                bleaching=bleach.clean(soup.prettify(),tags=allowed_tags,attributes=allowed_attrs,strip=True)
-                tree = BeautifulSoup(bleaching, "lxml")
+                document= Article(x.content, url)
 
                 metas=soup.findAll('meta')
 
@@ -415,7 +406,7 @@ class Article_check(Resource):
                     'res': url,
                     'title':title,
                     'thumbnail':thumbnail,
-                    'content':str(tree)
+                    'content':document.readable
 
                 }, 200
             else:
