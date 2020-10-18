@@ -388,7 +388,6 @@ class Article_check(Resource):
             if x is not None:
                 
                 soup = BeautifulSoup(x.content, 'html.parser')   
-
                 document= Article(x.content, url)
 
                 metas=soup.findAll('meta')
@@ -406,7 +405,7 @@ class Article_check(Resource):
                     'res': url,
                     'title':title,
                     'thumbnail':thumbnail,
-                    'content':document.readable
+                    'content':str(document.readable)
 
                 }, 200
             else:
