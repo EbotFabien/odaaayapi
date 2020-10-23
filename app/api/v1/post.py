@@ -26,7 +26,7 @@ from sumy.utils import get_stop_words
 import requests
 from bs4 import BeautifulSoup
 import bleach
-from sqlalchemy import or_,and_
+from sqlalchemy import or_,and_,func
 
 
 authorizations = {
@@ -170,6 +170,7 @@ users_post =  post.model('users_post',{
 Report_post = post.model('Report_post',{
     'post_id':fields.String(required=True),
     'reason':fields.String(required=True),
+    'Type': fields.String(required=True),
 })
 
 @post.doc(
@@ -817,8 +818,8 @@ class views_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/Report_post')
-class Report_post(Resource):
+@post.route('/post/Report_post__')
+class Report_post_(Resource):
     @post.expect(Report_post)   
     @token_required
     def post(self):
@@ -834,7 +835,9 @@ class Report_post(Resource):
                     "res":"Fail"
                 }
         if post:
-            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id)
+            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id,req_data['Type'])
+            db.session.add(Report_sent)
+            db.session.commit()
             mail.Report(user.email,req_data['reason'])
             return{
                 "status":1,
@@ -847,4 +850,78 @@ class Report_post(Resource):
                 "status":0,
                 "res":"Fail"
             }
+            #fff
+
+@post.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'Discovery_Type' : 'state the type of discovery',
+            'country':'State the country'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/post/Discovery')
+
+class Discovery(Resource):
+    #@token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            Discovery_Type = request.args.get('Discovery_Type') 
+            country = request.args.get('country')
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+
+            if country is None:
+                return{
+                    'status':0,
+                    'res': 'Please input country'
+                }
+            if Discovery_Type == 'New':
+                posts = Posts.query.order_by(Posts.uploader_date.desc()).filter_by(country=country).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(posts, postdata)
+                }, 200
+            if Discovery_Type == 'Trending':
+                posts = Posts.query.order_by(func.random()).filter_by(country=country).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(posts, postdata)
+                }, 200
+            if Discovery_Type == 'Best':
+                posts = Posts.query.order_by(func.random()).filter_by(country=country).paginate(int(start), int(count), False).items
+                return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(posts, postdata)
+                }, 200     
+
             #fff

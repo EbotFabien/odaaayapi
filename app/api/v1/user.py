@@ -851,7 +851,7 @@ class User_Random(Resource):
     responses={
         200: 'ok',
         201: 'created',
-        204: 'No Content',
+        204: 'No Content',    
         301: 'Resource was moved',
         304: 'Resource was not Modified',
         400: 'Bad Request to server',
