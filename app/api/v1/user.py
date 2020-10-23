@@ -4,7 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import requests as rqs
 from flask import abort, request, session,Blueprint
-from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment
+from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment,Notification
 from flask import current_app as app
 from app import db, cache, logging
 from sqlalchemy import or_, and_, distinct, func
@@ -12,6 +12,8 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import werkzeug
 import colorgram
+import requests
+import json
 
 authorizations = {
     'KEY': {
@@ -165,6 +167,9 @@ reaction =  user.model('reaction',{
 })
 ip_data = user.model('address',{
     'address':fields.String(required=True)
+})
+Notification_seen = user.model('Notification_seen',{
+    'notification_id':fields.String(required=True)
 })
 @user.doc(
     security='KEY',
@@ -831,6 +836,48 @@ class User_Random(Resource):
         else:
             return{
                 "res":"return request",
+                "status":0,
+                
+            }, 404
+
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/Seen_Notification')
+class Seen_Notification(Resource):
+    @token_required
+    @user.expect(Notification_seen)
+    def post(self):
+        token = request.headers['API-KEY']
+        req_data = request.get_json()
+        notification=req_data['notification_id']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        notification= Notification.query.filter_by(id=notification).first()
+
+        if user and notification:
+            notification.seen = True
+            db.session.commit()
+        else:
+            return{
+                "res":"failed",
                 "status":0,
                 
             }, 404

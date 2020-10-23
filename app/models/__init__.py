@@ -200,7 +200,7 @@ class Users(db.Model):
     def is_followers(self):
         return Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
-                followers.c.followed_id == self.id).all() 
+                followers.c.followed_id == self.id).all()
 
         
     def is_moderator(self):
@@ -270,6 +270,7 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    seen = db.Column(db.Boolean,nullable=False,default=False)
     timestamp = db.Column(db.Float, index=True, default=time)
     payload_json = db.Column(db.Text)
 

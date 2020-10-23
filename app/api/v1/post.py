@@ -15,6 +15,7 @@ from app import db, cache, logging
 import json
 from tqdm import tqdm
 from werkzeug.datastructures import FileStorage
+from breadability.readable import Article
 
 from sumy.parsers.html import HtmlParser
 from sumy.parsers.plaintext import PlaintextParser
@@ -296,7 +297,7 @@ class Post(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language= Language.query.filter_by(code=got_language).first()
         channel_list = []
-        followers_ = user.is_followers()
+        followers_=user.is_followers()
         for i in channel_names:
             name = Channels.query.filter_by(name=i).first()
             if name in user.get_channels():
@@ -374,51 +375,40 @@ class Article_check(Resource):
     @post.expect(Article_verify)
     @token_required
     def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user= Users.query.filter_by(uuid=data['uuid']).first()
-        url= req_data["Link"]
-        x = requests.get(url)
-        if x is not None:
-            
-            soup = BeautifulSoup(x.content, 'html.parser')   
-            allowed_tags = ['a', 'abbr', 'acronym', 'address', 'b', 'br', 'div', 'dl', 'dt',
-                'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img',
-                'li', 'ol', 'p', 'pre', 'q', 's', 'small', 'strike', 'strong',
-                'span', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th',
-                'thead', 'tr', 'tt', 'u', 'ul', 'video', 'audio']
+            req_data = request.get_json()
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            LANGUAGE = "english"
+            SENTENCES_COUNT = 10
+            url= req_data["Link"]
+            sum_content=''
+            x = requests.get(url)
+            if x is not None:
+                
+                soup = BeautifulSoup(x.content, 'html.parser')   
+                document= Article(x.content, url)
 
-            allowed_attrs = {
-                    'a': ['href', 'target', 'title'],
-                    'img': ['src', 'alt', 'width', 'height'],
-                } 
-            bleaching=bleach.clean(soup.prettify(),tags=allowed_tags,attributes=allowed_attrs,strip=True)
-            tree = BeautifulSoup(bleaching, "lxml")
-            print('*************************************')
-            print(soup.prettify())
-            print('______________________________________')
-            print(bleaching)
-            metas=soup.findAll('meta')
+                metas=soup.findAll('meta')
 
-            for i in metas:
-                if i.get('property') == "og:image":
-                    thumbnail=i.get('content')
+                for i in metas:
+                    if i.get('property') == "og:image":
+                        thumbnail=i.get('content')
 
-            title=soup.find('title').get_text()
+                title=soup.find('title').get_text()
 
             
 
-            return {
-                'status': 1,
-                'res': url,
-                'title':title,
-                'thumbnail':thumbnail,
-                'content':str(tree)
+                return {
+                    'status': 1,
+                    'res': url,
+                    'title':title,
+                    'thumbnail':thumbnail,
+                    'content':str(document.readable)
 
             }, 200
-        else:
-            return {
+            else:
+                return {
                     'status': 0,
                     'res': "This Article does not exist" 
                 }, 200
