@@ -270,7 +270,7 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    Seen = db.Column(db.Boolean,nullable=False,default=False)
+    seen = db.Column(db.Boolean,nullable=False,default=False)
     timestamp = db.Column(db.Float, index=True, default=time)
     payload_json = db.Column(db.Text)
 
@@ -418,6 +418,7 @@ class Posts(db.Model):
     picture_url =db.Column(db.String)
     audio_url =db.Column(db.String)
     video_url =db.Column(db.String)
+    country =db.Column(db.String)
     esposts = db.relationship('Postes', backref='spanish_posts', lazy='dynamic')
     enposts = db.relationship('Posten', backref='english_posts', lazy='dynamic')
     ptposts = db.relationship('Postpor', backref='portuguese_posts', lazy='dynamic')

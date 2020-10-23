@@ -850,7 +850,7 @@ class User_Random(Resource):
     responses={
         200: 'ok',
         201: 'created',
-        204: 'No Content',
+        204: 'No Content',    
         301: 'Resource was moved',
         304: 'Resource was not Modified',
         400: 'Bad Request to server',
@@ -872,7 +872,7 @@ class Seen_Notification(Resource):
         notification= Notification.query.filter_by(id=notification).first()
 
         if user and notification:
-            notification.Seen = True
+            notification.seen = True
             db.session.commit()
         else:
             return{
