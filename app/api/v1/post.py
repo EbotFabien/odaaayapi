@@ -170,6 +170,7 @@ users_post =  post.model('users_post',{
 Report_post = post.model('Report_post',{
     'post_id':fields.String(required=True),
     'reason':fields.String(required=True),
+    'Type': fields.String(required=True),
 })
 
 @post.doc(
@@ -818,8 +819,8 @@ class views_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/Report_post')
-class Report_post(Resource):
+@post.route('/post/Report_post__')
+class Report_post_(Resource):
     @post.expect(Report_post)   
     @token_required
     def post(self):
@@ -835,7 +836,9 @@ class Report_post(Resource):
                     "res":"Fail"
                 }
         if post:
-            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id)
+            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id,req_data['Type'])
+            db.session.add(Report_sent)
+            db.session.commit()
             mail.Report(user.email,req_data['reason'])
             return{
                 "status":1,
