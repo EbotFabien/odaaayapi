@@ -117,6 +117,11 @@ class Users(db.Model):
         secondaryjoin=(blocking.c.blocked_id == id),
         backref=db.backref('blocking',lazy='dynamic'), lazy='dynamic')
         
+    claps = db.relationship(
+        'Posts',secondary=clap,
+        primaryjoin=(clap.c.user_id == id),
+        backref=db.backref('clap_no', lazy='dynamic'), lazy='dynamic')
+
     def __init__(self, username,user_visibility,email=None,number=None):
         self.username = username
         self.uuid = str(uuid.uuid4())
@@ -135,6 +140,10 @@ class Users(db.Model):
             subs,( subs.c.users_id == self.id))
 
         return user.filter(subs.c.notif == True).all()
+
+    def No_claps(self):
+        return  self.query.join(
+            clap,(clap.c.user_id == self.id)).count()
 
     def add_notification(self,channel):
         if not self.notified(channel):
@@ -313,6 +322,9 @@ class Channels(db.Model):
         primaryjoin=(postchannel.c.channel_id == id),
         backref=db.backref('channelpost', lazy='dynamic'), lazy='dynamic')
 
+    def No_Posts (self):
+        return  self.query.join(
+            postchannel,(postchannel.c.channel_id == self.id )).count()
     
     def subscribed(self,user):
         return  self.query.join(
@@ -464,6 +476,7 @@ class Posts(db.Model):
             clap,(clap.c.post_id == self.id)).filter(
             clap.c.user_id == user.id).first()
 
+    
     def add_clap(self,user):
         if not self.has_clapped(user):
             self.clap.append(user)
