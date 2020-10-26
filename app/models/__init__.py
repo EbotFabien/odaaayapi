@@ -14,6 +14,7 @@ from time import time
 import json, shortuuid, bleach
 from markdown import markdown
 from werkzeug.utils import secure_filename
+from itsdangerous import  TimedJSONWebSignatureSerializer as Serializer
 
 channel_langs = db.Table('channel_langs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
@@ -257,6 +258,10 @@ class Users(db.Model):
         return Message.query.filter_by(recipient=self).filter(
             Message.timestamp > last_read_time).count()
 
+    def get_reset_token(self,expire_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'],expire_sec)
+        return s.dumps({'user_id':self.id}).decode('utf-8')
+        
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(128), index=True)

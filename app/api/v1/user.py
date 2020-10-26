@@ -917,10 +917,10 @@ class  Invitation(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         channel= Channels.query.filter_by(id=req_data['channel_id']).first()
-
+        toke_n=user.get_reset_token()
         if channel.subscribed(user):
             #email
-            mail.Invitation(user.email,email,"james")
+            mail.Invitation(user.email,email,"james"+toke_n)
             return{
                 'status':'1',
                 'res':'email sent'
