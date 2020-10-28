@@ -16,7 +16,6 @@ import werkzeug
 from redis import Redis
 import rq
 import rq_dashboard
-from flask_googletrans import translator
 from flask_msearch import Search
 
 bycrypt = Bcrypt()
@@ -47,7 +46,6 @@ def createapp(configname):
     cache.init_app(app)
     dashboard.bind(app)
     limiter.init_app(app)
-    app.ts = translator(app)
     search.init_app(app)
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
