@@ -4,7 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import requests as rqs
 from flask import abort, request, session,Blueprint
-from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment,Notification
+from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment,Notification,clap
 from flask import current_app as app
 from app import db, cache, logging
 from sqlalchemy import or_, and_, distinct, func
@@ -14,6 +14,7 @@ import werkzeug
 import colorgram
 import requests
 import json
+from app.services import mail
 
 authorizations = {
     'KEY': {
@@ -170,6 +171,10 @@ ip_data = user.model('address',{
 })
 Notification_seen = user.model('Notification_seen',{
     'notification_id':fields.String(required=True)
+})
+invitation =  user.model('Notification_seen',{
+    'email':fields.String(required=True),
+    'channel_id':fields.String(required=True)
 })
 @user.doc(
     security='KEY',
@@ -881,3 +886,89 @@ class Seen_Notification(Resource):
                 "status":0,
                 
             }, 404
+
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/Send_invitation')
+class  Invitation(Resource):
+    @token_required
+    @user.expect(invitation)
+    def post(self):
+        token = request.headers['API-KEY']
+        req_data = request.get_json()
+        email=req_data['email']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        channel= Channels.query.filter_by(id=req_data['channel_id']).first()
+        toke_n=user.get_reset_token()
+        if channel.subscribed(user):
+            #email
+            mail.Invitation(user.email,email,"james"+toke_n)
+            return{
+                'status':'1',
+                'res':'email sent'
+            }
+
+        else:
+           return{
+                'status':'0',
+                'res':'You are not subscribed to this channel'
+            } 
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/No_claps')
+class  No_claps_(Resource):
+    @token_required
+    def get(self):
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+
+        if user:
+            number =user.No_claps()
+            return{
+                    'number of claps':number,
+                    
+                },200
+
+        else:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                },400

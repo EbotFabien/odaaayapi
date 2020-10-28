@@ -69,7 +69,8 @@ for url in urls:
                     "lang":"en",
 
                 }
-                requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                print(params)
+                #requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
                 
                 
             else:
@@ -82,7 +83,8 @@ for url in urls:
                     "lang":"en",
 
                 }
-                requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                print(params)
+                #requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
                 
     if soup.findAll('item') is not None:
         items=soup.findAll('item')
@@ -124,7 +126,8 @@ for url in urls:
                     "content":sum_content,
                     "lang":"en",
                 }
-                requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                print(params)
+                #requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
                 
             else:
                 params = { 
@@ -136,8 +139,8 @@ for url in urls:
                     "lang":"en",
                    
                 }
-                
-                requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                print(params)
+                #requests.post(url="https://d5db74a60e4b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
                 
 #for item in xmldoc.iterfind('feed/item'):
     #print(item.findtext('title'))

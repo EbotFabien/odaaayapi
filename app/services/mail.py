@@ -27,6 +27,11 @@ def Report(sender_u,text_body):
     msg = Message(subject="Report", sender=sender_u, recipients=current_app.config['ADMINS'][0])
     msg.body = text_body
     mail.send(msg)
+
+def Invitation(sender_u,receiver_u,text_body):
+    msg = Message(subject="Report", sender=sender_u, recipients=receiver_u)
+    msg.body = sender_u+'is inviting you to join this channel through this link'+text_body
+    mail.send(msg)
     
 '''
 def send_password_reset_email(user):

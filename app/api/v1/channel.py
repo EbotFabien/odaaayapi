@@ -495,3 +495,45 @@ class ALL_channels_post(Resource):
                     "status":0,
                     "res":"No request found"
                 }
+
+
+
+@channel.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'channel_id': 'Input channel id',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@channel.route('/channel/No_posts')
+class  No_posts_(Resource):
+
+    def get(self):
+        if request.args:
+            channel  = request.args.get('channel_id')
+            channel =  Channels.query.filter_by(id=channel)
+
+        if channel:
+            number =channel.No_Posts
+            return{
+                    'number of posts':number,
+                    
+                },200
+
+        else:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                },400
