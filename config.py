@@ -36,7 +36,7 @@ class Config(object):
     UPLOAD_FOLDER = os.getcwd()+'/static'
     UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-    CACHE_TYPE: "simple" # Flask-Caching related configs
+    CACHE_TYPE= "simple" # Flask-Caching related configs
     CACHE_DEFAULT_TIMEOUT: 300
     PAGINATE_PAGE_SIZE = 4
     PAGINATE_PAGE_PARAM = "pagenumber"
