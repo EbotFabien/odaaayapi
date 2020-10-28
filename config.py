@@ -7,7 +7,7 @@ basedir= os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:1234@localhost/news'
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:Ewenzo#@das67001@localhost/news'
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     # 'mysql://root:''@localhost/news' \
     #postgresql+psycopg2://postgres:1234@localhost/news
