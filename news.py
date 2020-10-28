@@ -18,20 +18,7 @@ from app.services.task import app
 manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
-name = '''
-                                   (api)
- ███▄    █ ▓█████  █     █░  ██████ 
- ██ ▀█   █ ▓█   ▀ ▓█░ █ ░█░▒██    ▒ 
-▓██  ▀█ ██▒▒███   ▒█░ █ ░█ ░ ▓██▄   
-▓██▒  ▐▌██▒▒▓█  ▄ ░█░ █ ░█   ▒   ██▒
-▒██░   ▓██░░▒████▒░░██▒██▓ ▒██████▒▒
-░ ▒░   ▒ ▒ ░░ ▒░ ░░ ▓░▒ ▒  ▒ ▒▓▒ ▒ ░
-░ ░░   ░ ▒░ ░ ░  ░  ▒ ░ ░  ░ ░▒  ░ ░
-   ░   ░ ░    ░     ░   ░  ░  ░  ░  
-         ░    ░  ░    ░          ░  
- ~ By Leslie Etubo T, E. Fabien, Marc.
-
-'''
+name = '''(API) ~ By Leslie Etubo T, E. Fabien, Marc.'''
 
 @manager.command
 def logo():
