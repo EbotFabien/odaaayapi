@@ -336,7 +336,10 @@ class Channels(db.Model):
             subs,(subs.c.channel_id == self.id )).filter(
                 subs.c.users_id == user.id).first()
 
-            
+    def subscribed_numbers(self):
+        return  self.query.join(
+            subs,(subs.c.channel_id == self.id )).count()
+                    
     def haspost(self,post):
         return  self.query.join(
             postchannel,(postchannel.c.channel_id == self.id )).filter(

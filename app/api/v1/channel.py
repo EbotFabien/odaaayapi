@@ -537,3 +537,38 @@ class  No_posts_(Resource):
                     "status":0,
                     "res":"Fail"
                 },400
+
+
+@channel.doc(
+    security='KEY',
+    params={ 'ID': 'Specify the ID associated with the channel' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+@channel.route('/channel/unique')
+class full_channel(Resource):
+    def get(self):
+        if request.args:
+            ID = request.args.get('ID',None)
+            channel = Channels.query.filter_by(id=ID).first()
+            subscribers =channel.subscribed_numbers()
+            return{
+                "subscribers":subscribers,
+                "channel_data":marshal(channel,channel_view)
+            }, 200
+        else:
+            return{
+                "res":"return request",
+                "status":0,
+                
+            }, 404
