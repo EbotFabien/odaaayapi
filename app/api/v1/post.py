@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
+from operator import pos
 
 from flask_restplus import Namespace, Resource, fields, marshal,Api
 import jwt, uuid, os
 from flask_cors import CORS
 from functools import wraps
+
+from sqlalchemy.sql.base import NO_ARG
 from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
@@ -304,15 +307,24 @@ class Post(Resource):
             name = Channels.query.filter_by(name=i).first()
             if name in user.get_channels():
                 channel_list.append(name)
-        if len(channel_list) != 0:
+        if len(channel_list) != 0 and post_done is None:
             if ptype == 1:
                 newPost = Posts(user.id, title, ptype, content, language.id, user.id)
-                if post_done is  None:
-                    db.session.add(newPost)
-                    db.session.commit()
+                db.session.add(newPost)
+                db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
+                    db.session.commit()
+                for i in followers_:
+                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
+                    db.session.add(notif_add)
+                    db.session.commit()
+                for i in channel_names:
+                    names = Channels.query.filter_by(name=i).first()
+                    Mod =names.moderator
+                    notif_add1 = Notification("user" + user.username + "has uploaded a post to "+names.name,Mod)
+                    db.session.add(notif_add1)
                     db.session.commit()
                 return {
                     'status': 1,
@@ -322,12 +334,11 @@ class Post(Resource):
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
                 newPost = Posts(user.id, title, ptype, content, language.id, user.id, thumb_url=thumb_url_, post_url=post_url_)
-                if post_done is  None:
-                    db.session.add(newPost)
-                    db.session.commit()
-                    newPost.post_url=post_url_
-                    newPost.thumb_url=thumb_url_
-                    db.session.commit()
+                db.session.add(newPost)
+                db.session.commit()
+                newPost.post_url=post_url_
+                newPost.thumb_url=thumb_url_
+                db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
