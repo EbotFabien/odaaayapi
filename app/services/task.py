@@ -93,9 +93,10 @@ def translate_posts(post_id, user_id):
                 current_lang = Language.query.filter_by(code=user_default_lang).first()
                 table = language_dict.get(user_default_lang)
                 keywords = rake.apply(sum_content)
-                new_row = table(post_id, post.title, sum_content, current_lang.id, tags=str([x[0] for x in keywords[:5]]))
-                db.session.add(new_row)
-                db.session.commit()
+                if post is not None:
+                    new_row = table(post_id, post.title, sum_content, current_lang.id, tags=str([x[0] for x in keywords[:5]]))
+                    db.session.add(new_row)
+                    db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         p = 1
@@ -106,10 +107,12 @@ def translate_posts(post_id, user_id):
                    current_lang = Language.query.filter_by(code=i).first()
                    table = language_dict.get(i)
                    keywords = rake.apply(content_translation[i])
-                   new_row = table(post_id, title_translation[i], content_translation[i], current_lang.id, tags=str([x[0] for x in keywords[:5]]))
-                   db.session.add(new_row)
-                   db.session.commit()
-                   p += 1         
+                   new_check =table.query.filter_by(title=title_translation[i]).first()
+                   if new_check is None:
+                        new_row = table(post_id, title_translation[i], content_translation[i], current_lang.id, tags=str([x[0] for x in keywords[:5]]))
+                        db.session.add(new_row)
+                        db.session.commit()
+                        p += 1         
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())

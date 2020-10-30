@@ -258,7 +258,7 @@ class Users(db.Model):
         return Message.query.filter_by(recipient=self).filter(
             Message.timestamp > last_read_time).count()
 
-    def get_reset_token(self,expire_sec=1800):
+    def get_reset_token(self,expire_sec=86400):
         s = Serializer(app.config['SECRET_KEY'],expire_sec)
         return s.dumps({'user_id':self.id}).decode('utf-8')
         
