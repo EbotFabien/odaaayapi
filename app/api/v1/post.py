@@ -307,7 +307,7 @@ class Post(Resource):
         if len(channel_list) != 0:
             if ptype == 1:
                 newPost = Posts(user.id, title, ptype, content, language.id, user.id)
-                if post_done is not None:
+                if post_done is  None:
                     db.session.add(newPost)
                     db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
@@ -322,7 +322,7 @@ class Post(Resource):
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
                 newPost = Posts(user.id, title, ptype, content, language.id, user.id, thumb_url=thumb_url_, post_url=post_url_)
-                if post_done is not None:
+                if post_done is  None:
                     db.session.add(newPost)
                     db.session.commit()
                     newPost.post_url=post_url_
