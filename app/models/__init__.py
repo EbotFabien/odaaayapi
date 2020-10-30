@@ -282,7 +282,11 @@ class Task(db.Model):
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+<<<<<<< HEAD
     name = db.Column(db.String, index=True)
+=======
+    name = db.Column(db.String(), index=True)
+>>>>>>> 802d70c7270fd3f3d6f0e6f0c7fae1d8c77de585
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     seen = db.Column(db.Boolean,nullable=False,default=False)
     timestamp = db.Column(db.Float, index=True, default=time)
