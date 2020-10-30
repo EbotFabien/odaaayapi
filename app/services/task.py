@@ -37,7 +37,6 @@ def _set_task_progress(progress):
             task.complete = True
         db.session.commit()
 
-
 def export_posts(user_id):
     try:
         user = Users.query.get(user_id)
@@ -89,13 +88,21 @@ def translate_posts(post_id, user_id):
         for sentence in summarizer(parser.document, 4):
             sum_content += '\n'+str(sentence)
     try:
+        for j in language_dict:
+            if j == user_default_lang:
+                current_lang = Language.query.filter_by(code=user_default_lang).first()
+                table = language_dict.get(user_default_lang)
+                keywords = rake.apply(sum_content)
+                new_row = table(post_id, post.title, sum_content, current_lang.id, tags=str([x[0] for x in keywords[:5]]))
+                db.session.add(new_row)
+                db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         p = 1
         for i in tqdm(languages):
-            _set_task_progress(p/len(languages) * 100)
+            # _set_task_progress(p/len(languages) * 100)
             for j in language_dict:
-                if i == j:
+                if i == j and i != user_default_lang:
                    current_lang = Language.query.filter_by(code=i).first()
                    table = language_dict.get(i)
                    keywords = rake.apply(content_translation[i])

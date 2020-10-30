@@ -27,7 +27,7 @@ def logo():
 def recreate_db():
     with app.app_context():
         # db.drop_all()
-        # db.create_all()
+        db.create_all()
         db.session.commit()
 
 
@@ -58,7 +58,7 @@ def seed():
 @manager.command
 def run():
     logo()
-    # recreate_db()
+    recreate_db()
     # seed()
     # Error tracking and logging with sentry
     sentry_sdk.init(
