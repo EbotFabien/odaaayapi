@@ -1,7 +1,8 @@
 from flask_restplus import Namespace, Resource, fields,marshal,Api
-import jwt, uuid, os
+import jwt, uuid, os, json
 from flask_cors import CORS
 from functools import wraps
+import requests as rqs
 from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment,Notification,clap
 from flask import current_app as app
@@ -113,7 +114,6 @@ updateuser = user.model('Update',{
     'user_visibility':fields.String(required=False),
 })
 User_R_data = user.model('User_R_data',{
-    'user_id':fields.String(required=True),
     'username': fields.String(required=True),
     'email':fields.String(required=False),
     'number':fields.String(required=False),
@@ -333,13 +333,13 @@ class User_following(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_follow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_follow is None :
-            return {'res':'fail'}, 404
+            return {'status': 0,'res':'fail'}, 200
         if user_to_follow:
             user.follow(user_to_follow)
             db.session.commit()
-            return{'res':'success'},200
+            return{'status': 1, 'res':'success'},200
         else:
-            return {'res':'fail'},404
+            return {'status': 0, 'res':'fail'},200
     @token_required
     @user.expect(deleteuser)#This is the following route but we will use the deleteuser model since we just need the user ID        
     def delete(self):
@@ -349,15 +349,15 @@ class User_following(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_unfollow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unfollow is None :
-            return {'res':'fail'}, 404
+            return {'status': 0, 'res':'fail'}, 200
         if user.is_following(user_to_unfollow) is None:
-            return {'res':'fail'}, 404
+            return {'status': 0, 'res':'fail'}, 200
         if user.is_following(user_to_unfollow):
             user.unfollow(user_to_unfollow)
             db.session.commit()
-            return{'res':'success'},200
+            return{'status': 1, 'res':'success'},200
         else:
-            return {'res':'fail'},404
+            return {'status': 0, 'res':'fail'},200
 
 @user.route('/user/Block')
 class User_Block(Resource):
@@ -594,10 +594,10 @@ class Usermessage_sender(Resource):
                     "res":"This user does not exist"
                 }
         else:
-                return{
-                    "status":0,
-                    "res":"Request failed"
-                }
+            return{
+                "status":0,
+                "res":"Request failed"
+            }
         
 @user.doc(
     security='KEY',
@@ -707,7 +707,7 @@ class User_ip_address(Resource):
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
         if ip_address:
-            response=requests.get(ip_info)
+            response=rqs.get(ip_info)
             return{
                 'status':1,
                 'res': json.loads(response.content)
@@ -717,6 +717,7 @@ class User_ip_address(Resource):
                 'status':0,
                 'res':"input IP"
             }
+
 
 #test
 @user.doc(

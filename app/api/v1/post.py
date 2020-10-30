@@ -296,7 +296,7 @@ class Post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        language=Language.query.filter_by(code=got_language).first()
+        language= Language.query.filter_by(code=got_language).first()
         channel_list = []
         followers_=user.is_followers()
         post_done=Posts.query.filter_by(title=title).first()
@@ -342,7 +342,6 @@ class Post(Resource):
                     notif_add1 = Notification("user" + user.username + "has uploaded a post to "+names.name,Mod)
                     db.session.add(notif_add1)
                     db.session.commit()
-
                 return {
                     'status': 1,
                     'res': 'Post was made'
@@ -402,7 +401,7 @@ class Article_check(Resource):
 
                 title=soup.find('title').get_text()
 
-               
+            
 
                 return {
                     'status': 1,
@@ -411,13 +410,13 @@ class Article_check(Resource):
                     'thumbnail':thumbnail,
                     'content':str(document.readable)
 
-                }, 200
+            }, 200
             else:
                 return {
-                        'status': 0,
-                        'res': "This Article does not exist" 
-                    }, 200
-                
+                    'status': 0,
+                    'res': "This Article does not exist" 
+                }, 200
+            
 
 @post.doc(
     security='KEY',

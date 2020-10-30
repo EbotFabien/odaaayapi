@@ -18,6 +18,7 @@ from app.services.mail import send_email
 import os
 from tqdm import tqdm
 from googletrans import Translator
+from multi_rake import Rake
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
@@ -35,7 +36,6 @@ def _set_task_progress(progress):
         if progress >= 100:
             task.complete = True
         db.session.commit()
-
 
 def export_posts(user_id):
     try:
@@ -64,10 +64,13 @@ def translate_posts(post_id, user_id):
     language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
     post = Posts.query.get(post_id)
     user = Users.query.get(user_id)
-    post_auto_lang = translator.detect(post.content)
+    post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
+    # tag collector
+    rake = Rake()
+
     if post.post_url is not None:
         parser = HtmlParser.from_url(post.post_url, Tokenizer(post_language.name))
         stemmer = Stemmer(post_language.name)
@@ -85,16 +88,25 @@ def translate_posts(post_id, user_id):
         for sentence in summarizer(parser.document, 4):
             sum_content += '\n'+str(sentence)
     try:
+        for j in language_dict:
+            if j == user_default_lang:
+                current_lang = Language.query.filter_by(code=user_default_lang).first()
+                table = language_dict.get(user_default_lang)
+                keywords = rake.apply(sum_content)
+                new_row = table(post_id, post.title, sum_content, current_lang.id, tags=str([x[0] for x in keywords[:5]]))
+                db.session.add(new_row)
+                db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         p = 1
         for i in tqdm(languages):
-            _set_task_progress(p/len(languages) * 100)
+            # _set_task_progress(p/len(languages) * 100)
             for j in language_dict:
-                if i == j:
+                if i == j and i != user_default_lang:
                    current_lang = Language.query.filter_by(code=i).first()
                    table = language_dict.get(i)
-                   new_row = table(post_id, title_translation[i], content_translation[i], current_lang.id)
+                   keywords = rake.apply(content_translation[i])
+                   new_row = table(post_id, title_translation[i], content_translation[i], current_lang.id, tags=str([x[0] for x in keywords[:5]]))
                    db.session.add(new_row)
                    db.session.commit()
                    p += 1         

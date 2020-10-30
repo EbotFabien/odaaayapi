@@ -75,7 +75,7 @@ class Users(db.Model):
     email = db.Column(db.String(120),unique=True, nullable=True)
     password_hash = db.Column(db.String(256),nullable=True)
     uuid = db.Column(db.String, nullable=False)
-   # bio = db.Column(db.String(350), nullable=True)
+    bio = db.Column(db.String(350), nullable=True)
     user_number = db.Column(db.Integer, nullable=True)
     #user_handle = db.Column(db.String, nullable=False)
     profile_picture =  db.Column(db.String, nullable=True)
@@ -636,12 +636,14 @@ class Postarb(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('postarb', lazy='dynamic'))
+    tags = db.Column(db.Text)
 
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
         self.language_id = lang
+        self.tags = tags
 
 class Posten(db.Model):
     __searchable__ = ['title', 'content']
@@ -650,12 +652,14 @@ class Posten(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('posten', lazy='dynamic'))
+    tags = db.Column(db.Text)
 
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
         self.language_id = lang
+        self.tags = tags
 
 class Postpor(db.Model):
     __searchable__ = ['title', 'content']
@@ -664,12 +668,14 @@ class Postpor(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('postpor', lazy='dynamic'))
+    tags = db.Column(db.Text)
 
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
         self.language_id = lang
+        self.tags = tags
 
 class Postfr(db.Model):
     __searchable__ = ['title', 'content']
@@ -678,12 +684,14 @@ class Postfr(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('postfr', lazy='dynamic'))
+    tags = db.Column(db.Text)
     
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
         self.language_id = lang
+        self.tags = tags
 
 class Posthau(db.Model):
     __searchable__ = ['title', 'content']
@@ -692,12 +700,14 @@ class Posthau(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('posthau', lazy='dynamic'))
+    tags = db.Column(db.Text)
 
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
-        self.language_id = lang 
+        self.language_id = lang
+        self.tags = tags
 
 class Postsw(db.Model):
     __searchable__ = ['title', 'content']
@@ -706,12 +716,14 @@ class Postsw(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('postsw', lazy='dynamic'))
+    tags = db.Column(db.Text)
 
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
-        self.language_id = lang 
+        self.language_id = lang
+        self.tags = tags
 
 class Postes(db.Model):
     __searchable__ = ['title', 'content']
@@ -720,12 +732,14 @@ class Postes(db.Model):
     content = db.Column(db.String, nullable = False, unique=True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     posts = db.relationship('Posts', backref=db.backref('postes', lazy='dynamic'))
+    tags = db.Column(db.Text)
 
-    def __init__(self, id, title, content, lang):
+    def __init__(self, id, title, content, lang, tags=None):
         self.id = id
         self.title = title
         self.content= content
         self.language_id = lang
+        self.tags = tags
  
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
