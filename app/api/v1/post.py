@@ -260,7 +260,7 @@ class Post(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post_id=Posts.query.get(req_data['id'])
-        if user and post_id:
+        if user.id == post_id.uploader_id :
             db.session.delete(post_id)
             db.session.commit()
             return {'res':'success'}, 200
@@ -299,15 +299,17 @@ class Post(Resource):
         language=Language.query.filter_by(code=got_language).first()
         channel_list = []
         followers_=user.is_followers()
+        post_done=Posts.query.filter_by(title=title).first()
         for i in channel_names:
             name = Channels.query.filter_by(name=i).first()
             if name in user.get_channels():
                 channel_list.append(name)
         if len(channel_list) != 0:
             if ptype == 1:
-                newPost = Posts(user.id, title, ptype, content, language.id, user.id)
-                db.session.add(newPost)
-                db.session.commit()
+                if post_done is not None:
+                    newPost = Posts(user.id, title, ptype, content, language.id, user.id)
+                    db.session.add(newPost)
+                    db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
@@ -319,12 +321,13 @@ class Post(Resource):
             if ptype == 4:
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
-                newPost = Posts(user.id, title, ptype, content, language.id, user.id, thumb_url=thumb_url_, post_url=post_url_)
-                db.session.add(newPost)
-                db.session.commit()
-                newPost.post_url=post_url_
-                newPost.thumb_url=thumb_url_
-                db.session.commit()
+                if post_done is not None:
+                    newPost = Posts(user.id, title, ptype, content, language.id, user.id, thumb_url=thumb_url_, post_url=post_url_)
+                    db.session.add(newPost)
+                    db.session.commit()
+                    newPost.post_url=post_url_
+                    newPost.thumb_url=thumb_url_
+                    db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for c in channel_list:
                     c.add_post(newPost)
