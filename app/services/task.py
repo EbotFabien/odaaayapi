@@ -18,7 +18,8 @@ from app.services.mail import send_email
 import os
 from tqdm import tqdm
 from googletrans import Translator
-from multi_rake import Rake
+#from rake_nltk import Rake
+#from multi_rake import Rake
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
@@ -69,7 +70,7 @@ def translate_posts(post_id, user_id):
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
     # tag collector
-    rake = Rake()
+   # rake = Rake()
 
     if post.post_url is not None:
         parser = HtmlParser.from_url(post.post_url, Tokenizer(post_language.name))
@@ -92,9 +93,9 @@ def translate_posts(post_id, user_id):
             if j == user_default_lang:
                 current_lang = Language.query.filter_by(code=user_default_lang).first()
                 table = language_dict.get(user_default_lang)
-                keywords = rake.apply(sum_content)
+                #keywords = rake.apply(sum_content)
                 if post is not None:
-                    new_row = table(post_id, post.title, sum_content, current_lang.id, tags=str([x[0] for x in keywords[:5]]))
+                    new_row = table(post_id, post.title, sum_content, current_lang.id, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
                     db.session.add(new_row)
                     db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
@@ -106,10 +107,10 @@ def translate_posts(post_id, user_id):
                 if i == j and i != user_default_lang:
                    current_lang = Language.query.filter_by(code=i).first()
                    table = language_dict.get(i)
-                   keywords = rake.apply(content_translation[i])
+                   #keywords = rake.apply(content_translation[i])
                    new_check =table.query.filter_by(title=title_translation[i]).first()
                    if new_check is None:
-                        new_row = table(post_id, title_translation[i], content_translation[i], current_lang.id, tags=str([x[0] for x in keywords[:5]]))
+                        new_row = table(post_id, title_translation[i], content_translation[i], current_lang.id, tags=str('ddddddd'))#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
                         p += 1         
