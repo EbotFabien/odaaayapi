@@ -525,6 +525,7 @@ class ShoutPost(Resource):
             posts = Posts.query.filter_by(id=post_id).first()
             if user:
                 if posts:
+                    count_claps=posts.No__claps()
                     clappedpost=Posts.query.filter_by(id=post_id).order_by(Posts.id.desc()).paginate(int(start), int(count), False).items
                     return  {
                     "start": start,
@@ -532,6 +533,7 @@ class ShoutPost(Resource):
                     "count": count,
                     "next": next,
                     "previous": previous,
+                    "amt_shouts":count_claps,
                     "results": marshal(clappedpost, post_clap)
                 }, 200
                 else:

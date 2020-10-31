@@ -484,6 +484,9 @@ class Posts(db.Model):
             clap,(clap.c.post_id == self.id)).filter(
             clap.c.user_id == user.id).first()
 
+    def No__claps(self):
+        return self.query.join(
+            clap,(clap.c.post_id == self.id)).count()
     
     def add_clap(self,user):
         if not self.has_clapped(user):
