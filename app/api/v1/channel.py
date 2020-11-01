@@ -47,7 +47,8 @@ channel_view = channel.model('channel_view', {
     'name': fields.String(required=True),
     'description': fields.String(required=True),
     'profile_pic': fields.String(required=True),
-    'background': fields.String(required=True)
+    'background': fields.String(required=True),
+    'private':fields.Boolean(required=True)
 })
 channel_R_data = channel.model('channel_R_data', {
     'id': fields.Integer(required=True),
@@ -85,7 +86,8 @@ channelcreationdata = channel.model('ChannelCreationData', {
     'profile_pic': fields.String(required=True),
     'description': fields.String(required=True),
     'background': fields.String(),
-    'css': fields.String()
+    'css': fields.String(),
+    'private':fields.Boolean()
 })
 channel_sub_moderator = channel.model('channel_sub_moderator',{
     'channel_id': fields.String(required=True),
@@ -139,6 +141,8 @@ class Data(Resource):
                 new_channel = Channels(req_data['name'],req_data['description'], req_data['profile_pic'], \
                 req_data['background'], user.id, req_data['css'])
                 db.session.add(new_channel)
+                db.session.commit()
+                new_channel.private = req_data['private']
                 db.session.commit()
             else:
                 return {'res':'Channel already exist'}, 404
