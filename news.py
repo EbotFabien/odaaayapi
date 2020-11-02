@@ -26,7 +26,7 @@ def logo():
 
 def recreate_db():
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
         db.session.commit()
 
@@ -90,5 +90,5 @@ def test():
     return 1
 
 if __name__ == "__main__":
-    #manager.run()
+    manager.run()
     run()
