@@ -17,8 +17,8 @@ from werkzeug.utils import secure_filename
 from itsdangerous import  TimedJSONWebSignatureSerializer as Serializer
 
 channel_langs = db.Table('channel_langs',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
-    db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True)
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True, unique=True),
+    db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True, unique=True)
 )
 postchannel = db.Table('postchannel',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
@@ -298,8 +298,8 @@ class Notification(db.Model):
 
 class Channels(db.Model):
     __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.String, unique=True)
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)
     background = db.Column(db.String)
