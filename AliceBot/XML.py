@@ -18,10 +18,18 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
+from contextlib import closing
 
-urls= ['https://guardian.ng/category/news/nigeria/feed/']
+urls= ['https://guardian.ng/category/news/nigeria/feed/','https://www.channelstv.com/feed/','https://www.premiumtimesng.com/feed/','https://www.pmnewsnigeria.com/feed','https://www.withinnigeria.com/feed/','https://www.nairaland.com/feed','https://guardian.ng/category/news/nigeria/feed/']
+_HTTP_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.155 Safari/537.36 OPR/31.0.1889.174",
+    # "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
+}
 for url in urls:
-    response=requests.get(url,verify = False)
+    with closing(requests.get(url, headers=_HTTP_HEADERS,verify = False)) as response1:
+        response=response1
+        response.close()
+
     soup=BeautifulSoup(response.content,features="xml")
     headers = {'API-KEY': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiQm9vZ2llIiwidXVpZCI6ImE2MDA4YWRkLWNmMmEtNDE4NS1iNmE4LWNlMjE2YzY1MzI5OCIsImlhdCI6MTU5NjA5ODA4M30.pKwSjDoC3AboeVW3Xe8yY8hIfuKhqT86IRbP13Y7ovE','Content-type': 'application/json', 'Accept': 'text/plain'}
     
@@ -70,22 +78,24 @@ for url in urls:
 
                 }
                 #print(params)
-                requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
-                
+                response=requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                response.close()
+                                
                 
             else:
                 params = { 
                     "title": Title,
                     "channel":["Webb-Martin","Chapman LLC","Jensen, Hudson and Peterson"],
-                    "type":4,
+                    "type":1,
                     "post_url": Link,
                     "content":sum_content,
                     "lang":"en",
 
                 }
                 #print(params)
-                requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
-                
+                response=requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                response.close()
+
     if soup.findAll('item') is not None:
         items=soup.findAll('item')
         news_items =[]
@@ -127,21 +137,21 @@ for url in urls:
                     "lang":"en",
                 }
                 #print(params)
-                requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
-                
+                response=requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                response.close()                
             else:
                 params = { 
                     "title": Title,
                     "channel":["Webb-Martin","Chapman LLC","Jensen, Hudson and Peterson"],
-                    "type":4,
+                    "type":1,
                     "post_url": Link,
                     "content":sum_content,
                     "lang":"en",
                    
                 }
                 #print(params)
-                requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
-                
+                response=requests.post(url="https://3b1015659f8b.ngrok.io/api/v1/post",data=json.dumps(params),headers=headers,verify=False)
+                response.close()                
 #for item in xmldoc.iterfind('feed/item'):
     #print(item.findtext('title'))
    #'https://www.channelstv.com/feed/','https://www.nairaland.com/feed','https://guardian.ng/category/news/nigeria/feed/','https://www.channelstv.com/feed/'
