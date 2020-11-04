@@ -143,8 +143,7 @@ class Users(db.Model):
         return user.filter(subs.c.notif == True).all()
 
     def No_claps(self):
-        return  self.query.join(
-            clap,(clap.c.user_id == self.id)).count()
+        return  self.clap.filter(clap.c.user_id == self.id).count()
 
     def add_notification(self,channel):
         if not self.notified(channel):
@@ -329,8 +328,7 @@ class Channels(db.Model):
         backref=db.backref('channelpost', lazy='dynamic'), lazy='dynamic')
 
     def No_Posts (self):
-        return  self.query.join(
-            postchannel,(postchannel.c.channel_id == self.id )).count()
+        return  self.postchannel.filter(postchannel.c.channel_id == self.id ).count()
     
     def subscribed(self,user):
         return  self.query.join(
@@ -338,8 +336,7 @@ class Channels(db.Model):
                 subs.c.users_id == user.id).first()
 
     def subscribed_numbers(self):
-        return  self.query.join(
-            subs,(subs.c.channel_id == self.id )).count()
+        return  self.subs.filter(subs.c.channel_id == self.id ).count()
                     
     def haspost(self,post):
         return  self.query.join(
@@ -486,8 +483,7 @@ class Posts(db.Model):
             clap.c.user_id == user.id).first()
 
     def No__claps(self):
-        return self.query.join(
-            clap,(clap.c.post_id == self.id)).count()
+        return self.clap.filter(clap.c.post_id == self.id).count()
     
     def add_clap(self,user):
         if not self.has_clapped(user):
