@@ -462,9 +462,9 @@ class UsersPost(Resource):
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user= Users.query.filter_by(uuid=data['uuid']).first()
-            posts1 = Posts.query.filter_by(uploader_id=user.id).first()
-            if user.id == posts1.uploader_id :
-                pgPosts = Posts.query.filter_by(uploader_id=posts1.uploader_id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False)
+            posts1 = Posts.query.filter_by(uploader=user.id).first()
+            if user.id == posts1.uploader:
+                pgPosts = Posts.query.filter_by(uploader=posts1.uploader).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False)
                 posts = pgPosts.items
                 total = pgPosts.total
                 return {
