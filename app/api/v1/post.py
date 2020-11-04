@@ -870,10 +870,7 @@ class Report_post_(Resource):
 
 @post.doc(
     security='KEY',
-    params={ 'start': 'Value to start from ',
-            'limit': 'Total limit of the query',
-            'count': 'Number results per page',
-            'Discovery_Type' : 'state the type of discovery',
+    params={ 
             'country':'State the country'
             },
     responses={
@@ -895,49 +892,30 @@ class Discovery(Resource):
     #@cache.cached(300, key_prefix='all_posts')
     def get(self):
         if request.args:
-            start  = request.args.get('start', None)
-            limit  = request.args.get('limit', None)
-            count = request.args.get('count', None)
-            Discovery_Type = request.args.get('Discovery_Type') 
+            start  = 1
+            count = 5
             country = request.args.get('country')
-            # Still to fix the next and previous WRT Sqlalchemy
-            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
-            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+
 
             if country is None:
                 return{
                     'status':0,
                     'res': 'Please input country'
                 }
-            if Discovery_Type == 'New':
-                posts = Posts.query.order_by(Posts.uploader_date.desc()).filter_by(country=country).paginate(int(start), int(count), False).items
+            else:
+                New = Posts.query.order_by(Posts.uploader_date.desc()).filter_by(country=country).paginate(int(start), int(count), False).items
+                Trending = Posts.query.order_by(func.random()).filter_by(country=country).paginate(int(start), int(count), False).items
+                Best = Posts.query.order_by(func.random()).filter_by(country=country).paginate(int(start), int(count), False).items
+               
                 return {
-                    "start": start,
-                    "limit": limit,
-                    "count": count,
-                    "next": next,
-                    "previous": previous,
-                    "results": marshal(posts, postdata)
+                    "New": marshal(New, postdata),
+                    "Trending": marshal(Trending, postdata),
+                    "Best": marshal(Best, postdata)
                 }, 200
-            if Discovery_Type == 'Trending':
-                posts = Posts.query.order_by(func.random()).filter_by(country=country).paginate(int(start), int(count), False).items
-                return {
-                    "start": start,
-                    "limit": limit,
-                    "count": count,
-                    "next": next,
-                    "previous": previous,
-                    "results": marshal(posts, postdata)
-                }, 200
-            if Discovery_Type == 'Best':
-                posts = Posts.query.order_by(func.random()).filter_by(country=country).paginate(int(start), int(count), False).items
-                return {
-                    "start": start,
-                    "limit": limit,
-                    "count": count,
-                    "next": next,
-                    "previous": previous,
-                    "results": marshal(posts, postdata)
-                }, 200     
 
+        else:
+            return{
+                    'status':0,
+                    'res': 'request failed'
+                },400
             #fff
