@@ -63,7 +63,7 @@ def createapp(configname):
     app.register_blueprint(api_blueprint, url_prefix='/api')
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     #app.register_blueprint(errors)
-    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+    cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
     @app.route('/')
     def index():
@@ -83,7 +83,7 @@ def createapp(configname):
 
     @app.errorhandler(werkzeug.exceptions.NotFound)
     def handle_bad_request(e):
-        return 'bad request!', 404
+        return 'Not Found!', 404
         
     @app.errorhandler(werkzeug.exceptions.InternalServerError)
     def handle_bad_request(e):
