@@ -63,7 +63,7 @@ def createapp(configname):
     app.register_blueprint(api_blueprint, url_prefix='/api')
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     #app.register_blueprint(errors)
-    cors = CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     @app.route('/')
     def index():
