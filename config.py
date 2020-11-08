@@ -43,6 +43,8 @@ class Config(object):
     PAGINATE_SIZE_PARAM = "pagesize"
     PAGINATE_RESOURCE_LINKS_ENABLED = True
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
+    RQ_DASHBOARD_USERNAME='rqadmin'
+    RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
     ADMINS = ['touchone0001@gmail.com']
     TWILIO_ACCOUNT_SID = 'AC5e5097c08f1957d7e590079ca378a298'
