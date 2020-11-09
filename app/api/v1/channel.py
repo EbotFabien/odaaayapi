@@ -64,11 +64,16 @@ channeldata = channel.model('channelreturndata',{
     'description': fields.String(required=True)
 })
 
+user_data = channel.model('user_data', {
+    'id':fields.String(required=True),
+    'profile_picture':fields.String(required=True)
+})
 channel_post =channel.model('channel_post',{
     'id': fields.Integer(required=True),
     'title':fields.String(required=True),
     'uuid':fields.String(required=True),
-    'uploader':fields.String(required=True),
+    'uploader_data':fields.List(fields.Nested(user_data)),
+    'thumb_url':fields.String(required=True),
     'uploader_date':fields.String(required=True)
 })
 
