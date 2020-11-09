@@ -460,7 +460,7 @@ class Posts(db.Model):
     
     uploader_data=db.relationship("Users", 
         primaryjoin=(uploader_id == Users.id),
-        backref=db.backref('uploader__data',  lazy='dynamic'),  lazy='dynamic')
+        backref=db.backref('uploader__data',  uselist=False),  uselist=False)
 
     #Save = db.relationship(
         #'Users',secondary=Save,

@@ -464,7 +464,7 @@ class UsersPost(Resource):
             user= Users.query.filter_by(uuid=data['uuid']).first()
             posts1 = Posts.query.filter_by(uploader=user.id).first()
             if user.id == posts1.uploader:
-                pgPosts = Posts.query.filter_by(uploader=posts1.uploader).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False)
+                pgPosts = Posts.query.filter_by(uploader_id=posts1.uploader_id).order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False)
                 posts = pgPosts.items
                 total = pgPosts.total
                 return {
