@@ -304,7 +304,7 @@ class Channels(db.Model):
     profile_pic = db.Column(db.String)
     background = db.Column(db.String)
     css = db.Column(db.String)
-    #private =db.Column(db.Boolean, nullable=False, default=False)
+    private =db.Column(db.Boolean, nullable=False, default=False)
     desc_en = db.Column(db.String)
     desc_es = db.Column(db.String)
     desc_ar = db.Column(db.String)
@@ -460,7 +460,7 @@ class Posts(db.Model):
     
     uploader_data=db.relationship("Users", 
         primaryjoin=(uploader_id == Users.id),
-        backref=db.backref('uploader__data',  lazy='dynamic'),  lazy='dynamic')
+        backref=db.backref('uploader__data',  uselist=False),  uselist=False)
 
     #Save = db.relationship(
         #'Users',secondary=Save,

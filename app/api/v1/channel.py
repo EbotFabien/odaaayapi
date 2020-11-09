@@ -66,6 +66,7 @@ channeldata = channel.model('channelreturndata',{
 
 user_data = channel.model('user_data', {
     'id':fields.String(required=True),
+    'username':fields.String(required=True),
     'profile_picture':fields.String(required=True)
 })
 channel_post =channel.model('channel_post',{
