@@ -457,6 +457,10 @@ class Posts(db.Model):
         primaryjoin=(clap.c.post_id == id),
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
+    
+    uploader_data=db.relationship("Users", 
+        primaryjoin=(uploader_id == Users.id),
+        backref=db.backref('uploader__data',  lazy='dynamic'),  lazy='dynamic')
 
     #Save = db.relationship(
         #'Users',secondary=Save,
