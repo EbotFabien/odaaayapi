@@ -650,7 +650,6 @@ class full_channel(Resource):
             ID = request.args.get('ID',None)
             channel = Channels.query.filter_by(id=ID).first()
             subscribers =channel.subscribed_numbers()
-            print(subscribers)
             return{
                 "subscribers":subscribers,
                 "channel_data":marshal(channel,channel_view)

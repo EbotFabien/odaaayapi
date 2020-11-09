@@ -17,16 +17,16 @@ from werkzeug.utils import secure_filename
 from itsdangerous import  TimedJSONWebSignatureSerializer as Serializer
 
 channel_langs = db.Table('channel_langs',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
-    db.Column('language_id', db.Integer, db.ForeignKey('language.id'), primary_key=True)
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
+    db.Column('language_id', db.Integer, db.ForeignKey('language.id'))
 )
 postchannel = db.Table('postchannel',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
-    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
 )
 subs = db.Table('subs',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id'), primary_key=True),
-    db.Column('users_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
+    db.Column('users_id', db.Integer, db.ForeignKey('users.id')),
 )
 followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
@@ -38,8 +38,8 @@ blocking = db.Table('Blocked',
 )
 clap = db.Table('clap',
     db.Column('clap_id',db.Integer,autoincrement=True, primary_key = True),
-    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
-    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'), primary_key=True)
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'))
 )
 shout = db.Table('shout',
     db.Column('shout_id',db.Integer,autoincrement=True, primary_key = True),
@@ -296,6 +296,7 @@ class Notification(db.Model):
         return json.loads(str(self.payload_json))
 
 class Channels(db.Model):
+
     __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -418,6 +419,8 @@ class Rating(db.Model):
     def __repr__(self):
         return '<Rating>%r' %self.id
 
+
+
 class Posts(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
@@ -429,7 +432,7 @@ class Posts(db.Model):
     thumb_url = db.Column(db.String)
     orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
     uploader_date = db.Column(db.DateTime, nullable=False)
-    post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
+    post_type = db.Column(db.Integer, db.ForeignKey('posttype.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     ratings_id = db.relationship('Rating', backref='rating', lazy = True)
     comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
@@ -760,21 +763,6 @@ class Message(db.Model):
     def __repr__(self):
         return '<Message {}>'.format(self.body)
     
-class Save(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    content = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    post___data=db.relationship('Posts', 
-        primaryjoin=(post_id == Posts.id),
-        backref=db.backref('postsdat_a', uselist=False), uselist=False)
-    def __init__(self, user, content,post):
-        self.user_id = user
-        self.content = content
-        self.post_id = post
-
-    def __repr__(self):
-        return '<Save %r>' % self.id
       
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -798,3 +786,19 @@ class Report(db.Model):
     def __repr__(self):
         return '<Report %r>' % self.id
 
+
+class Save(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    content = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id =db.Column(db.Integer,db.ForeignKey('posts.id', onupdate="CASCADE", ondelete="CASCADE"),nullable=False)
+    post___data=db.relationship('Posts', 
+        primaryjoin=(post_id == Posts.id),
+        backref=db.backref('postsdat_a', uselist=False), uselist=False)
+    def __init__(self, user, content,post):
+        self.user_id = user
+        self.content = content
+        self.post_id = post
+
+    def __repr__(self):
+        return '<Save %r>' % self.id
