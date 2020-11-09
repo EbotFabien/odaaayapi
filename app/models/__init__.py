@@ -43,8 +43,8 @@ clap = db.Table('clap',
 )
 shout = db.Table('shout',
     db.Column('shout_id',db.Integer,autoincrement=True, primary_key = True),
-    db.Column('user_id',db.Integer,db.ForeignKey('users.id'),primary_key=True),
-    db.Column('comment_id',db.Integer,db.ForeignKey('comment.id'), primary_key=True)
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('comment_id',db.Integer,db.ForeignKey('comment.id'))
 )
 sub_moderator = db.Table('sub_moderator',
     db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
@@ -298,7 +298,7 @@ class Notification(db.Model):
 class Channels(db.Model):
 
     __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,unique=True, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     profile_pic = db.Column(db.String)
