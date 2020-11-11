@@ -77,6 +77,7 @@ class Users(db.Model):
     uuid = db.Column(db.String, nullable=False)
     bio = db.Column(db.String(350), nullable=True)
     user_number = db.Column(db.Integer, nullable=True)
+    reset_code=db.string()
     #user_handle = db.Column(db.String, nullable=False)
     profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
