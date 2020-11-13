@@ -225,15 +225,15 @@ class Login_email(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@signup.route('/auth/phone_signup')
+@signup.route('/auth/signup')
 class Signup(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
     @signup.expect(schema.signupdata)
     def post(self):
         signup_data = request.get_json()
-        number = signup_data['phonenumber']
-        exuser = Users.query.filter_by(user_number=number).first() #filter also by userhandle
+        user_name = signup_data['username']
+        exuser = Users.query.filter_by(username=user_name).first() #filter also by userhandle
         if signup_data:
             if exuser:
                 return { 
@@ -241,25 +241,15 @@ class Signup(Resource):
                     'status':0
                 }, 200
             else:
-                number = signup_data['phonenumber']
-                verification_code = '123456'
-                # phone.send_confirmation_code(number)
-                if verification_code:
-                    newuser = Users('', True, number=int(signup_data['phonenumber']))
-                    newuser.code = verification_code
-                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                    db.session.add(newuser)
-                    db.session.commit()
-                    return {
-                        'status': 1,
-                        'res': 'success',
-                        'phone': signup_data['phonenumber']
-                    }, 200
-                else:
-                    return {
-                        'status': 0,
-                        'results':'error'
-                    }, 201
+                newuser = Users(user_name, True)
+                db.session.add(newuser)
+                db.session.commit()
+                return {
+                    'status': 1,
+                    'res': 'success',
+                    'phone': signup_data['username']
+                }, 200
+            
         else:
             return {
                 'status': 0,
