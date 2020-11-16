@@ -14,6 +14,8 @@ import werkzeug
 import jwt, uuid, os
 from flask import current_app as app
 from sqlalchemy import func
+import re
+from app.services import mail
 from .v1 import user, info, token, search, post, comment, channel
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
@@ -180,6 +182,7 @@ class Login(Resource):
 class Login_email(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("1/hour")
+    @login.expect(schema.email_login)
     def post(self):
         app.logger.info('User login with user_name')
         data = request.get_json()
@@ -225,6 +228,22 @@ class Login_email(Resource):
             else:
                 return {'res': 'User does not exist'}, 401
 
+@login.doc(
+    params={
+            },
+
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @login.route('/auth/check_reset')
 class _check_reset(Resource):
     @login.expect(schema.check_pass)
@@ -235,29 +254,56 @@ class _check_reset(Resource):
         code=req_data['code']
         check_email =Users.query.filter_by(email=email).first()
         if check_email.code == code:
+            check_email.passwordhash(password)
             check_email.maxtry = 0
+            user.verified=True
             db.session.commit()
             return{
                     'res':'code has been reset',
                     
                 },200
                 
+@login.doc(
+    params={
+            },
+
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @login.route('/auth/reset_code')
 class _reset_code(Resource):
     @login.expect(schema.reset_pass)
     def post(self):
         req_data = request.get_json()
         email=req_data['email']
-        check_email =Users.query.filter_by(email=email).first()
-        if check_email:
-            mail.Invitation(receiver_u=email,text_body="01010")
-            user.code="01010"
-            db.session.commit()
+        phone_num=req_data['phone_number']
+        email =Users.query.filter_by(email=email).first()
+        code_sent=int(phone.generate_code())
+        regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+        regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
+        if re.search(regex1,email) or re.search(regex2,email):
+                mail.Invitation(receiver_u=email,text_body=code_sent)
+                user.code=code_sent
+                db.session.commit()
+                return{
+                        'res':'Mail sent',
+                        
+                    },200
+        if  phone_num:
+            phone.send_confirmation_code(phone_num)
             return{
-                    'res':'Mail sent',
-                    
-                },200
-
+                    'res':'Phone_code sent',
+                        
+                    },200
         else:
             return{
                     "status":0,

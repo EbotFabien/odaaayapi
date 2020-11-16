@@ -85,7 +85,7 @@ class Users(db.Model):
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)
-    #maxtries=db.Column(db.Integer)
+    maxtry=db.Column(db.Integer)
     posts = db.relationship('Posts', backref='author', lazy='dynamic')
     code_expires_in = db.Column(db.String)
     messages_sent = db.relationship('Message',
