@@ -77,7 +77,6 @@ class Users(db.Model):
     uuid = db.Column(db.String, nullable=False)
     bio = db.Column(db.String(350), nullable=True)
     user_number = db.Column(db.Integer, nullable=True)
-    reset_code=db.string()
     #user_handle = db.Column(db.String, nullable=False)
     profile_picture =  db.Column(db.String, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
@@ -86,8 +85,9 @@ class Users(db.Model):
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)
+    #maxtries=db.Column(db.Integer)
     posts = db.relationship('Posts', backref='author', lazy='dynamic')
-    code_expires_in = db.Column(db.DateTime)
+    code_expires_in = db.Column(db.String)
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
                                     backref='author', lazy='dynamic')

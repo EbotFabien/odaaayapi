@@ -172,9 +172,9 @@ ip_data = user.model('address',{
 Notification_seen = user.model('Notification_seen',{
     'notification_id':fields.String(required=True)
 })
-invitation =  user.model('Notification_seen',{
+invitation =  user.model('Invitation',{
     'email':fields.String(required=True),
-    'channel_id':fields.String(required=True)
+    'channel_id':fields.String(required=True) 
 })
 @user.doc(
     security='KEY',
@@ -974,49 +974,6 @@ class  No_claps_(Resource):
                 },400
 
 
-@user.doc(
-    security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person',
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
-              },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',    
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/reset_code')
-class  reset_code_(Resource):
-    @token_required
-    @user.expect(invitation)
-    def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        email=req_data['email']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        check_email =Users.query.filter_by(email=email).first()
-        if check_email:
-            mail.Invitation(email,"01010")
-            user.reset_code="01010"
-            db.session.commit()
-            return{
-                    'res':'Mail sent',
-                    
-                },200
 
-        else:
-            return{
-                    "status":0,
-                    "res":"Fail"
-                },400
 
 

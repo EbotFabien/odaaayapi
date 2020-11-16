@@ -162,7 +162,7 @@ class Login(Resource):
 @login.doc(
     params={
             'username':'Username',
-            'password': 'password'},
+            'email': 'email'},
 
     responses={
         200: 'ok',
@@ -183,11 +183,16 @@ class Login_email(Resource):
     def post(self):
         app.logger.info('User login with user_name')
         data = request.get_json()
+        count=5
         if data:
-            user_name = data['username']
+            email = data['email']#email
             password = data['password']
-            user = Users.query.filter_by(username=user_name).first()
+            user = Users.query.filter_by(email=email).first()
             if user :
+                if user.verified == False:
+                    return{
+                        'res':' you are not verified'
+                    },401
                 if password:
                     if user.verify_password(password) and user.verified == True:
                         token = jwt.encode({
@@ -204,7 +209,14 @@ class Login_email(Resource):
                             'token': string_token
                         }, 201
                     else:
-                        return {'res': 'Your Password is wrong or you not verified'}, 401
+                        if user.maxtry < count:
+                            user.maxtry +=1
+                            db.session.commit()
+                            return {'res': 'Your Password is wrong '}, 401
+                        if user.maxtry >= count:
+                           user.verified=False
+                           db.session.commit()
+                           return {'res': 'Reset your Password '}, 401
                 else:
                     default_password = '123456'
                     user.password = default_password
@@ -212,6 +224,45 @@ class Login_email(Resource):
                     return {'res': 're_enter password'}, 301
             else:
                 return {'res': 'User does not exist'}, 401
+
+@login.route('/auth/check_reset')
+class _check_reset(Resource):
+    @login.expect(schema.check_pass)
+    def post(self):
+        req_data = request.get_json()
+        email=req_data['email']
+        password=req_data['password']
+        code=req_data['code']
+        check_email =Users.query.filter_by(email=email).first()
+        if check_email.code == code:
+            check_email.maxtry = 0
+            db.session.commit()
+            return{
+                    'res':'code has been reset',
+                    
+                },200
+                
+@login.route('/auth/reset_code')
+class _reset_code(Resource):
+    @login.expect(schema.reset_pass)
+    def post(self):
+        req_data = request.get_json()
+        email=req_data['email']
+        check_email =Users.query.filter_by(email=email).first()
+        if check_email:
+            mail.Invitation(receiver_u=email,text_body="01010")
+            user.code="01010"
+            db.session.commit()
+            return{
+                    'res':'Mail sent',
+                    
+                },200
+
+        else:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                },400
 @signup.doc(
     responses={
         200: 'ok',

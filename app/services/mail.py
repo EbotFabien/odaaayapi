@@ -31,7 +31,7 @@ def Report(sender_u,text_body):
 def Invitation(receiver_u,text_body,sender_u=current_app.config['ADMINS'][0]):
     msg = Message(subject="Report", sender=sender_u, recipients=receiver_u)
     msg.body =text_body
-    mail.send(msg)
+    mail.send(msg) 
     
 '''
 def send_password_reset_email(user):
