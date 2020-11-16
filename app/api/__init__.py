@@ -14,6 +14,8 @@ import werkzeug
 import jwt, uuid, os
 from flask import current_app as app
 from sqlalchemy import func
+import re
+from app.services import mail
 from .v1 import user, info, token, search, post, comment, channel
 from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
@@ -162,7 +164,7 @@ class Login(Resource):
 @login.doc(
     params={
             'username':'Username',
-            'password': 'password'},
+            'email': 'email'},
 
     responses={
         200: 'ok',
@@ -180,14 +182,20 @@ class Login(Resource):
 class Login_email(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("1/hour")
+    @login.expect(schema.email_login)
     def post(self):
         app.logger.info('User login with user_name')
         data = request.get_json()
+        count=5
         if data:
-            user_name = data['username']
+            email = data['email']#email
             password = data['password']
-            user = Users.query.filter_by(username=user_name).first()
+            user = Users.query.filter_by(email=email).first()
             if user :
+                if user.verified == False:
+                    return{
+                        'res':' you are not verified'
+                    },401
                 if password:
                     if user.verify_password(password) and user.verified == True:
                         token = jwt.encode({
@@ -204,7 +212,14 @@ class Login_email(Resource):
                             'token': string_token
                         }, 201
                     else:
-                        return {'res': 'Your Password is wrong or you not verified'}, 401
+                        if user.maxtry < count:
+                            user.maxtry +=1
+                            db.session.commit()
+                            return {'res': 'Your Password is wrong '}, 401
+                        if user.maxtry >= count:
+                           user.verified=False
+                           db.session.commit()
+                           return {'res': 'Reset your Password '}, 401
                 else:
                     default_password = '123456'
                     user.password = default_password
@@ -212,6 +227,88 @@ class Login_email(Resource):
                     return {'res': 're_enter password'}, 301
             else:
                 return {'res': 'User does not exist'}, 401
+
+@login.doc(
+    params={
+            },
+
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@login.route('/auth/check_reset')
+class _check_reset(Resource):
+    @login.expect(schema.check_pass)
+    def post(self):
+        req_data = request.get_json()
+        email=req_data['email']
+        password=req_data['password']
+        code=req_data['code']
+        check_email =Users.query.filter_by(email=email).first()
+        if check_email.code == code:
+            check_email.passwordhash(password)
+            check_email.maxtry = 0
+            user.verified=True
+            db.session.commit()
+            return{
+                    'res':'code has been reset',
+                    
+                },200
+                
+@login.doc(
+    params={
+            },
+
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@login.route('/auth/reset_code')
+class _reset_code(Resource):
+    @login.expect(schema.reset_pass)
+    def post(self):
+        req_data = request.get_json()
+        email=req_data['email']
+        phone_num=req_data['phone_number']
+        email =Users.query.filter_by(email=email).first()
+        code_sent=int(phone.generate_code())
+        regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+        regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
+        if re.search(regex1,email) or re.search(regex2,email):
+                mail.Invitation(receiver_u=email,text_body=code_sent)
+                user.code=code_sent
+                db.session.commit()
+                return{
+                        'res':'Mail sent',
+                        
+                    },200
+        if  phone_num:
+            phone.send_confirmation_code(phone_num)
+            return{
+                    'res':'Phone_code sent',
+                        
+                    },200
+        else:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                },400
 @signup.doc(
     responses={
         200: 'ok',
@@ -225,15 +322,15 @@ class Login_email(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@signup.route('/auth/phone_signup')
+@signup.route('/auth/signup')
 class Signup(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
     @signup.expect(schema.signupdata)
     def post(self):
         signup_data = request.get_json()
-        number = signup_data['phonenumber']
-        exuser = Users.query.filter_by(user_number=number).first() #filter also by userhandle
+        user_name = signup_data['username']
+        exuser = Users.query.filter_by(username=user_name).first() #filter also by userhandle
         if signup_data:
             if exuser:
                 return { 
@@ -241,25 +338,15 @@ class Signup(Resource):
                     'status':0
                 }, 200
             else:
-                number = signup_data['phonenumber']
-                verification_code = '123456'
-                # phone.send_confirmation_code(number)
-                if verification_code:
-                    newuser = Users('', True, number=int(signup_data['phonenumber']))
-                    newuser.code = verification_code
-                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                    db.session.add(newuser)
-                    db.session.commit()
-                    return {
-                        'status': 1,
-                        'res': 'success',
-                        'phone': signup_data['phonenumber']
-                    }, 200
-                else:
-                    return {
-                        'status': 0,
-                        'results':'error'
-                    }, 201
+                newuser = Users(user_name, True)
+                db.session.add(newuser)
+                db.session.commit()
+                return {
+                    'status': 1,
+                    'res': 'success',
+                    'phone': signup_data['username']
+                }, 200
+            
         else:
             return {
                 'status': 0,

@@ -872,7 +872,7 @@ class Report_post_(Resource):
 @post.doc(
     security='KEY',
     params={ 
-            'country':'State the country'
+            'address':'ip_address'
             },
     responses={
         200: 'ok',
@@ -895,7 +895,7 @@ class Discovery(Resource):
         if request.args:
             start  = 1
             count = 5
-            country = request.args.get('country')
+            ip_address = request.args.get('address')
 
 
             if country is None:

@@ -172,9 +172,9 @@ ip_data = user.model('address',{
 Notification_seen = user.model('Notification_seen',{
     'notification_id':fields.String(required=True)
 })
-invitation =  user.model('Notification_seen',{
+invitation =  user.model('Invitation',{
     'email':fields.String(required=True),
-    'channel_id':fields.String(required=True)
+    'channel_id':fields.String(required=True) 
 })
 @user.doc(
     security='KEY',
@@ -921,7 +921,7 @@ class  Invitation(Resource):
         toke_n=user.get_reset_token()
         if channel.subscribed(user):
             #email
-            mail.Invitation(user.email,email,"james"+toke_n)
+            mail.Invitation(email,"james"+toke_n,user.email)
             return{
                 'status':'1',
                 'res':'email sent'
@@ -972,3 +972,8 @@ class  No_claps_(Resource):
                     "status":0,
                     "res":"Fail"
                 },400
+
+
+
+
+
