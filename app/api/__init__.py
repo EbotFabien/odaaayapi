@@ -291,7 +291,7 @@ class _reset_code(Resource):
         regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
         if re.search(regex1,email) or re.search(regex2,email):
-                mail.Invitation(receiver_u=email,text_body=code_sent)
+                mail.invitation(receiver_u=email,text_body=code_sent)
                 user.code=code_sent
                 db.session.commit()
                 return{
