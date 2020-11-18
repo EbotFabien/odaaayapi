@@ -9,29 +9,32 @@ def send_async_email(app, msg):
         mail.send(msg)
 
 
-def send_email(recipients, text_body,
+def send_email(app, recipients, text_body,
                attachments=None, sync=False):
-    msg = Message(subject="verification", sender="noreply@demo.com", recipients=recipients)
-    msg.body = text_body
-    #msg.html = html_body
-    if attachments:
-        for attachment in attachments:
-            msg.attach(*attachment)
-    if sync:
-        mail.send(msg)
-    else:
-        Thread(target=send_async_email,
-            args=(current_app._get_current_object(), msg)).start()
+    with app.app_context():
+        msg = Message(subject="verification", sender="noreply@demo.com", recipients=recipients)
+        msg.body = text_body
+        #msg.html = html_body
+        if attachments:
+            for attachment in attachments:
+                msg.attach(*attachment)
+        if sync:
+            mail.send(msg)
+        else:
+            Thread(target=send_async_email,
+                args=(current_app._get_current_object(), msg)).start()
 
-def Report(sender_u,text_body):
-    msg = Message(subject="Report", sender=sender_u, recipients=current_app.config['ADMINS'][0])
-    msg.body = text_body
-    mail.send(msg)
+def Report(app, sender_u,text_body):
+    with app.app_context():
+        msg = Message(subject="Report", sender=sender_u, recipients=app.config['ADMINS'][0])
+        msg.body = text_body
+        mail.send(msg)  
 
-def Invitation(receiver_u,text_body,sender_u=current_app.config['ADMINS'][0]):
-    msg = Message(subject="Report", sender=sender_u, recipients=receiver_u)
-    msg.body =text_body
-    mail.send(msg) 
+def Invitation(app, receiver_u,text_body,sender_u):
+    with app.app_context():
+        msg = Message(subject="Report", sender=app.config['ADMINS'][0], recipients=receiver_u)
+        msg.body =text_body
+        mail.send(msg) 
     
 '''
 def send_password_reset_email(user):

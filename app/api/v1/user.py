@@ -118,6 +118,7 @@ User_R_data = user.model('User_R_data',{
     'email':fields.String(required=False),
     'number':fields.String(required=False),
     'bio':fields.String(required=False),
+    'uuid':fields.String(required=False),
     'profile_picture':fields.String(required=False),
     'user_visibility':fields.String(required=False),
 })
@@ -320,9 +321,6 @@ class User_following(Resource):
             return {
                 "results":marshal(followers,following_followers)
             }, 200
-       
-        
-       
 
     @token_required
     @user.expect(deleteuser)#This is the following route but we will use the deleteuser model since we just need the user ID        
