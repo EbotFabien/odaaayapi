@@ -13,6 +13,8 @@ from flask_migrate import Migrate, MigrateCommand, upgrade
 import unittest
 import os
 from app.services.task import app
+from app.services import mail
+from flask import current_app
 
 
 manager = Manager(app)

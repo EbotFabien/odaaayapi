@@ -85,7 +85,7 @@ class Users(db.Model):
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
     code = db.Column(db.Integer)
-    maxtry=db.Column(db.Integer)
+    #maxtry=db.Column(db.Integer)
     posts = db.relationship('Posts', backref='author', lazy='dynamic')
     code_expires_in = db.Column(db.String)
     messages_sent = db.relationship('Message',
@@ -795,7 +795,7 @@ class Report(db.Model):
 class Save(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     content = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     post_id =db.Column(db.Integer,db.ForeignKey('posts.id', onupdate="CASCADE", ondelete="CASCADE"),nullable=False)
     post___data=db.relationship('Posts', 
         primaryjoin=(post_id == Posts.id),

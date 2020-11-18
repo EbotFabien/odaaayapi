@@ -16,7 +16,6 @@ def send_sms(to_number, body):
                         from_=twilio_number,
                         body=message)
 
-def send_confirmation_code(to_number):
-    verification_code = generate_code()
+def send_confirmation_code(to_number,verification_code):
     send_sms(to_number, verification_code)
     return verification_code

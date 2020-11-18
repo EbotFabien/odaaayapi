@@ -92,79 +92,12 @@ message = apisec.namespace('/api/mesage/user*', \
  
 
 @login.doc(
-    params={ 
-            'phone': 'User phone number',
-            'code': 'verification code'},
-
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@login.route('/auth/phone_login')
-class Login(Resource):
-    # Limiting the user request to localy prevent DDoSing
-    @limiter.limit("1/hour")
-    def post(self):
-        app.logger.info('User login in')
-        if request.args:
-            number = request.args.get('phone', None)
-            code = request.args.get('code', None)
-            user = Users.query.filter_by(user_number=number).first()
-            if user is not None:
-                if code:
-                    if (str(user.code) == str(code)) and not (datetime.utcnow() > user.code_expires_in):
-                        token = jwt.encode({
-                            'user': user.username,
-                            'uuid': user.uuid,
-                            'exp': datetime.utcnow() + timedelta(days=30),
-                            'iat': datetime.utcnow()
-                        },
-                        app.config.get('SECRET_KEY'),
-                        algorithm='HS256')
-                        return {
-                            'status': 1,
-                            'res': 'success',
-                            'token': str(token)
-                        }, 200
-                    else:
-                        return {
-                            'status': 0,
-                            'res': 'verification fail make sure code is not more than 5 mins old'
-                            }, 200
-                else:
-                    verification_code = '123456'
-                    user.code = verification_code
-                    user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                    #db.session.add(newuser)
-                    db.session.commit()
-                    # phone.send_confirmation_code(request.args.get('phone', None))
-                    return {
-                        'status': 1,
-                        'res': 'verification sms sent'
-                        }, 201
-            else:
-                return {
-                    'status': 0,
-                    'res': 'user does not exist sign up'
-                    },200
-        else:
-           return {
-               'status': 0,
-               'res': 'Invalid request'
-               }, 500
-
-@login.doc(
     params={
             'username':'Username',
-            'email': 'email'},
+            'email': 'email',
+            'phone': 'User phone number',
+            'code':'verification code',
+            'password':'input Password'},
 
     responses={
         200: 'ok',
@@ -178,26 +111,25 @@ class Login(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@login.route('/auth/email_login')
+@login.route('/auth/login')
 class Login_email(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("1/hour")
     @login.expect(schema.email_login)
     def post(self):
         app.logger.info('User login with user_name')
-        data = request.get_json()
         count=5
-        if data:
-            email = data['email']#email
-            password = data['password']
+        if request.args:
+            number = request.args.get('phone', None)
+            code = request.args.get('code', None)
+            user1 = Users.query.filter_by(user_number=number).first()
+            email = request.args.get('email', None)
+            password =request.args.get('password', None)
             user = Users.query.filter_by(email=email).first()
             if user :
-                if user.verified == False:
-                    return{
-                        'res':' you are not verified'
-                    },401
-                if password:
-                    if user.verify_password(password) and user.verified == True:
+
+                if email and  password:
+                    if user.verify_password(password):
                         token = jwt.encode({
                             'user': user.username,
                             'uuid': user.uuid,
@@ -211,6 +143,8 @@ class Login_email(Resource):
                             'res': 'success',
                             'token': string_token
                         }, 201
+
+                
                     else:
                         if user.maxtry < count:
                             user.maxtry +=1
@@ -220,12 +154,49 @@ class Login_email(Resource):
                            user.verified=False
                            db.session.commit()
                            return {'res': 'Reset your Password '}, 401
-                else:
-                    default_password = '123456'
-                    user.password = default_password
-                    db.session.commit()
-                    return {'res': 're_enter password'}, 301
+                
+            
+            if user1:
+                    if code is None:
+                        verification_code=phone.generate_code()
+                        user1.code = verification_code
+                        user1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                        db.session.commit()
+                        phone.send_confirmation_code(request.args.get('phone', None),verification_code)
+                        return {
+                            'status': 1,
+                            'res': 'verification sms sent'
+                            }, 201
+                    
+                    if code:
+                        if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                            token = jwt.encode({
+                                'user': user1.username,
+                                'uuid': user1.uuid,
+                                'exp': datetime.utcnow() + timedelta(days=30),
+                                'iat': datetime.utcnow()
+                            },
+                            app.config.get('SECRET_KEY'),
+                            algorithm='HS256')
+                            return {
+                                'status': 1,
+                                'res': 'success',
+                                'token': str(token)
+                            }, 200
+                        else:
+                            if user1.maxtry < count:
+                                user1.maxtry +=1
+                                db.session.commit()
+                                return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+
+                            if user1.maxtry >= count:
+                                user1.verified=False
+                                db.session.commit()
+                                return {'res': 'Reset your code '}, 401
             else:
+                return {'res': 'User does not exist'}, 401
+
+        else:
                 return {'res': 'User does not exist'}, 401
 
 @login.doc(
@@ -291,7 +262,7 @@ class _reset_code(Resource):
         regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
         if re.search(regex1,email) or re.search(regex2,email):
-                mail.Invitation(receiver_u=email,text_body=code_sent)
+                mail.invitation(receiver_u=email,text_body=code_sent)
                 user.code=code_sent
                 db.session.commit()
                 return{
