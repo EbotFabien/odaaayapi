@@ -855,7 +855,6 @@ class Report_post_(Resource):
             Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id,req_data['Type'])
             db.session.add(Report_sent)
             db.session.commit()
-            mail.Report(user.email,req_data['reason'])
             return{
                 "status":1,
                 "res":"Post has been reported"

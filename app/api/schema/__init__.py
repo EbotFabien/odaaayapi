@@ -17,9 +17,19 @@ signupdata = apisec.model('Signup', {
     'username': fields.String(required=False, description="The username for the application")
     #'phonenumber': fields.String(required=True, description="Users phone number")
 })
-email_login =  apisec.model('email_login', {
+full_login =  apisec.model('full_login', {
     'email': fields.String(required=True, description="Users Name"),
     'password': fields.String(required=True, description="Users Password"),
+    'username':fields.String(required=False, description="The username for the application"),
+    'phone':  fields.String(required=True, description="Users phone number"),
+    'code':fields.String(required=True, description="verification code"),
+
+})
+
+Report_post = apisec.model('Report_post',{
+    'post_id':fields.String(required=True),
+    'reason':fields.String(required=True),
+    'Type': fields.String(required=True),
 })
 
 reset_pass =  apisec.model('reset_pass',{

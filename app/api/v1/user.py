@@ -347,15 +347,15 @@ class User_following(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_unfollow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unfollow is None :
-            return {'status': 0, 'res':'fail'}, 200
+            return {'status': 0, 'res':'faila'}, 200
         if user.is_following(user_to_unfollow) is None:
-            return {'status': 0, 'res':'fail'}, 200
+            return {'status': 0, 'res':'fails'}, 200
         if user.is_following(user_to_unfollow):
             user.unfollow(user_to_unfollow)
             db.session.commit()
             return{'status': 1, 'res':'success'},200
         else:
-            return {'status': 0, 'res':'fail'},200
+            return {'status': 0, 'res':user_to_unfollow.id},200
 
 @user.route('/user/Block')
 class User_Block(Resource):
