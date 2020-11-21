@@ -465,7 +465,8 @@ class Home(Resource):
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'count': 'Number results per page',
-            'id': 'Article id'},
+            'id': 'Article id',
+            'lang':'Language'},
     responses={
         200: 'ok',
         201: 'created',
