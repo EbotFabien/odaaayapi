@@ -115,7 +115,7 @@ message = apisec.namespace('/api/mesage/user*', \
 class Login_email(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("1/hour")
-    @login.expect(schema.email_login)
+    @login.expect(schema.full_login)
     def post(self):
         app.logger.info('User login with user_name')
         count=5
@@ -224,7 +224,7 @@ class _check_reset(Resource):
         password=req_data['password']
         code=req_data['code']
         check_email =Users.query.filter_by(email=email).first()
-        if check_email.code == code:
+        if check_email.code == int(code):
             check_email.passwordhash(password)
             check_email.maxtry = 0
             user.verified=True
@@ -233,7 +233,11 @@ class _check_reset(Resource):
                     'res':'code has been reset',
                     
                 },200
-                
+        else:
+            return{
+                    'res':'code is not same',
+                    
+                },400
 @login.doc(
     params={
             },
@@ -257,14 +261,14 @@ class _reset_code(Resource):
         req_data = request.get_json()
         email=req_data['email']
         phone_num=req_data['phone_number']
-        email =Users.query.filter_by(email=email).first()
+        email1 =Users.query.filter_by(email=email).first()
         code_sent=int(phone.generate_code())
         regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
-        if re.search(regex1,email) or re.search(regex2,email):
-                mail.invitation(receiver_u=email,text_body=code_sent)
-                user.code=code_sent
+        if re.search(regex1,str(email)) or re.search(regex2,str(email)):
+                email1.code=code_sent
                 db.session.commit()
+                mail.send_email(recipients=email1.email,text_body=code_sent)
                 return{
                         'res':'Mail sent',
                         
@@ -593,20 +597,34 @@ class Related(Resource):
 @home.route('/article/<id>')
 class Article(Resource):
     def get(self, id):
-        if id:
-            posts_feed = Posts.query.filter_by(uuid = id).first()
-            channels = posts_feed.get_post_channels()
-            return {
-                "results": {
-                    'article': marshal(posts_feed, schema.postdata),
-                    'channels': marshal(channels, schema.channeldata)
-                }
-            }, 200
+        language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+        if request.args:
+            if id:
+                lang  = request.args.get('lang', None)
+                table = language_dict.get(lang)
+                posts_feed = Posts.query.filter_by(uuid = id).first()
+                translated_feed = table.query.filter_by(id = posts_feed.id).first()
+                channels = posts_feed.get_post_channels()
+                return {
+                    "results": {
+                        "lang": lang,
+                        'translated_feed':marshal(translated_feed, schema.postdata),
+                        'article': marshal(posts_feed, schema.postdata),
+                        'channels': marshal(channels, schema.channeldata)
+                    }
+                }, 200
+            else:
+                return {
+                    'status': 0,
+                    'res': 'article not found'
+                }, 404
         else:
+            posts_feed = Posts.query.filter_by(uuid = id).first()
             return {
-                'status': 0,
-                'res': 'article not found'
-            }, 404
+                'feed': marshal(posts_feed, schema.postdata)
+            }, 200 
+
+        
 
 @home.route('/summary/<id>')
 class Aticle(Resource):
