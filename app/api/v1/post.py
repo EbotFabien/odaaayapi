@@ -142,7 +142,7 @@ Clap_post = post.model('clap1',{
     'Post_id':fields.String(required=True)
 })
 saves_post = post.model('saves_post',{
-    'Post_id':fields.Integer(required=True)
+    'Post_id':fields.Integer(required=True) 
 })
 user_clap = post.model('user_clap',{
     'id':fields.Integer(required=True),
@@ -844,7 +844,7 @@ class Report_post_(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['post_id']).first()
-
+  
         if user is None:
             return{
                     "status":0,
