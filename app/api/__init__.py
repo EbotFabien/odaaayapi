@@ -13,7 +13,7 @@ from werkzeug.datastructures import FileStorage
 import werkzeug
 import jwt, uuid, os
 from flask import current_app as app
-from sqlalchemy import func
+from sqlalchemy import func,or_,and_
 import re
 from app.services import mail
 from .v1 import user, info, token, search, post, comment, channel
@@ -627,27 +627,129 @@ class Article(Resource):
 
         
 
-@home.route('/summary/<id>')
-class Aticle(Resource):
-    def get(self, id):
-        # user getting data for their home screen
-        language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
-        if request.args:
-            lang  = request.args.get('lang', None)
-            table = language_dict.get(lang)
-            orig_post = Posts.query.filter_by(uuid = id).first()
-            posts_feed = table.query.filter_by(id = orig_post.id).first()
-            return {
-                "lang": lang,
-                "results": {
-                    'article': marshal(posts_feed, schema.postdata)
+@home.route('/Report_post__/')
+class Report_post_(Resource):
+    @home.expect(schema.Report_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['post_id']).first()
+  
+        if user is None:
+            return{
+                    "status":0,
+                    "res":"Fail"
                 }
-            }, 200
+
+        if post:
+            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id,req_data['Type'])
+            db.session.add(Report_sent)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"Post has been reported"
+            } 
+
+                
         else:
-            posts_feed = Posts.query.filter_by(uuid = id).first()
-            return {
-                'feed': marshal(posts_feed, schema.postdata)
-            }, 200     
+            return{
+                "status":0,
+                "res":"Fail"
+            }
+            #fff
+
+@home.route('/Save/')
+class save_post(Resource): 
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            channel=request.args.get('channel_id')
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            if user:
+                user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+                if user_saves:
+                    return  {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next,
+                        "previous": previous,
+                        "results": marshal(user_saves,schema.saved)
+                    }, 200
+                else:
+                    return{
+                        "status":0,
+                        "res":"User does not have saved posts"
+                    }
+            else:
+                 return{
+                        "status":0,
+                        "res":"User does not exist"
+                    }
+        else:
+            return{
+                        "status":0,
+                        "res":"Request failed"
+                    }
+
+    @home.expect(schema.saves_post) 
+    @token_required
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        Saves= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
+
+        if Saves:
+            db.session.delete(Saves)
+            db.session.commit()
+        else:
+           return{
+                    "status":0,
+                    "res":"Fail"
+                }      
+
+    @home.expect(schema.saves_post)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        Saves= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
+        if Saves:
+            return{
+                "status":0,
+                "res":"Post has already been saved"
+            } 
+        if post:
+            save= Save(user.id,post.content,post.id)
+            db.session.add(save)
+            db.session.commit()
+            return{
+                "status":1,
+                "res":"Post has been saved"
+            }  
+                
+        else:
+            return{
+                    "status":0,
+                    "res":"Fail"
+                }
 
 @message.doc(
     security='KEY',

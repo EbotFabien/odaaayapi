@@ -20,6 +20,12 @@ channel_langs = db.Table('channel_langs',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
     db.Column('language_id', db.Integer, db.ForeignKey('language.id'))
 )
+
+Not_Interested = db.Table('Not_Interested',
+    db.Column('user_id',db.Integer,db.ForeignKey('users.id')),
+    db.Column('post_id',db.Integer,db.ForeignKey('posts.id'))
+)
+
 postchannel = db.Table('postchannel',
     db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
     db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
@@ -324,6 +330,8 @@ class Channels(db.Model):
         secondaryjoin=(subs.c.users_id == Users.id),
         backref=db.backref('get_subscribers', lazy='dynamic'), lazy='dynamic')
 
+   
+
     postchannel = db.relationship(
         'Posts',secondary=postchannel,
         primaryjoin=(postchannel.c.channel_id == id),
@@ -458,6 +466,12 @@ class Posts(db.Model):
         primaryjoin=(clap.c.post_id == id),
         secondaryjoin=(clap.c.user_id == Users.id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
+
+    Not_Interested = db.relationship(
+        'Users', secondary=Not_Interested,
+        primaryjoin=(Not_Interested.c.post_id == id),
+        secondaryjoin=(Not_Interested.c.user_id == Users.id),
+        backref=db.backref('get_subscribers', lazy='dynamic'), lazy='dynamic')
     
     uploader_data=db.relationship("Users", 
         primaryjoin=(uploader_id == Users.id),
@@ -489,6 +503,19 @@ class Posts(db.Model):
         return self.query.join(
             clap,(clap.c.post_id == self.id)).filter(
             clap.c.user_id == user.id).first()
+
+    def not_interested(self,user):
+        return self.query.join(
+            Not_Interested,(Not_Interested.c.post_id == self.id)).filter(
+            Not_Interested.c.user_id == user.id).first()
+
+    def is_not_interested(self,user):
+        if not self.not_interested(user):
+            self.Not_Interested.append(user)
+
+    def remove_not_interested(self,user):
+        if  self.not_interested(user):
+            self.Not_Interested.remove(user)
 
     def No__claps(self):
         return self.clap.filter(clap.c.post_id == self.id).count()
