@@ -32,6 +32,34 @@ Report_post = apisec.model('Report_post',{
     'Type': fields.String(required=True),
 })
 
+saves_post = apisec.model('saves_post',{
+    'Post_id':fields.Integer(required=True)
+})
+
+saved = apisec.model('saved',{
+    "content":fields.String(required=True),
+    "user_id":fields.String(required=True),
+    "post___data":fields.List(fields.Nested(user_post_sav)),
+})
+
+user_post_sav = apisec.model('postreturnuserdata', {
+    'id': fields.Integer(required=True),
+    'uuid':fields.String(required=True),
+    'title': fields.String(required=True),
+    'postchannel': fields.List(fields.Nested(channelfinal)),
+    'post_url': fields.String(required=True),
+    'thumb_url': fields.String(required=True),
+    'uploader': fields.String(required=True),
+    'content': fields.String(required=True),
+    'uploader_date': fields.DateTime(required=True)
+})
+
+channelfinal = apisec.model('channelreturndata',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True)
+})
+
 reset_pass =  apisec.model('reset_pass',{
     'email':fields.String(required=True),
     'phone_number':fields.String(required=True),

@@ -306,7 +306,7 @@ class User_following(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         if fan_base == 'post':
-            posts=user.followed_posts()
+            posts=user.followed_posts() 
             return {
                 "results":marshal(posts,Postfollowed)
             }, 200
