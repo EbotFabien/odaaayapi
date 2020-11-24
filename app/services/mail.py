@@ -41,19 +41,6 @@ def send_email(app, recipients, text_body,
             Thread(target=send_async_email,
                 args=(current_app._get_current_object(), msg)).start()
 
-<<<<<<< HEAD
-def Report(app, sender_u,text_body):
-    with app.app_context():
-        msg = Message(subject="Report", sender=sender_u, recipients=app.config['ADMINS'][0])
-        msg.body = text_body
-        mail.send(msg)  
-
-def Invitation(app, receiver_u,text_body,sender_u):
-    with app.app_context():
-        msg = Message(subject="Report", sender=app.config['ADMINS'][0], recipients=receiver_u)
-        msg.body =text_body
-        mail.send(msg) 
-=======
 def invitation(receiver_u,text_body):
 
     Thread(target=user,
@@ -70,7 +57,6 @@ def Report(sender_u,text_body):
 
 
      
->>>>>>> 1a71d2130e2be40ff14c5172f19ba2482f7947ed
     
 '''
 def send_password_reset_email(user):

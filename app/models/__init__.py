@@ -471,7 +471,7 @@ class Posts(db.Model):
         'Users', secondary=Not_Interested,
         primaryjoin=(Not_Interested.c.post_id == id),
         secondaryjoin=(Not_Interested.c.user_id == Users.id),
-        backref=db.backref('get_subscribers', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')
     
     uploader_data=db.relationship("Users", 
         primaryjoin=(uploader_id == Users.id),

@@ -36,10 +36,11 @@ saves_post = apisec.model('saves_post',{
     'Post_id':fields.Integer(required=True)
 })
 
-saved = apisec.model('saved',{
-    "content":fields.String(required=True),
-    "user_id":fields.String(required=True),
-    "post___data":fields.List(fields.Nested(user_post_sav)),
+
+channelfinal = apisec.model('channelreturndata',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'description': fields.String(required=True)
 })
 
 user_post_sav = apisec.model('postreturnuserdata', {
@@ -54,10 +55,10 @@ user_post_sav = apisec.model('postreturnuserdata', {
     'uploader_date': fields.DateTime(required=True)
 })
 
-channelfinal = apisec.model('channelreturndata',{
-    'id': fields.Integer(required=True),
-    'name': fields.String(required=True),
-    'description': fields.String(required=True)
+saved = apisec.model('saved',{
+    "content":fields.String(required=True),
+    "user_id":fields.String(required=True),
+    "post___data":fields.List(fields.Nested(user_post_sav)),
 })
 
 reset_pass =  apisec.model('reset_pass',{
