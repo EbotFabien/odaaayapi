@@ -115,24 +115,12 @@ class Login_email(Resource):
         app.logger.info('User login with user_name')
         count=5
         req_data = request.get_json()
-<<<<<<< HEAD
-        email=req_data['email'] or None
-        number=req_data['phone'] or None
-        password=req_data['password'] or None
-        code=req_data['code'] or None
-        phone_login=req_data['phone_login'] or True
-        user1 = Users.query.filter_by(user_number=number).first()
-        user = Users.query.filter_by(email=email).first()
-        if phone_login == False and user :
-            if email and  password:
-=======
         phone_login=req_data['phone_login']
         if phone_login == False :
             email=req_data['email'] or None
             password=req_data['password'] or None
             user = Users.query.filter_by(email=email).first()
             if user:
->>>>>>> fee96746c0bdd9a7d54597df0ba66795b4634993
                 if user.verify_password(password):
                     token = jwt.encode({
                         'user': user.username,

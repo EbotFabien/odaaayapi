@@ -74,19 +74,12 @@ userdata = user.model('Profile', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
-<<<<<<< HEAD
-notification =user.model('Notification',{
-    'id':fields.Integer(required=True),
-    'name':  fields.String(required=True),
-    
-=======
 notification_ =user.model('notification_',{
     'id': fields.Integer(required=True),
     'name': fields.String(required=True),
     'user_id': fields.String(required=True),
     'seen': fields.String(required=True),
     'timestamp': fields.String(required=True),
->>>>>>> fee96746c0bdd9a7d54597df0ba66795b4634993
 })
 update_settings = user.model('Full_settings',{
     'user_id' :fields.Integer(required=True),
