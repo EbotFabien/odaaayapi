@@ -115,6 +115,7 @@ class Login_email(Resource):
         app.logger.info('User login with user_name')
         count=5
         req_data = request.get_json()
+<<<<<<< HEAD
         email=req_data['email'] or None
         number=req_data['phone'] or None
         password=req_data['password'] or None
@@ -124,6 +125,14 @@ class Login_email(Resource):
         user = Users.query.filter_by(email=email).first()
         if phone_login == False and user :
             if email and  password:
+=======
+        phone_login=req_data['phone_login']
+        if phone_login == False :
+            email=req_data['email'] or None
+            password=req_data['password'] or None
+            user = Users.query.filter_by(email=email).first()
+            if user:
+>>>>>>> fee96746c0bdd9a7d54597df0ba66795b4634993
                 if user.verify_password(password):
                     token = jwt.encode({
                         'user': user.username,
@@ -137,7 +146,7 @@ class Login_email(Resource):
                         'status': 1,
                         'res': 'success',
                         'token': string_token
-                    }, 201
+                    }, 200
 
             
                 else:
@@ -149,47 +158,54 @@ class Login_email(Resource):
                         user.verified=False
                         db.session.commit()
                         return {'res': 'Reset your Password '}, 401
+
+            else:
+                return {'res': 'User does not exist'}, 401
             
         
-        if phone_login == True and user1:
-                if code is None:
-                    verification_code=phone.generate_code()
-                    user1.code = verification_code
-                    user1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                    db.session.commit()
-                    phone.send_confirmation_code(number,verification_code)
-                    return {
-                        'status': 1,
-                        'res': 'verification sms sent'
-                        }, 201
-                
-                if code:
-                    if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
-                        token = jwt.encode({
-                            'user': user1.username,
-                            'uuid': user1.uuid,
-                            'exp': datetime.utcnow() + timedelta(days=30),
-                            'iat': datetime.utcnow()
-                        },
-                        app.config.get('SECRET_KEY'),
-                        algorithm='HS256')
+        if phone_login == True:
+                number=req_data['phone'] or None
+                code=req_data['code'] or None
+                user1 = Users.query.filter_by(user_number=number).first()
+                if user1:
+                    if code is None:
+                        verification_code=phone.generate_code()
+                        user1.code = verification_code
+                        user1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                        db.session.commit()
+                        phone.send_confirmation_code(number,verification_code)
                         return {
                             'status': 1,
-                            'res': 'success',
-                            'token': str(token)
-                        }, 200
-                    else:
-                        if user1.maxtry < count:
-                            user1.maxtry +=1
-                            db.session.commit()
-                            return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+                            'res': 'verification sms sent'
+                            }, 200
+                    
+                    if code:
+                        if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                            token = jwt.encode({
+                                'user': user1.username,
+                                'uuid': user1.uuid,
+                                'exp': datetime.utcnow() + timedelta(days=30),
+                                'iat': datetime.utcnow()
+                            },
+                            app.config.get('SECRET_KEY'),
+                            algorithm='HS256')
+                            return {
+                                'status': 1,
+                                'res': 'success',
+                                'token': str(token)
+                            }, 200
+                        else:
+                            if user1.maxtry < count:
+                                user1.maxtry +=1
+                                db.session.commit()
+                                return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
 
-                        if user1.maxtry >= count:
-                            user1.verified=False
-                            db.session.commit()
-                            return {'res': 'Reset your code '}, 401
-        else:
-            return {'res': 'User does not exist'}, 401
+                            if user1.maxtry >= count:
+                                user1.verified=False
+                                db.session.commit()
+                                return {'res': 'Reset your code '}, 401
+                else:
+                    return {'res': 'User does not exist'}, 401
 
     
 
