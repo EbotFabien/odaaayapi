@@ -17,7 +17,7 @@ from sqlalchemy import func,or_,and_
 import re
 from app.services import mail
 from .v1 import user, info, token, search, post, comment, channel
-from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
+from app.models import Report, Users, Channels, subs, Language, Save, Setting, Message, Comment, \
     Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
         Postsw, Postes, Posttype, Rating, Ratingtype, postchannel
 
@@ -114,7 +114,7 @@ message = apisec.namespace('/api/mesage/user*', \
 @login.route('/auth/login')
 class Login_email(Resource):
     # Limiting the user request to localy prevent DDoSing
-    @limiter.limit("1/hour")
+    # @limiter.limit("1/hour")
     @login.expect(schema.full_login)
     def post(self):
         app.logger.info('User login with user_name')

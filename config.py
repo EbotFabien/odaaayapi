@@ -62,7 +62,7 @@ class Config(object):
 class Development(Config):
     DEBUG = True
     HOST = '0.0.0.0'
-    PORT = 5000
+    PORT = 8000
 
 class Production(Config):
     DEBUG = False
