@@ -75,8 +75,8 @@ userdata = user.model('Profile', {
     'user_visibility': fields.Boolean(required=True)
 })
 notification =user.model('Notification',{
-    'id'
-    'name'
+    'id':fields.Integer(required=True),
+    'name':  fields.String(required=True),
     
 })
 update_settings = user.model('Full_settings',{

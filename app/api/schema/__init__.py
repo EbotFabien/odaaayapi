@@ -23,7 +23,7 @@ full_login =  apisec.model('full_login', {
     #'username':fields.String(required=False, description="The username for the application"),
     'phone':  fields.String(required=False, description="Users phone number"),
     'code':fields.String(required=False, description="verification code"),
-    'phone_login':fields.Boolean(required=False, description="determine_login"),
+    'phone_login':fields.Boolean(required=True, description="determine_login"),
 
 })
 
