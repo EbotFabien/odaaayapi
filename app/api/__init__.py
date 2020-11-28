@@ -175,6 +175,8 @@ class Login_email(Resource):
                         
                         if code:
                             if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                                user1.maxtry =0
+                                db.session.commit()
                                 token = jwt.encode({
                                     'user': user1.username,
                                     'uuid': user1.uuid,
