@@ -74,6 +74,11 @@ userdata = user.model('Profile', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
+notification =user.model('Notification',{
+    'id'
+    'name'
+    
+})
 update_settings = user.model('Full_settings',{
     'user_id' :fields.Integer(required=True),
     'username':  fields.String(required=True),
@@ -863,8 +868,34 @@ class User_Random(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/Seen_Notification')
+@user.route('/user/Seen_Notification & notifs of user')
 class Seen_Notification(Resource):
+    @token_required
+    def get(self):
+        if request.args:
+            token = request.headers['API-KEY']
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            notification= Notification.query.filter_by(user_id=user.id).paginate(int(start),int(count), False).items
+            return{
+                "start":start,
+                "limit":limit,
+                "count":count,
+                "next":next,
+                "previous":previous,
+                "results":marshal(notification,User_R_data)
+            }, 200
+        else:
+            return{
+                "res":"return request",
+                "status":0,
+                
+            }, 404
     @token_required
     @user.expect(Notification_seen)
     def post(self):
