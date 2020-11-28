@@ -74,10 +74,12 @@ userdata = user.model('Profile', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
-notification =user.model('Notification',{
-    'id'
-    'name'
-    
+notification_ =user.model('notification_',{
+    'id': fields.Integer(required=True),
+    'name': fields.String(required=True),
+    'user_id': fields.String(required=True),
+    'seen': fields.String(required=True),
+    'timestamp': fields.String(required=True),
 })
 update_settings = user.model('Full_settings',{
     'user_id' :fields.Integer(required=True),
@@ -888,7 +890,7 @@ class Seen_Notification(Resource):
                 "count":count,
                 "next":next,
                 "previous":previous,
-                "results":marshal(notification,User_R_data)
+                "results":marshal(notification,notification_)
             }, 200
         else:
             return{
