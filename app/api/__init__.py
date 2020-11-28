@@ -120,32 +120,37 @@ class Login_email(Resource):
             email=req_data['email'] or None
             password=req_data['password'] or None
             user = Users.query.filter_by(email=email).first()
-            if user:
-                if user.verify_password(password):
-                    token = jwt.encode({
-                        'user': user.username,
-                        'uuid': user.uuid,
-                        'iat': datetime.utcnow()
-                    },
-                    app.config.get('SECRET_KEY'),
-                    algorithm='HS256')
-                    string_token = str(token)
-                    return {
-                        'status': 1,
-                        'res': 'success',
-                        'token': string_token
-                    }, 200
+            if user :
+                if user.maxtry >= count:
+                    if user.verify_password(password):
+                        user.maxtry =0
+                        db.session.commit()
+                        token = jwt.encode({
+                            'user': user.username,
+                            'uuid': user.uuid,
+                            'iat': datetime.utcnow()
+                        },
+                        app.config.get('SECRET_KEY'),
+                        algorithm='HS256')
+                        string_token = str(token)
+                        return {
+                            'status': 1,
+                            'res': 'success',
+                            'token': string_token
+                        }, 200
 
-            
+                
+                    else:
+                        if user.maxtry < count:
+                            user.maxtry +=1
+                            db.session.commit()
+                            return {'res': 'Your Password is wrong '}, 401
+                        if user.maxtry >= count:
+                            user.verified=False
+                            db.session.commit()
+                            return {'res': 'Reset your Password '}, 401
                 else:
-                    if user.maxtry < count:
-                        user.maxtry +=1
-                        db.session.commit()
-                        return {'res': 'Your Password is wrong '}, 401
-                    if user.maxtry >= count:
-                        user.verified=False
-                        db.session.commit()
-                        return {'res': 'Reset your Password '}, 401
+                    return {'res': 'Your account has been blocked'}, 401
 
             else:
                 return {'res': 'User does not exist'}, 401
@@ -156,42 +161,45 @@ class Login_email(Resource):
                 code=req_data['code'] or None
                 user1 = Users.query.filter_by(user_number=number).first()
                 if user1:
-                    if code is None:
-                        verification_code=phone.generate_code()
-                        user1.code = verification_code
-                        user1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                        db.session.commit()
-                        phone.send_confirmation_code(number,verification_code)
-                        return {
-                            'status': 1,
-                            'res': 'verification sms sent'
-                            }, 200
-                    
-                    if code:
-                        if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
-                            token = jwt.encode({
-                                'user': user1.username,
-                                'uuid': user1.uuid,
-                                'exp': datetime.utcnow() + timedelta(days=30),
-                                'iat': datetime.utcnow()
-                            },
-                            app.config.get('SECRET_KEY'),
-                            algorithm='HS256')
+                    if user.maxtry >= count:
+                        if code is None:
+                            verification_code=phone.generate_code()
+                            user1.code = verification_code
+                            user1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                            db.session.commit()
+                            phone.send_confirmation_code(number,verification_code)
                             return {
                                 'status': 1,
-                                'res': 'success',
-                                'token': str(token)
-                            }, 200
-                        else:
-                            if user1.maxtry < count:
-                                user1.maxtry +=1
-                                db.session.commit()
-                                return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+                                'res': 'verification sms sent'
+                                }, 200
+                        
+                        if code:
+                            if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                                token = jwt.encode({
+                                    'user': user1.username,
+                                    'uuid': user1.uuid,
+                                    'exp': datetime.utcnow() + timedelta(days=30),
+                                    'iat': datetime.utcnow()
+                                },
+                                app.config.get('SECRET_KEY'),
+                                algorithm='HS256')
+                                return {
+                                    'status': 1,
+                                    'res': 'success',
+                                    'token': str(token)
+                                }, 200
+                            else:
+                                if user1.maxtry < count:
+                                    user1.maxtry +=1
+                                    db.session.commit()
+                                    return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
 
-                            if user1.maxtry >= count:
-                                user1.verified=False
-                                db.session.commit()
-                                return {'res': 'Reset your code '}, 401
+                                if user1.maxtry >= count:
+                                    user1.verified=False
+                                    db.session.commit()
+                                    return {'res': 'Reset your code '}, 401
+                    else:
+                        return {'res': 'Your account has been blocked'}, 401
                 else:
                     return {'res': 'User does not exist'}, 401
 
