@@ -883,7 +883,7 @@ class Seen_Notification(Resource):
             next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            notification= Notification.query.filter_by(user_id=user.id).paginate(int(start),int(count), False).items
+            notification= Notification.query.filter(and_(Notification.user_id == user.id , Notification.seen == True )).paginate(int(start),int(count), False).items
             return{
                 "start":start,
                 "limit":limit,
