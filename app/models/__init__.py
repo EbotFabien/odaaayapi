@@ -803,16 +803,16 @@ class Report(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
     uploader_id=db.Column(db.Integer)
-    Type = db.Column(db.Text)
+    rtype = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def __init__(self, reason, email, user_id,post,uploader_id,Type):
+    def __init__(self, reason, email, user_id,post,uploader_id,rtype):
         self.reason = reason
         self.email = email
         self.user_id = user_id
         self.post_id = post
         self.uploader_id = uploader_id
-        self.Type = Type
+        self.rtype = rtype
     
      
     def __repr__(self):
