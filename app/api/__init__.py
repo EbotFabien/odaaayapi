@@ -47,7 +47,8 @@ def token_required(f):
             pass
         return f(*args, **kwargs)
     return decorated
-if os.environ.get('CUSTOM_ENV_VAR'):
+v=1
+if v==1:
     @property
     def specs_url(self):
         return url_for(self.endpoint('specs'), _external=True, _scheme='https')
