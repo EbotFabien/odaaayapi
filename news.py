@@ -1,6 +1,6 @@
 from faker import Faker
-from app.models import Users, Channels, subs, Language, Save, Setting, Message, Comment, \
-    Posts, Postarb, Posten, Postfr, Posthau, Postpor, Postsw, Posttype, Rating, Ratingtype
+from app.models import Users, Language, Save, Setting, \
+    Posts, Translated, Posttype, Rating, Ratingtype
 from app import db, createapp
 import random
 import sentry_sdk
@@ -12,56 +12,29 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand, upgrade
 import unittest
 import os
-from app.services.task import app
 from app.services import mail
 from flask import current_app
 
-
+app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
-name = '''(API) ~ By Leslie Etubo T, E. Fabien, Marc.'''
+name = '''(API) ~ By Leslie Etubo T, E. Fabien'''
 
 @manager.command
 def logo():
     print(name)
 
+@manager.command
 def recreate_db():
     with app.app_context():
         #db.drop_all()
         db.create_all()
         db.session.commit()
 
-
-def seed():
-    with app.app_context():
-        fake = Faker()
-        db.session.add(Users(username='test', number='123456', user_visibility=True))
-        db.session.commit()
-        for i in range(10):
-            passwd = fake.ean8()
-            user = fake.user_name()
-            db.session.add(Users(username=user, number=fake.zipcode_plus4(), user_visibility=True))
-            db.session.commit()
-        for v in range(1):
-            db.session.add(Posttype(content='text'))
-            db.session.commit()
-        for j in range(10):
-            db.session.add(Channels(name=fake.company(), description=fake.paragraph(),profile_pic=fake.image_url(), background=fake.image_url(), user=random.randint(1,10), css=''))
-            db.session.commit()
-        for x in range(80):
-            db.session.add(Posts(uploader=Users.query.filter_by(id=random.randint(1,10)).first().id, title=fake.sentence(), channel=random.randint(1,10), posttype=1, content=fake.text(), uploader_id=random.randint(1,10)))
-            db.session.commit()
-        for y in range(100):
-            db.session.add(Comment(language=1, user=random.randint(1,10), post=random.randint(2,80), content=fake.paragraph(), comment_type='text' , public=True))
-            db.session.commit()
-
-
 @manager.command
 def run():
     logo()
-    # recreate_db()
-    # seed()
     # Error tracking and logging with sentry
     sentry_sdk.init(
         dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
@@ -81,7 +54,6 @@ def run():
         # ssl_context='adhoc'
     )
 
-
 @manager.command
 def test():
     """Runs the unit tests."""
@@ -92,5 +64,7 @@ def test():
     return 1
 
 if __name__ == "__main__":
-    #manager.run()
-    run()
+    recreate_db()
+    manager.run()
+    
+    #run()

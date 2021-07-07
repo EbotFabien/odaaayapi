@@ -12,8 +12,7 @@ from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
-from app.models import Save , Users, Channels, subs, Posts, Language, Postarb, Posten, Postes, Postfr, \
-    Posthau, Postpor, Postsw,Report,Notification
+from app.models import Save , Users, Posts, Language,Translated,Report,Notification
 from app import db, cache, logging
 import json
 from tqdm import tqdm
@@ -61,7 +60,7 @@ def token_required(f):
 api = Blueprint('api',__name__, template_folder='../templates')
 post1=Api( app=api, doc='/docs',version='1.4',title='News API.',\
 description='', authorizations=authorizations)
-#from app.api import schema
+#from app.api import schema  'channel': fields.List(fields.String(required=True)),
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 uploader = post1.parser()
@@ -75,7 +74,6 @@ post = post1.namespace('/api/post', \
 
 postcreationdata = post.model('postcreationdata', {
     'title': fields.String(required=True),
-    'channel': fields.List(fields.String(required=True)),
     'type': fields.Integer(required=True),
     'post_url': fields.String(required=False, default=None),
     'thumb': fields.String(required=False, default=None),
@@ -93,14 +91,7 @@ deletedata =post.model('deletedata',{
     'id':fields.String(required=True)
 })
 
-channelfinal = post.model('channelreturndata',{
-    'id': fields.Integer(required=True),
-    'name': fields.String(required=True),
-    'description': fields.String(required=True)
-})
-channeldata=post.model('channelreturndata',{
-    'channel_id': fields.Integer(required=True),
-})
+
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
     'uuid':fields.String(required=True),
@@ -109,14 +100,12 @@ postdata = post.model('postreturndata', {
     'uploader': fields.String(required=True),
     'content': fields.String(required=True),
     'thumb_url': fields.String(required=False),
-    'uploader_date': fields.DateTime(required=True),
-    'postchannel': fields.List(fields.Nested(channelfinal))
+    'uploader_date': fields.DateTime(required=True)
 })
 user_post_sav = post.model('postreturnuserdata', {
     'id': fields.Integer(required=True),
     'uuid':fields.String(required=True),
     'title': fields.String(required=True),
-    'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
     'thumb_url': fields.String(required=True),
     'uploader': fields.String(required=True),
@@ -156,7 +145,6 @@ post_clap = post.model('clap',{
 postreq = post.model('postreq', {
     'arg': fields.String(required=True),
     'all': fields.Boolean(required=True),
-    'channel': fields.Integer(required=True),
     'arg_type': fields.String(required=True),
 })
 Article_verify = post.model('postreq',{
@@ -209,12 +197,12 @@ class Post(Resource):
             # Still to fix the next and previous WRT Sqlalchemy
             next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count+"&lang="+lang
             previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count+"&lang="+lang
-            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
             if lang:
                 for i in tqdm(language_dict):
                     if i == lang:
-                        table = language_dict.get(i)
-                        results = table.query.paginate(int(start), int(count), False).items
+                        current_lang = Language.query.filter_by(code=i).first()
+                        results = Translated.query.filter_by(language_id=current_lang.id).paginate(int(start), int(count), False).items
                 return {
                     "start": start,
                     "limit": limit,
@@ -293,38 +281,23 @@ class Post(Resource):
         args = uploader.parse_args()
         title=req_data['title']
         content=req_data['content']
-        channel_names = req_data['channel']
         ptype= req_data['type']
         got_language = req_data['lang']
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language= Language.query.filter_by(code=got_language).first()
-        channel_list = []
         followers_=user.is_followers()
         post_done=Posts.query.filter_by(title=title).first()
-        for i in channel_names:
-            name = Channels.query.filter_by(name=i).first()
-            if name in user.get_channels():
-                channel_list.append(name)
-        if len(channel_list) != 0 and post_done is None:
+        if post_done is None:
             if ptype == 1:
                 newPost = Posts(user.id, title, ptype, content, language.id, user.id)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                for c in channel_list:
-                    c.add_post(newPost)
-                    db.session.commit()
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
-                    db.session.commit()
-                for i in channel_names:
-                    names = Channels.query.filter_by(name=i).first()
-                    Mod =names.moderator
-                    notif_add1 = Notification("user" + user.username + "has uploaded a post to "+names.name,Mod)
-                    db.session.add(notif_add1)
                     db.session.commit()
                 return {
                     'status': 1,
@@ -340,18 +313,9 @@ class Post(Resource):
                 newPost.thumb_url=thumb_url_
                 db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                for c in channel_list:
-                    c.add_post(newPost)
-                    db.session.commit()
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
-                    db.session.commit()
-                for i in channel_names:
-                    names = Channels.query.filter_by(name=i).first()
-                    Mod =names.moderator
-                    notif_add1 = Notification("user" + user.username + "has uploaded a post to "+names.name,Mod)
-                    db.session.add(notif_add1)
                     db.session.commit()
                 return {
                     'status': 1,
@@ -365,7 +329,7 @@ class Post(Resource):
         else:
            return {
                 'status': 0,
-                'res': 'No channel found'
+                'res': 'Post exists already'
             }, 200     
 
 
@@ -385,7 +349,7 @@ class Post(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@post.route('/post/article_check')
+@post.route('/post/articlecheck')
 class Article_check(Resource):
     @post.expect(Article_verify)
     @token_required
@@ -612,7 +576,6 @@ class save_post(Resource):
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
-            channel=request.args.get('channel_id')
             next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
             previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
             token = request.headers['API-KEY']
@@ -717,7 +680,7 @@ class save_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/user_Save')
+@post.route('/post/usersaves')#User_Saves
 class user_save_post(Resource): 
     @token_required
     #@cache.cached(300, key_prefix='all_posts')
@@ -768,7 +731,7 @@ class user_save_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/user_post')
+@post.route('/post/userposts')#user_post
 class views_post(Resource):
     @post.expect(users_post)   
     @token_required
@@ -835,7 +798,7 @@ class views_post(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
  
-@post.route('/post/Report_post__')
+@post.route('/post/Reportpost')
 class Report_post_(Resource):
     @post.expect(Report_post)   
     @token_required

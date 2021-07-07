@@ -11,16 +11,15 @@ from app import db, limiter, cache,bycrypt
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 import werkzeug
+import json, shortuuid
 import jwt, uuid, os
 from flask import current_app as app
 from sqlalchemy import func,or_,and_
 import re
 from app.services import mail
-from .v1 import user, info, token, search, post, comment, channel
-from app.models import Report, Users, Channels, subs, Language, Save, Setting, Message, Comment, \
-    Posts, Postarb, Posten, Postfr, Posthau, Postpor, \
-        Postsw, Postes, Posttype, Rating, Ratingtype, postchannel
-
+from .v1 import user, info, token, search, post
+from app.models import Report, Users, Language, Save, Setting, \
+         Posttype, Rating, Ratingtype
 # API security
 authorizations = {
     'KEY': {
@@ -64,9 +63,8 @@ apisec.add_namespace(info)
 apisec.add_namespace(user)
 apisec.add_namespace(token)
 apisec.add_namespace(post)
-apisec.add_namespace(channel)
 apisec.add_namespace(search)
-apisec.add_namespace(comment)
+
 
 
 login = apisec.namespace('/api/auth', \
@@ -120,41 +118,44 @@ class Login_email(Resource):
             email=req_data['email'] or None
             password=req_data['password'] or None
             user = Users.query.filter_by(email=email).first()
-            if user:
-                if user.verify_password(password):
-                    token = jwt.encode({
-                        'user': user.username,
-                        'uuid': user.uuid,
-                        'iat': datetime.utcnow()
-                    },
-                    app.config.get('SECRET_KEY'),
-                    algorithm='HS256')
-                    string_token = str(token)
-                    return {
-                        'status': 1,
-                        'res': 'success',
-                        'token': string_token
-                    }, 200
+            if user : 
+                if user.verified_email == True:
+                    if user.verify_password(password):
+                        token = jwt.encode({
+                            'user': user.username,
+                            'uuid': user.uuid,
+                            'iat': datetime.utcnow()
+                        },
+                        app.config.get('SECRET_KEY'),
+                        algorithm='HS256')
+                        string_token = str(token)
+                        return {
+                            'status': 1,
+                            'res': 'success',
+                            'token': string_token
+                        }, 200
 
-            
+                
+                    else:
+                        if user.tries < count:
+                            user.tries +=1
+                            db.session.commit()
+                            return {'res': 'Your Password is wrong '}, 401
+                        if user.tries >= count:
+                            user.verified_email=False
+                            db.session.commit()
+                            return {'res': 'Reset your Password '}, 401
                 else:
-                    if user.maxtry < count:
-                        user.maxtry +=1
-                        db.session.commit()
-                        return {'res': 'Your Password is wrong '}, 401
-                    if user.maxtry >= count:
-                        user.verified=False
-                        db.session.commit()
-                        return {'res': 'Reset your Password '}, 401
+                    return {'status': 4,'res': 'user is  not verified'}, 401
 
             else:
-                return {'res': 'User does not exist'}, 401
+                return {'res': 'User does not exist '}, 401
             
         
         if phone_login == True:
                 number=req_data['phone'] or None
                 code=req_data['code'] or None
-                user1 = Users.query.filter_by(user_number=number).first()
+                user1 = Users.query.filter_by(phone=number).first()
                 if user1:
                     if code is None:
                         verification_code=phone.generate_code()
@@ -179,12 +180,14 @@ class Login_email(Resource):
                             algorithm='HS256')
                             return {
                                 'status': 1,
-                                'res': 'verification sms sent'
+                                'res':'success',
+                                'token': str(token)
                                 }, 200
                         
                         if code:
                             if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
-                                user1.maxtry =0
+                                user1.verified_phone=True
+                                user1.tries =0
                                 db.session.commit()
                                 token = jwt.encode({
                                     'user': user1.username,
@@ -200,13 +203,13 @@ class Login_email(Resource):
                                     'token': str(token)
                                 }, 200
                             else:
-                                if user1.maxtry < count:
-                                    user1.maxtry +=1
+                                if user1.tries < count:
+                                    user1.tries +=1
                                     db.session.commit()
                                     return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
 
-                                if user1.maxtry >= count:
-                                    user1.verified=False
+                                if user1.tries >= count:
+                                    user1.verified_phone=False
                                     db.session.commit()
                                     return {'res': 'Reset your code '}, 401
                     else:
@@ -239,22 +242,65 @@ class _check_reset(Resource):
         req_data = request.get_json()
         email=req_data['email']
         password=req_data['password']
-        code=req_data['code']
+        #code=req_data['code']
         check_email =Users.query.filter_by(email=email).first()
-        if check_email.code == int(code):
+        if check_email:#.code == int(code):
             check_email.passwordhash(password)
-            check_email.maxtry = 0
-            user.verified=True
+            check_email.tries = 0
+            user.verified_email=True
             db.session.commit()
             return{
+                    'status':1,
                     'res':'code has been reset',
                     
                 },200
         else:
             return{
+                    'status':0,
                     'res':'code is not same',
                     
                 },400
+
+@login.doc(
+    params={
+            },
+
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@login.route('/auth/checkresetcode')
+class _check_reset(Resource):
+    @login.expect(schema.check_code)
+    def post(self):
+        req_data = request.get_json()
+        email=req_data['email']
+        code=req_data['code']
+        check_email =Users.query.filter_by(email=email).first()
+        if check_email.code == int(code) and not (datetime.utcnow() > check_email.code_expires_in):
+            check_email.tries = 0
+            user.verified_email=True
+            db.session.commit()
+            return{
+                    'status':1,
+                    'res':'code has been reset',
+                    
+                },200
+        else:
+            return{
+                    'status':0,
+                    'res':'code is not same or expired',
+                    
+                },400
+
 @login.doc(
     params={
             },
@@ -277,22 +323,26 @@ class _reset_code(Resource):
     def post(self):
         req_data = request.get_json()
         email=req_data['email']
-        phone_num=req_data['phone_number']
+        phone_num=req_data['number']
         email1 =Users.query.filter_by(email=email).first()
+        phon=Users.query.filter_by(phone=phone_num).first()
         code_sent=int(phone.generate_code())
         regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
         if re.search(regex1,str(email)) or re.search(regex2,str(email)):
                 email1.code=code_sent
+                email1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
                 db.session.commit()
-                mail.send_email(recipients=email1.email,text_body=code_sent)
+                mail.send_email(app,[email1.email],code_sent)
                 return{
+                        'status':1,
                         'res':'Mail sent',
                         
                     },200
-        if  phone_num:
+        if  phon:
             phone.send_confirmation_code(phone_num)
             return{
+                    'status':1,
                     'res':'Phone_code sent',
                         
                     },200
@@ -314,81 +364,153 @@ class _reset_code(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@signup.route('/auth/signup')
-class Signup(Resource):
-    # Limiting the user request to localy prevent DDoSing
-    @limiter.limit("10/hour")
-    @signup.expect(schema.signupdata)
-    def post(self):
-        signup_data = request.get_json()
-        user_name = signup_data['username']
-        exuser = Users.query.filter_by(username=user_name).first() #filter also by userhandle
-        if signup_data:
-            if exuser:
-                return { 
-                    'res':'user already exist',
-                    'status':0
-                }, 200
-            else:
-                newuser = Users(user_name, True)
-                db.session.add(newuser)
-                db.session.commit()
-                return {
-                    'status': 1,
-                    'res': 'success',
-                    'phone': signup_data['username']
-                }, 200
-            
-        else:
-            return {
-                'status': 0,
-                'results':'error'
-            },201
 
-@signup.route('/auth/email_signup')
+
+@signup.route('/auth/signup')
 class Signup_email(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
     @signup.expect(schema.signupdataemail)
     def post(self):
         signup_data = request.get_json()
-        email = signup_data['email']
-        
-        user = Users.query.filter_by(email=email).first() #filter by user handle
         if signup_data:
-            if user:
-                return { 
-                    'res':'user already exist',
-                    'status': 0
-                }, 200
-            else:
-                email = signup_data['email']
-                verification_code = '123456'
+            email = signup_data['email'] or None 
+            username = signup_data['user_name'] or None 
+            password = signup_data['password'] or None
+            phone_number = signup_data['phone_number'] or None
 
-                if verification_code:
-                    newuser = Users('', True, signup_data['email'])
+            if email and username and password is not None:
+                user = Users.query.filter_by(email=email).first() #filter by user handle
+            
+                if user :
+                    if user.verified_email == False:
+                        verification_code = phone.generate_code()
+                        user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                        user.code = verification_code
+                        mail.send_email(app,[user.email],verification_code)
+                        return { 
+                            'res':'user already exist,verification code sent',
+                            'status': 0
+                        }, 200
+                    else:
+                        return { 
+                            'res':'user already exist',
+                            'status': 3
+                        }, 200
+                else:
+                    verification_code = phone.generate_code()
+
+                    if verification_code:
+                        newuser = Users(username,str(uuid.uuid4()),True, signup_data['email'])
+                        newuser.code = verification_code
+                        newuser.passwordhash(password)
+                        newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                        db.session.add(newuser)
+                        db.session.commit()
+                        #send code to email
+                        mail.send_email(app,[signup_data['email']],verification_code) #check this
+                        return {
+                            'res': 'success',
+                            'user_name':username,
+                            'email': signup_data['email'],
+                            'status': 1
+                        }, 200
+                    else:
+                        return {
+                            'status': 0,
+                            'res':'error'
+                        }, 201
+            if phone_number is not None:
+                user = Users.query.filter_by(phone=phone_number).first()
+                if user:
+                    return { 
+                        'res':'user already exist',
+                        'status': 0
+                    }, 200
+                else:
+                    verification_code=phone.generate_code()
+                    newuser = Users(str(phone_number),str(uuid.uuid4()),True, str(phone_number),phone_number)
+                    db.session.commit()
                     newuser.code = verification_code
                     newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
                     db.session.add(newuser)
                     db.session.commit()
-                    #send code to email
-                    mail.send_email([signup_data['email']],verification_code) 
+                    phone.send_confirmation_code(phone_number,verification_code)
                     return {
-                        'res': 'success',
-                        'email': signup_data['email'],
-                        'status': 1
+                        'status': 1,
+                        'Phone':phone_number,
+                        'res': 'verification sms sent'
+                        }, 200
+            if email and username and password and phone_number is not None:
+                user = Users.query.filter_by(email=email).first()
+                if user:
+                    return { 
+                        'res':'user already exist',
+                        'status': 0
                     }, 200
                 else:
+                    verification_code=phone.generate_code()
+                    newuser = Users(user_name,str(uuid.uuid4()),False, email,phone_number)
+                    db.session.commit()
+                    newuser.code = verification_code
+                    newuser.passwordhash(password)
+                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    db.session.commit()
+                    phone.send_confirmation_code(phone_number,verification_code)
+                    mail.send_email(app,[signup_data['email']],verification_code) #check this
                     return {
-                        'status': 0,
-                        'res':'error'
-                    }, 201
+                        'status': 1,
+                        'user_name':user_name,
+                        'email':email,
+                        'Phone':phone_number,
+                        'res': 'verification sms  and email sent'
+                        }, 200
         else:
             return {
                 'status': 0,
                 'res': 'No data'
             },201
 
+@signup.doc(
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+
+@signup.route('/auth/resetpassword')
+class Resetpassword(Resource):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("10/hour")
+    @signup.expect(schema.resetpassword)
+    def post(self):
+        signup_data = request.get_json()
+        if signup_data:
+            email = signup_data['email'] 
+            check=Users.query.filter_by(email=email).first()
+            if check:
+                verification_code = phone.generate_code()
+                check.code = verification_code
+                check.code_expires_in = datetime.utcnow() + timedelta(minutes=5)
+                db.session.commit()
+                mail.send_email(app,[email],verification_code)
+                return {
+                'status': 1,
+                'res': 'email has been sent'
+                },200
+            else:
+                return {
+                'status': 0,
+                'res': 'user not found'
+                },201
 @signup.route('/auth/email_verification')
 class email_verification(Resource):
     # Limiting the user request to localy prevent DDoSing
@@ -396,11 +518,11 @@ class email_verification(Resource):
     @signup.expect(schema.verifyemail)
     def post(self):
         signup_data = request.get_json()
-        email = signup_data['Email']
+        email = signup_data['email']
         exuser = Users.query.filter_by(email=email).first()
         if exuser:
-            if exuser.code == int(signup_data['verification_code']) and not (datetime.utcnow() > exuser.code_expires_in):
-                exuser.verified = True
+            if exuser.code == int(signup_data['code']) and not (datetime.utcnow() > exuser.code_expires_in):
+                exuser.verified_email = True
                 db.session.commit()
                 return {
                         'res': "user is verified",
@@ -448,11 +570,11 @@ class Home(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
             for i in language_dict:
                 if i == lang:
-                    table = language_dict.get(i)
-                    posts_feed = table.query.order_by(func.random()).paginate(int(start), int(count), False)
+                    current_lang = Language.query.filter_by(code=i).first()
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -507,11 +629,11 @@ class Videos(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
             for i in language_dict:
                 if i == lang:
-                    table = language_dict.get(i)
-                    posts_feed = table.query.join(Posts).order_by(func.random()).filter(Posts.post_type==2).paginate(int(start), int(count), False)
+                    current_lang = Language.query.filter_by(code=i).first()
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.post_type==2).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -545,11 +667,11 @@ class Discover(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
             for i in language_dict:
                 if i == lang:
-                    table = language_dict.get(i)
-                    posts_feed = table.query.join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
+                    current_lang = Language.query.filter_by(code=i).first()
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -584,11 +706,11 @@ class Related(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
             for i in language_dict:
                 if i == lang:
-                    table = language_dict.get(i)
-                    posts_feed = table.query.join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
+                    current_lang = Language.query.filter_by(code=i).first()
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -615,20 +737,18 @@ class Related(Resource):
 @home.route('/article/<id>')
 class Article(Resource):
     def get(self, id):
-        language_dict = {'en': Posten, 'es': Postes, 'ar': Postarb, 'pt': Postpor, 'sw': Postsw, 'fr': Postfr, 'ha': Posthau}
+        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
         if request.args:
             if id:
                 lang  = request.args.get('lang', None)
-                table = language_dict.get(lang)
+                current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid = id).first()
-                translated_feed = table.query.filter_by(id = posts_feed.id).first()
-                channels = posts_feed.get_post_channels()
+                translated_feed = Translated.query.filter_by(post_id= posts_feed.id).first()
                 return {
                     "results": {
                         "lang": lang,
                         'translated_feed':marshal(translated_feed, schema.postdata),
-                        'article': marshal(posts_feed, schema.postdata),
-                        'channels': marshal(channels, schema.channeldata)
+                        'article': marshal(posts_feed, schema.postdata)
                     }
                 }, 200
             else:
@@ -685,7 +805,6 @@ class save_post(Resource):
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
-            channel=request.args.get('channel_id')
             next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
             previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
             token = request.headers['API-KEY']

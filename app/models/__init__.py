@@ -3,104 +3,72 @@
 # After linking, * Run flask Migrate to use Alembic module to migrate the data without destroying your
 # Data in the Database. This file should not be messed with if you donno know what you are doing.
 
-from app import db
+from app import  db
+from itsdangerous import  TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
+from sqlalchemy import ForeignKeyConstraint,ForeignKey,UniqueConstraint
+import json
 from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
-import redis
-import rq
 from flask import current_app as app
 from time import time
 import json, shortuuid, bleach
 from markdown import markdown
 from werkzeug.utils import secure_filename
-from itsdangerous import  TimedJSONWebSignatureSerializer as Serializer
 
-channel_langs = db.Table('channel_langs',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
-    db.Column('language_id', db.Integer, db.ForeignKey('language.id'))
-)
 
 Not_Interested = db.Table('Not_Interested',
     db.Column('user_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('post_id',db.Integer,db.ForeignKey('posts.id'))
 )
 
-postchannel = db.Table('postchannel',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
-    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
-)
-subs = db.Table('subs',
-    db.Column('channel_id', db.Integer, db.ForeignKey('channels.id')),
-    db.Column('users_id', db.Integer, db.ForeignKey('users.id')),
-)
+
 followers = db.Table('followers',
     db.Column('follower_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('followed_id',db.Integer,db.ForeignKey('users.id')),
 )
+
 blocking = db.Table('Blocked',
     db.Column('blocker_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('blocked_id',db.Integer,db.ForeignKey('users.id')),
 )
+
 clap = db.Table('clap',
     db.Column('clap_id',db.Integer,autoincrement=True, primary_key = True),
     db.Column('user_id',db.Integer,db.ForeignKey('users.id')),
     db.Column('post_id',db.Integer,db.ForeignKey('posts.id'))
 )
-shout = db.Table('shout',
-    db.Column('shout_id',db.Integer,autoincrement=True, primary_key = True),
-    db.Column('user_id',db.Integer,db.ForeignKey('users.id')),
-    db.Column('comment_id',db.Integer,db.ForeignKey('comment.id'))
-)
-sub_moderator = db.Table('sub_moderator',
-    db.Column('channel_id',db.Integer,db.ForeignKey('channels.id')),
-    db.Column('sub_moderator_id',db.Integer,db.ForeignKey('users.id'))
-)
+
+
 
 # The user table will store user all user data, passwords will not be stored
 # This is for confidentiality purposes. Take note when adding a model for
 # vulnerability.
 
+shorty=shortuuid.uuid()
 
-class Reaction(db.Model):
-    id = db.Column(db.Integer,primary_key=True)
-    comment = db.Column(db.Integer, db.ForeignKey('comment.id'))
-    reaction = db.Column(db.String, nullable=False)
 
-    def __init__(self, comment,reaction):
-        self.comment = comment
-        self.reaction = reaction
-
-    def __repr__(self):
-        return '<Reaction {}>'.format(self.reaction)
         
 class Users(db.Model):
     __searchable__ = ['username']
     id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String, nullable=False)
+    username = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120),unique=True, nullable=True)
+    phone = db.Column(db.String(120), nullable=True)
+    uuid = db.Column(db.String(60), nullable=False)
     password_hash = db.Column(db.String(256),nullable=True)
-    uuid = db.Column(db.String, nullable=False)
     bio = db.Column(db.String(350), nullable=True)
-    user_number = db.Column(db.Integer, nullable=True)
-    #user_handle = db.Column(db.String, nullable=False)
-    profile_picture =  db.Column(db.String, nullable=True)
+    picture =  db.Column(db.String(120), nullable=True)
+    code = db.Column(db.Integer, nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
-    verified = db.Column(db.Boolean, nullable=False, default=False)
-    #user_saves = db.relationship('Save', backref="save", lazy=True )
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
-    code = db.Column(db.Integer)
-    #maxtry=db.Column(db.Integer)
-    posts = db.relationship('Posts', backref='author', lazy='dynamic')
-    code_expires_in = db.Column(db.String)
-    messages_sent = db.relationship('Message',
-                                    foreign_keys='Message.sender_id',
-                                    backref='author', lazy='dynamic')
-    messages_received = db.relationship('Message',
-                                        foreign_keys='Message.recipient_id',
-                                        backref='recipient', lazy='dynamic')
-    last_message_read_time = db.Column(db.DateTime)
+    last_code = db.Column(db.Integer)
+    code_expires_in = db.Column(db.DateTime)
+    verified_email = db.Column(db.Boolean, nullable=False, default=False)
+    verified_phone = db.Column(db.Boolean, nullable=False, default=False)
+    tries = db.Column(db.Integer,default=0)
+    created_on = db.Column(db.DateTime)
+    
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
@@ -112,10 +80,7 @@ class Users(db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
         
-    subs =  db.relationship(
-        'Channels', secondary=subs,
-        primaryjoin=(subs.c.users_id == id),
-        backref=db.backref('notify', lazy='dynamic'), lazy='dynamic')
+    
 
    
 
@@ -130,12 +95,11 @@ class Users(db.Model):
         primaryjoin=(clap.c.user_id == id),
         backref=db.backref('clap_no', lazy='dynamic'), lazy='dynamic')
 
-    def __init__(self, username,user_visibility,email=None,number=None):
+    def __init__(self,username,uuid,user_visibility,email=None,number=None):
         self.username = username
-        self.uuid = str(uuid.uuid4())
-        self.user_number = number
-        #self.user_handle = user_handle
-        #self.profile_picture = profile_picture
+        self.uuid = uuid
+        self.phone = number
+        #self.picture = profile_picture
         self.user_visibility = user_visibility
         self.email =email
 
@@ -143,23 +107,12 @@ class Users(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
-    def notified(self,channel):
-        user=  self.query.join(
-            subs,( subs.c.users_id == self.id))
-
-        return user.filter(subs.c.notif == True).all()
+   
 
     def No_claps(self):
         return  self.clap.filter(clap.c.user_id == self.id).count()
 
-    def add_notification(self,channel):
-        if not self.notified(channel):
-            notif =db.session.query(subs).filter(subs.c.users_id == self.id).first()
-            notif.notif = True 
-
-    def remove_notification(self,channel):
-        if self.notified(channel):
-            self.subs.append('False')
+   
 
     def is_blocking(self, user):
         return self.blocked.filter(
@@ -197,16 +150,6 @@ class Users(db.Model):
         own= Posts.query.filter_by(uploader_id=self.id)
         return followed.union(own).order_by(Posts.uploader_date.desc())
     
-    def channel_sub_moderators(self):
-        return Channels.query.join(
-            sub_moderator,(sub_moderator.c.channel_id == Channels.id)).filter(
-                sub_moderator.c.sub_moderator_id == self.id).order_by(Channels.id.desc())
-        #own= Channels.query.filter_by(user_id=user)
-        #return followed.union(own)
-    def sub_mods(self,channel):
-         return Users.query.join(
-             sub_moderator,(sub_moderator.c.sub_moderator_id == self.id)).filter(
-                sub_moderator.c.channel_id == channel.id).all() 
 
     def has_followed(self):
         return Users.query.join(
@@ -218,16 +161,7 @@ class Users(db.Model):
             followers,(followers.c.follower_id == Users.id)).filter(
                 followers.c.followed_id == self.id).all()
 
-        
-    def is_moderator(self):
-        return Users.query.join(
-            Channels,(Channels.moderator == Users.id)).filter(
-                Channels.moderator == self.id).first()
-
-    def get_channels(self):
-        return Channels.query.join(
-            subs,(subs.c.users_id == self.id)).filter(
-                subs.c.channel_id == Channels.id).all() 
+         
 
 
     
@@ -259,14 +193,34 @@ class Users(db.Model):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
     
-    def new_messages(self):
-        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
-        return Message.query.filter_by(recipient=self).filter(
-            Message.timestamp > last_read_time).count()
+  
+class Postsummary(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
+    content = db.Column(db.String)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    status = db.Column(db.String)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def get_reset_token(self,expire_sec=86400):
-        s = Serializer(app.config['SECRET_KEY'],expire_sec)
-        return s.dumps({'user_id':self.id}).decode('utf-8')
+    def __repr__(self):
+        return '<Postsummary %r>' % self.id
+
+class Translated(db.Model):
+    __searchable__ = ['title', 'content']
+    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False, unique=True)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    post_id = db.Column(db.Integer,db.ForeignKey('posts.id'), nullable=False)
+    tags = db.Column(db.Text)
+    status = db.Column(db.String)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+
+    def __repr__(self):
+        return '<Translated %r>' % self.id
+
+
         
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -290,125 +244,34 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     seen = db.Column(db.Boolean,nullable=False,default=False)
     timestamp = db.Column(db.Float, index=True, default=time)
     payload_json = db.Column(db.Text)
 
-    def __init__(self, name, user):
+    def __init__(self, name, user,post):
         self.name = name
         self.user_id = user
-        
+        self.post_id = post
 
     def get_data(self):
         return json.loads(str(self.payload_json))
 
-class Channels(db.Model):
-
-    __searchable__ = ['name', 'description', 'desc_en', 'desc_es', 'desc_fr', 'desc_pt', 'desc_ar', 'desc_sw', 'desc_ha']
-    id = db.Column(db.Integer,unique=True, primary_key=True)
-    name = db.Column(db.String)
-    description = db.Column(db.String)
-    profile_pic = db.Column(db.String)
-    background = db.Column(db.String)
-    css = db.Column(db.String)
-    private =db.Column(db.Boolean, nullable=False, default=False)
-    desc_en = db.Column(db.String)
-    desc_es = db.Column(db.String)
-    desc_ar = db.Column(db.String)
-    desc_pt = db.Column(db.String)
-    desc_fr = db.Column(db.String)
-    desc_sw = db.Column(db.String)
-    desc_ha = db.Column(db.String)
-    moderator = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    sub_moderator = db.relationship('Users', secondary=sub_moderator,
-        primaryjoin=(sub_moderator.c.channel_id == id),
-        secondaryjoin=(sub_moderator.c.sub_moderator_id == Users.id),
-        backref=db.backref('sub_mod', lazy='dynamic'),lazy='dynamic')
-    subs = db.relationship(
-        'Users', secondary=subs,
-        primaryjoin=(subs.c.channel_id == id),
-        secondaryjoin=(subs.c.users_id == Users.id),
-        backref=db.backref('get_subscribers', lazy='dynamic'), lazy='dynamic')
-
-   
-
-    postchannel = db.relationship(
-        'Posts',secondary=postchannel,
-        primaryjoin=(postchannel.c.channel_id == id),
-        backref=db.backref('channelpost', lazy='dynamic'), lazy='dynamic')
-
-    def No_Posts (self):
-        return  self.postchannel.filter(postchannel.c.channel_id == self.id ).count()
-    
-    def subscribed(self,user):
-        return  self.query.join(
-            subs,(subs.c.channel_id == self.id )).filter(
-                subs.c.users_id == user.id).first()
-
-    def subscribed_numbers(self):
-        return  self.subs.filter(subs.c.channel_id == self.id ).count()
-                    
-    def haspost(self,post):
-        return  self.query.join(
-            postchannel,(postchannel.c.channel_id == self.id )).filter(
-                postchannel.c.post_id == post.id).first()
-
-    def add_sub(self,user):
-        if not self.subscribed(user):
-            self.subs.append(user)
-
-    def add_post(self, post):
-        if not self.haspost(post):
-            self.postchannel.append(post)
-            
-    def remove_sub(self,user):
-        if  self.subscribed(user):
-            self.subs.remove(user)
-
-    def is_sub_mod(self,user):
-        return self.sub_moderator.filter(
-            sub_moderator.c.sub_moderator_id == user.id).count() > 0
-    def add_sub_mod(self,user):
-        if not self.is_sub_mod(user):
-            self.sub_moderator.append(user)
-    def remove_sub_mod(self,user):
-        if not self.is_sub_mod(user):
-            self.sub_moderator.remove(user)
-   # def modify_sub(self,user):
-    #    return self.sub_moderator.filter(
-    #        sub_moderator.c.sub_moderator_id == user.id).first()# == new_id
-
-    def __init__(self, name, description, profile_pic, background, user, css):
-        self.name = name
-        self.profile_pic = profile_pic
-        self.background = background
-        self.description = description
-        self.moderator = user
-        self.css = css
-
     def __repr__(self):
-        return'<Channels>%r' %self.name 
+        return '<Notification %r>' % self.id
+
 
 class Setting(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False) 
     users_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
-    post = db.Column(db.Boolean, nullable=False, default=False)
-    comments = db.Column(db.Boolean, nullable=False, default=False)
-    saves = db.Column(db.Boolean, nullable=False, default=False)
-    channel = db.Column(db.Boolean, nullable=False, default=False)
-    messages = db.Column(db.Boolean, nullable=False, default=False)
     N_S_F_W = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, language, users, theme, post, messages, channel, saves, comment):
+    def __init__(self, language, users, theme):
         self.language_id = language
         self.theme = theme
         self.post = post
-        self.messages = messages
-        self.channel = channel
-        self.saves = saves
-        self.comments = comment
         self.users_id = users
 
     def __repr__(self):
@@ -421,46 +284,43 @@ class Rating(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
 
     def __init__(self, ratingtype, rater,post):
-        self.post = post
+        self.post_id = post
         self.rater = rater
         self.ratingtype = ratingtype
-
+ 
     def __repr__(self):
         return '<Rating>%r' %self.id
-
-
 
 class Posts(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    uuid = db.Column(db.String)
-    content = db.Column(db.Text)
-    uploader = db.Column(db.String)
-    post_url = db.Column(db.String)
-    thumb_url = db.Column(db.String)
+    title = db.Column(db.String(160))
+    uuid = db.Column(db.String(60))
+    description = db.Column(db.String(200))
+    post_url = db.Column(db.String(200))
+    thumb_url = db.Column(db.String(200))
+    text_content = db.Column(db.Text)
+    picture_url = db.Column(db.String(200))
+    audio_url = db.Column(db.String(200))
+    video_url = db.Column(db.String(200))
+    Country = db.Column(db.Integer, db.ForeignKey('country.id'), nullable=False)
+    translate = db.Column(db.Boolean, nullable=False, default=False)
+    summarize = db.Column(db.Boolean, nullable=False, default=False)
+    created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
     orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
-    uploader_date = db.Column(db.DateTime, nullable=False)
-    post_type = db.Column(db.Integer, db.ForeignKey('posttype.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    ratings_id = db.relationship('Rating', backref='rating', lazy = True)
-    comments_id = db.relationship('Comment', backref='postcomment', lazy = True)
-    picture_url =db.Column(db.String)
-    audio_url =db.Column(db.String)
-    video_url =db.Column(db.String)
-    country =db.Column(db.String)
-    esposts = db.relationship('Postes', backref='spanish_posts', lazy='dynamic')
-    enposts = db.relationship('Posten', backref='english_posts', lazy='dynamic')
-    ptposts = db.relationship('Postpor', backref='portuguese_posts', lazy='dynamic')
-    swposts = db.relationship('Postsw', backref='swahili_posts', lazy='dynamic')
-    haposts = db.relationship('Posthau', backref='hausa_posts', lazy='dynamic')
-    arposts = db.relationship('Postarb', backref='arabic_posts', lazy='dynamic')
-    frposts = db.relationship('Postfr', backref='french_posts', lazy='dynamic')
-    postchannel = db.relationship(
-        'Channels',secondary=postchannel,
-        primaryjoin=(postchannel.c.post_id == id),
-        secondaryjoin=(postchannel.c.channel_id == Channels.id),
-        backref=db.backref('post_channel', lazy='dynamic'), lazy='dynamic')
+    ratings = db.relationship('Rating', backref='rating', lazy = True)
+    
+    summarized = db.relationship('Postsummary', 
+        primaryjoin=(id == Postsummary.post_id),
+        backref='summarized', lazy='dynamic')
+    
+    
+    translatedposts = db.relationship('Translated',
+        primaryjoin=(id == Translated.post_id),
+        backref='translations', lazy='dynamic')
+
     clap = db.relationship(
         'Users',secondary=clap,
         primaryjoin=(clap.c.post_id == id),
@@ -474,7 +334,7 @@ class Posts(db.Model):
         backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')
     
     uploader_data=db.relationship("Users", 
-        primaryjoin=(uploader_id == Users.id),
+        primaryjoin=(author == Users.id),
         backref=db.backref('uploader__data',  uselist=False),  uselist=False)
 
     #Save = db.relationship(
@@ -494,10 +354,7 @@ class Posts(db.Model):
             tags=allowed_tags, strip=True))
 
    
-    def post_is_channel(self,channel):
-        return self.query.join(
-            postchannel,(postchannel.c.post_id == self.id)).filter(
-                postchannel.c.channel_id == channel.id).first()
+    
 
     def has_clapped(self,user):
         return self.query.join(
@@ -528,18 +385,11 @@ class Posts(db.Model):
         if  self.has_clapped(user):
             self.clap.remove(user)
 
-    def add_post(self,channel):
-        if not self.post_is_channel(channel):
-            self.postchannel.append(channel)
-
-    def remove_post(self,channel):
-        if self.post_is_channel(channel):
-            self.postchannel.remove(channel)
-
+   
     def __init__(self, uploader, title, posttype, content, lang, uploader_id, post_url=None, video_url=None, thumb_url=None):
         self.content = content
         self.title = title
-        self.uuid = secure_filename(title)+'_'+shortuuid.uuid()
+        self.uuid = secure_filename(title)+'_'+shorty[0:3]
         self.uploader_id = uploader
         self.post_type = posttype
         self.orig_lang = lang
@@ -562,10 +412,7 @@ class Posts(db.Model):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
 
-    def get_post_channels(self):
-        return Channels.query.join(
-            postchannel,(postchannel.c.post_id == self.id)).filter(
-                postchannel.c.channel_id == Channels.id).all()
+   
 
     def __repr__(self):
         return '<Post>%r' %self.title
@@ -577,75 +424,14 @@ class Language(db.Model):
     code = db.Column(db.String(16), nullable=False)
     name = db.Column(db.String(40), nullable=False)
 
-    def __init__(self, name, code, comments):
-        self.comments = comments
-        self.code = code
-        self.name = name
+    
     def __repr__(self):
         return '<Language>%r' %self.name
 
-class Comment(db.Model):
 
-    _N = 6
 
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    comment_type = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
-    language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable= False)
-    public =db.Column(db.Boolean, nullable= False, default=True)
-    path = db.Column(db.Text, index=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
-    post__data = db.relationship("Posts", 
-        primaryjoin=(post_id == Posts.id),
-        backref=db.backref('post_data', uselist=False), uselist=False)
-    replies = db.relationship(
-        'Comment', backref=db.backref('parent', remote_side=[id]),
-        lazy='dynamic')
-    shout =db.relationship(
-        'Users',secondary=shout,
-        primaryjoin=(shout.c.comment_id == id),
-        secondaryjoin=(shout.c.user_id == Users.id),
-        backref=db.backref('shout', lazy='dynamic'), lazy='dynamic')
 
-    def has_shouted(self,user):
-        return self.query.join(
-            shout,(shout.c.comment_id == self.id)).filter(
-            shout.c.user_id == user.id).first()
 
-    def add_shout(self,user):
-        if not self.has_shouted(user):
-            self.shout.append(user)
-
-    def remove_shout(self,user):
-        if  self.has_shouted(user):
-            self.shout.remove(user)
-            
-    def __init__(self, language, user, post, content, comment_type, public,parent_id=None):
-        self.content = content
-        self.user_id = user
-        self.post_id = post
-        self.language_id = language
-        self.comment_type = comment_type
-        self.public = public 
-        self.parent_id = parent_id
-        
-
-    def __repr__(self):
-        return '<Comment>%r' %self.content
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-        prefix = self.parent.path + '.' if self.parent else ''
-        self.path = prefix + '{:0{}d}'.format(self.id, self._N)
-        db.session.commit()
-        
-
-    def level(self):
-        return len(self.path) // self._N - 1
 
 class Posttype(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -667,166 +453,43 @@ class Ratingtype(db.Model):
     def __repr__(self):
         return '<Ratingtype>%r' %self.id
 
-class Postarb(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('postarb', lazy='dynamic'))
-    tags = db.Column(db.Text)
-
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
-
-class Posten(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('posten', lazy='dynamic'))
-    tags = db.Column(db.Text)
-
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
-
-class Postpor(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('postpor', lazy='dynamic'))
-    tags = db.Column(db.Text)
-
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
-
-class Postfr(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('postfr', lazy='dynamic'))
-    tags = db.Column(db.Text)
-    
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
-
-class Posthau(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('posthau', lazy='dynamic'))
-    tags = db.Column(db.Text)
-
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
-
-class Postsw(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('postsw', lazy='dynamic'))
-    tags = db.Column(db.Text)
-
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
-
-class Postes(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False, unique=True)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    posts = db.relationship('Posts', backref=db.backref('postes', lazy='dynamic'))
-    tags = db.Column(db.Text)
-
-    def __init__(self, id, title, content, lang, tags=None):
-        self.id = id
-        self.title = title
-        self.content= content
-        self.language_id = lang
-        self.tags = tags
- 
-class Message(db.Model):
+class Reporttype(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    sender__name = db.relationship("Users", 
-        primaryjoin=(sender_id == Users.id),
-        backref=db.backref('sender_name', uselist=False), uselist=False)
-    recipient__name = db.relationship("Users", 
-        primaryjoin=(recipient_id == Users.id),
-        backref=db.backref('recipient_name', uselist=False), uselist=False)
-    body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    content = db.Column(db.String)
+
+    def __init__(self, content):
+        self.content = content
 
     def __repr__(self):
-        return '<Message {}>'.format(self.body)
-    
+        return '<Reporttype>%r' %self.id
+
+
+
+
+
       
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     reason = db.Column(db.String)
-    email = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reporter = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    uploader_id=db.Column(db.Integer)
-    rtype = db.Column(db.String)
+    user_reported=db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    rtype = db.Column(db.Integer, db.ForeignKey('reporttype.id'), nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def __init__(self, reason, email, user_id,post,uploader_id,rtype):
-        self.reason = reason
-        self.email = email
-        self.user_id = user_id
-        self.post_id = post
-        self.uploader_id = uploader_id
-        self.rtype = rtype
-    
-     
+         
     def __repr__(self):
         return '<Report %r>' % self.id
 
-
 class Save(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    content = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     post_id =db.Column(db.Integer,db.ForeignKey('posts.id', onupdate="CASCADE", ondelete="CASCADE"),nullable=False)
     post___data=db.relationship('Posts', 
         primaryjoin=(post_id == Posts.id),
         backref=db.backref('postsdat_a', uselist=False), uselist=False)
+
+    
     def __init__(self, user, content,post):
         self.user_id = user
         self.content = content
@@ -834,3 +497,16 @@ class Save(db.Model):
 
     def __repr__(self):
         return '<Save %r>' % self.id
+
+
+
+class country(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    code = db.Column(db.String)
+
+    def __init__(self, content):
+        self.content = content
+
+    def __repr__(self):
+        return '<country>%r' %self.id

@@ -1,12 +1,14 @@
 from threading import Thread
-from flask import current_app
+from flask import current_app,url_for
 from flask_mail import Message
 from app import mail
+
 
 
 def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
+        print(True)
 
 def user(app,text_body,receiver_u):
         with app.app_context():
@@ -37,26 +39,28 @@ def send_email(app, recipients, text_body,
                 msg.attach(*attachment)
         if sync:
             mail.send(msg)
+            print(True)
         else:
             Thread(target=send_async_email,
                 args=(current_app._get_current_object(), msg)).start()
 
-def invitation(receiver_u,text_body):
-
-    Thread(target=user,
-            args=(current_app._get_current_object(),text_body,receiver_u)).start()
-
-def Invitation(receiver_u,text_body,sender_u):
-
-    Thread(target=user_,
-            args=(current_app._get_current_object(), sender_u,text_body,receiver_u)).start()
 
 def Report(sender_u,text_body):
     Thread(target=_user_,
             args=(current_app._get_current_object(), sender_u,text_body)).start()
 
 
+def invitation_email(token,email,sender,r):
+    msg = Message('You have been invited to oodaay',
+                  sender=sender,
+                  recipients=[email])
+    
+    msg.body = f''' To join odaay,visit the following link:
+                {r}
      
+                if you did not make this request then simply ignore this email and no changes will be made
+                '''
+    mail.send(msg)
     
 '''
 def send_password_reset_email(user):

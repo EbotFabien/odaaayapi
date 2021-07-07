@@ -63,21 +63,35 @@ saved = apisec.model('saved',{
 })
 
 reset_pass =  apisec.model('reset_pass',{
-    'email':fields.String(required=True),
-    'phone_number':fields.String(required=True),
+    'email':fields.String(required=False),
+    'number':fields.String(required=False),
 })
+
+resetpassword = apisec.model('resetpassword',{
+    'email':fields.String(required=True)
+})
+
 check_pass =apisec.model('check_pass',{
-    'code':fields.String(required=True),
+    #'code':fields.String(required=True),
     'email':fields.String(required=True),
     'password':fields.String(required=True),
 })
 
-signupdataemail= apisec.model('signup',{
-    'User_name': fields.String(required=True, description="Users Email")
+check_code =apisec.model('check_code',{
+    'code':fields.String(required=True),
+    'email':fields.String(required=True)
 })
+
+signupdataemail= apisec.model('signup',{
+    'user_name': fields.String(required=False, description="Users Name"),
+    'email': fields.String(required=False, description="Users Email"),
+    'password':fields.String(required=False, description="Password"),
+    'phone_number':fields.String(required=False, description="Phone Number"),
+})
+
 verifyemail= apisec.model('verify',{
-    'verification_code': fields.String(required=True, description="The username for the application"),
-    'Email': fields.String(required=True, description="Users Email")
+    'code': fields.String(required=True, description="The username for the application"),
+    'email': fields.String(required=True, description="Users Email")
 })
 channeldata = apisec.model('channel',{
     'id': fields.Integer(required=True),
@@ -149,3 +163,5 @@ send_verification = apisec.model('send_verification', {
     'code': fields.String(required=True, description="code sent to user from server"),
     'type': fields.String(required=True, description="phone, email or both")
 })
+
+

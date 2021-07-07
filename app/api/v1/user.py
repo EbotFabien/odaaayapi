@@ -4,7 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import requests as rqs
 from flask import abort, request, session,Blueprint
-from app.models import Users, followers, Setting,Channels,Message,Reaction,Comment,Notification,clap
+from app.models import Users, followers, Setting,Notification,clap,Save,Posts
 from flask import current_app as app
 from app import db, cache, logging
 from sqlalchemy import or_, and_, distinct, func
@@ -13,8 +13,9 @@ from werkzeug.utils import secure_filename
 import werkzeug
 import colorgram
 import requests
+from datetime import datetime, timedelta
 import json
-from app.services import mail
+from app.services import mail,phone
 
 authorizations = {
     'KEY': {
@@ -63,6 +64,18 @@ userinfo = user.model('Profile', {
     'author': fields.String,
     'description': fields.String
 })
+
+COnfirminvitation= user.model('COnfirminvitation',{
+    'uuid':fields.String(required=True, description="Users uuid"),
+    'user_name': fields.String(required=False, description="Users Name"),
+    'email': fields.String(required=False, description="Users Email"),
+    'password':fields.String(required=False, description="Password"),
+    'phone_number':fields.String(required=False, description="Phone Number"),
+})
+
+sinvitation= user.model('sinvitation',{
+    'email': fields.String(required=False, description="invitee Email")
+})
 userdata = user.model('Profile', {
     'id': fields.Integer(required=True),
     'username': fields.String(required=True),
@@ -74,6 +87,17 @@ userdata = user.model('Profile', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
+postsdata = user.model('postsdata',{
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True)
+})
+
+saved = user.model('saved', {
+    'id': fields.Integer(required=True),
+    'user_id': fields.String(required=True),
+    'post___data': fields.List(fields.Nested(postsdata))
+})
+
 notification_ =user.model('notification_',{
     'id': fields.Integer(required=True),
     'name': fields.String(required=True),
@@ -94,9 +118,6 @@ update_settings = user.model('Full_settings',{
     'theme': fields.String(required=True),
     'post': fields.Boolean(required=True),
     'saves': fields.Boolean(required=True),
-    'channel': fields.Boolean(required=True),
-    'comments': fields.Boolean(required=True),
-    'messages': fields.Boolean(required=True),
     'N_S_F_W': fields.Boolean(required=True),
     
 })
@@ -107,9 +128,6 @@ user_prefs = user.model('Preference', {
     'theme': fields.String(required=True),
     'post': fields.Boolean(required=True),
     'saves': fields.Boolean(required=True),
-    'channel': fields.Boolean(required=True),
-    'comments': fields.Boolean(required=True),
-    'messages': fields.Boolean(required=True),
     'N_S_F_W': fields.Boolean(required=True),
 })
 updateuser = user.model('Update',{
@@ -159,31 +177,15 @@ user_name = user.model('user_clap',{
     'id':fields.Integer(required=True),
     'username':fields.String(required=True),
 })
-messagedata = user.model('message_data',{
-    'sender__name':fields.List(fields.Nested(user_name)),
-    'timestamp':fields.String(required=True),
-    'recipient__name':fields.List(fields.Nested(user_name)),
-    'body':fields.String(required=True)
-})
-messagedata1 =  user.model('message_data1',{
-    'sender__name':fields.List(fields.Nested(user_name)),
-    'timestamp':fields.String(required=True),
-    'recipient__name':fields.List(fields.Nested(user_name)),
-})
-reaction =  user.model('reaction',{
-    'reaction':fields.String(required=True),
-    'comment':fields.String(required=True)
-})
+
+
 ip_data = user.model('address',{
     'address':fields.String(required=True)
 })
 Notification_seen = user.model('Notification_seen',{
     'notification_id':fields.String(required=True)
 })
-invitation =  user.model('Invitation',{
-    'email':fields.String(required=True),
-    'channel_id':fields.String(required=True) 
-})
+
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',
@@ -472,7 +474,7 @@ class Userprefs(Resource):
             return {
                 "status":1,
                 "res":"User_data updated"
-            }, 200
+            }, 200 
         else:
             return {
                 "status":0,
@@ -483,9 +485,7 @@ class Userprefs(Resource):
             user_settings.theme = req_data['theme']
             user_settings.post = req_data['post']
             user_settings.messages = req_data['messages']
-            user_settings.channel = req_data['channel']
             user_settings.saves = req_data['saves']
-            user_settings.comments =req_data['comment'] 
             user_settings.users_id =req_data['users'] 
             db.session.commit()
             return {
@@ -495,191 +495,11 @@ class Userprefs(Resource):
 
 
 
-@user.doc(
-    security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person',
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
-              },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/user_messages')
-class Usermessage(Resource):
-    @token_required
-    def get(self):
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        if user:
-            messages = Message.query.filter(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).distinct(or_(Message.sender_id == user.id , Message.recipient_id == user.id)).all()
-            return{
-                "results":marshal(messages,messagedata1)
-            }, 200
-        else:
-            return{
-                "status":0,
-                "res":"This user does not exist"
-            }
+
+
+
         
-    @token_required
-    @user.expect(user_messaging)
-    def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        content =req_data['content']
-        sender = Users.query.filter_by(uuid=data['uuid']).first()
-        receiver = Users.query.filter_by(uuid=req_data['uuid']).first()
-        
-        if sender and receiver:
-            msg = Message(author=sender, recipient=receiver,body=content)
-            db.session.add(msg)
-            db.session.commit()
-            return {
-                "status":1,
-                "res":"Message sent"
-            }, 200
-        else:
-            return {
-                "status":0,
-                "res":"Users are not found"
-            }, 404
-#delete later
 
-
-@user.doc(
-    security='KEY',
-    params={ 'uuid': 'Specify the uuid associated with the person',
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
-              },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/message_conversation')
-class Usermessage_sender(Resource):
-    @token_required
-    def get(self):
-        if request.args:
-            user_id_2 =request.args.get('uuid', None)
-            token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            user = Users.query.filter_by(uuid=data['uuid']).first()
-            user_2= Users.query.filter_by(uuid=user_id_2).first()
-            if user:
-                messages = Message.query.filter(and_(or_(Message.sender_id == user_2.id , Message.recipient_id == user_2.id) ,or_(Message.sender_id == user.id , Message.recipient_id == user.id))).all()
-
-                return{
-                    "results":marshal(messages,messagedata)
-                }, 200
-            else:
-                return{
-                    "status":0,
-                    "res":"This user does not exist"
-                }
-        else:
-            return{
-                "status":0,
-                "res":"Request failed"
-            }
-        
-@user.doc(
-    security='KEY',
-    params={ 
-        'user_id': 'Specify the user_id associated with the person',
-        'start': 'Value to start from ',
-        'limit': 'Total limit of the query',
-        'count': 'Number results per page',
-    },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/reaction')
-class User_reaction(Resource):
-    @token_required
-    @user.expect(reaction)
-    def post(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        reaction = req_data['reaction']
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        comment = Comment.query.filter_by(id=req_data['comment']).first()
-
-        if user:
-            if comment:
-                if reaction == ":smile:" :
-                    Reactions =Reaction(comment.id,reaction)
-                    db.session.add(Reactions)
-                    db.session.commit()
-                    return{
-                        "status":1,
-                        "res":"smile reaction posted"
-                    }
-                if reaction == ":angry:":
-                    Reactions =Reaction(comment.id,reaction)
-                    db.session.add(Reactions)
-                    db.session.commit()
-                    return{
-                        "status":1,
-                        "res":"anger reaction posted"
-                    }
-                if reaction == ":disappointed_relieved:":
-                    Reactions =Reaction(comment.id,reaction)
-                    db.session.add(Reactions)
-                    db.session.commit()
-                    return{
-                        "status":1,
-                        "res":"sad reaction posted"
-                    }
-                else:
-                     return{
-                        "status":1,
-                        "res":"this reaction is not  available"
-                    }
-            else:
-                return{
-                    "status":0,
-                    "res":"comment not found"
-                }
-                
-        else:
-            return{
-                "status":0,
-                "res":"Users are not found"
-            }
-            #getmethod
-            #deletemethod
 
 @user.doc(
     security='KEY',
@@ -700,7 +520,7 @@ class User_reaction(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/ip_address_data')
+@user.route('/user/ip_addressdata')
 class User_ip_address(Resource):
      #@token_required
     @user.expect(ip_data)
@@ -744,7 +564,7 @@ class User_ip_address(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/upload_profile_pic')
+@user.route('/user/profilepic')
 class User_upload_profile_pic(Resource):
     @token_required
     @user.expect(uploader)
@@ -825,7 +645,7 @@ class User_upload_profile_pic(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/Random_users')
+@user.route('/user/Randomusers')
 class User_Random(Resource):
      def get(self):
         if request.args:
@@ -870,7 +690,7 @@ class User_Random(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/Seen_Notification & notifs of user')
+@user.route('/user/Notification')
 class Seen_Notification(Resource):
     @token_required
     def get(self):
@@ -938,31 +758,174 @@ class Seen_Notification(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@user.route('/user/Send_invitation')
+@user.route('/user/invitation')
 class  Invitation(Resource):
     @token_required
-    @user.expect(invitation)
+    def get(self):
+        token =  request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        if data is None:
+            return{
+                'status':'0',
+                'res':'This token has expired'
+            },400
+        else:
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            return{
+                'status':'1',
+                'user':user.username,
+                'uuid':user.uuid,
+                'res':'Your token is valid'
+            },200
+
+    @token_required#check the data sent
+    @user.expect(sinvitation)
     def post(self):
         token = request.headers['API-KEY']
         req_data = request.get_json()
-        email=req_data['email']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        channel= Channels.query.filter_by(id=req_data['channel_id']).first()
-        toke_n=user.get_reset_token()
-        if channel.subscribed(user):
-            #email
-            mail.Invitation(email,"james"+toke_n,user.email)
+        email= req_data['email']
+        
+        if user and email:
+            token = jwt.encode({
+                'uuid': user.uuid,
+                'exp': datetime.utcnow() + timedelta(minutes=60), 
+                'iat': datetime.utcnow()
+            },
+            app.config.get('SECRET_KEY'),
+            algorithm='HS256')
+            r="http://localhost:3000/en/invitation?token="+str(token)
+            mail.invitation_email(token,email,user.email,r)
             return{
-                'status':'1',
-                'res':'email sent'
-            }
+                'token':str(token),
+                'res':'Invitation_sent'
+            },200
 
         else:
            return{
                 'status':'0',
-                'res':'You are not subscribed to this channel'
-            } 
+                'res':'You are not a user'
+            },400 
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/confirminvitation')
+class  confirminvitation(Resource):
+    @user.expect(COnfirminvitation)
+    def post(self):
+        signup_data = request.get_json()
+        user1 = Users.query.filter_by(uuid=signup_data['uuid']).first()
+        if signup_data and user1:
+            email = signup_data['email'] or None
+            username = signup_data['user_name'] or None
+            password = signup_data['password'] or None
+            phone_number = signup_data['phone_number'] or None
+
+            if email and username and password is not None:
+                user = Users.query.filter_by(email=email).first() #filter by user handle
+            
+                if user:
+                    return { 
+                        'res':'user already exist',
+                        'status': 0
+                    }, 200
+                else:
+                    verification_code = phone.generate_code()
+
+                    if verification_code:
+                        newuser = Users(username,str(uuid.uuid4()),False, signup_data['email'])
+                        newuser.code = verification_code
+                        newuser.passwordhash(password)
+                        newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                        db.session.add(newuser)
+                        db.session.commit()
+                        newuser.follow(user1)
+                        db.session.commit()
+                        #send code to email
+                        mail.send_email(app,[signup_data['email']],verification_code) #check this
+                        return {
+                            'res': 'success',
+                            'user_name':username,
+                            'email': signup_data['email'],
+                            'status': 1
+                        }, 200
+                    else:
+                        return {
+                            'status': 0,
+                            'res':'error'
+                        }, 201
+            if phone_number is not None:
+                user = Users.query.filter_by(phone=phone_number).first()
+                if user:
+                    return { 
+                        'res':'user already exist',
+                        'status': 0
+                    }, 200
+                else:
+                    verification_code=phone.generate_code()
+                    newuser = Users(str(phone_number),str(uuid.uuid4()),True, str(phone_number),phone_number)
+                    db.session.commit()
+                    newuser.code = verification_code
+                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    db.session.add(newuser)
+                    db.session.commit()
+                    newuser.follow(user1)
+                    db.session.commit()
+                    phone.send_confirmation_code(phone_number,verification_code)
+                    return {
+                        'status': 1,
+                        'Phone':phone_number,
+                        'res': 'verification sms sent'
+                        }, 200
+            if email and username and password and phone_number is not None:
+                user = Users.query.filter_by(email=email).first()
+                if user:
+                    return { 
+                        'res':'user already exist',
+                        'status': 0
+                    }, 200
+                else:
+                    verification_code=phone.generate_code()
+                    newuser = Users(user_name,str(uuid.uuid4()),True, email,phone_number)
+                    db.session.commit()
+                    newuser.code = verification_code
+                    newuser.passwordhash(password)
+                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    db.session.commit()
+                    newuser.follow(user1)
+                    db.session.commit()
+                    phone.send_confirmation_code(phone_number,verification_code)
+                    mail.send_email(app,[signup_data['email']],verification_code) #check this
+                    return {
+                        'status': 1,
+                        'user_name':user_name,
+                        'email':email,
+                        'Phone':phone_number,
+                        'res': 'verification sms  and email sent'
+                        }, 200
+        else:
+            return {
+                'status': 0,
+                'res': 'No data'
+            },201
 
 @user.doc(
     security='KEY',
@@ -1005,6 +968,108 @@ class  No_claps_(Resource):
                 },400
 
 
+
+@user.doc(
+    security='KEY',
+    params={ 
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/savings')
+class  No_savings(Resource):
+    @token_required
+    def get(self):
+        if request.args:
+            token = request.headers['API-KEY']
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            saves=Save.query.filter_by(user_id=user.id).paginate(int(start),int(count), False).items
+            if saves:
+                return{
+                    "start":start,
+                    "limit":limit,
+                    "count":count,
+                    "next":next,
+                    "previous":previous,
+                    'number of saves':count,
+                    "results":marshal(saves,saved)
+                            
+                },200
+
+            else:
+                return{
+                        "status":0,
+                        "res":"Fail"
+                    },400
+
+@user.doc(
+    security='KEY',
+    params={ 
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/posts')
+class  Posts_(Resource):
+    @token_required
+    def get(self):
+        if request.args:
+            token = request.headers['API-KEY']
+            start = request.args.get('start',None)
+            limit = request.args.get('limit',None)
+            count = request.args.get('count',None)
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            posts=Posts.query.filter_by(author=user.id).paginate(int(start),int(count), False).items
+            if posts:
+                return{
+                    "start":start,
+                    "limit":limit,
+                    "count":count,
+                    "next":next,
+                    "previous":previous,
+                    'number of saves':count,
+                    "results":marshal(posts,postsdata)
+                            
+                },200
+
+            else:
+                return{
+                        "status":0,
+                        "res":"Fail"
+                    },400
 
 
 

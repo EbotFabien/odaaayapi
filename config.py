@@ -8,9 +8,11 @@ basedir= os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
     SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:odaaayAdmin@localhost/news"
+    #SQLALCHEMY_DATABASE_URI =  "postgresql+psycopg2://postgres:1234@localhost/news" # 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     # 'mysql://root:''@localhost/news' \
-    #postgresql+psycopg2://postgres:1234@localhost/news
+    # "postgresql+psycopg2://postgres:odaaayAdmin@localhost/news"
+    #  postgresql+psycopg2://postgres:1234@localhost/news
     #    or 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     # 'postgresql://localhost/news'
     # 'postgresql+psycopg2://test:test@db/test'
@@ -22,6 +24,8 @@ class Config(object):
     SWAGGER_UI_DOC_EXPANSION = None
     RESTPLUS_MASK_SWAGGER = True
     RESTPLUS_VALIDATE = True
+    STRIPE_KEY_PUB = 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
+    STRIPE_KEY_SEC = 'sk_test_IRUKv5saDJtl2B605DVTYm6I00Si1ogtf5'
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings
     MAIL_SERVER = 'smtp.gmail.com'
@@ -47,9 +51,9 @@ class Config(object):
     RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
     ADMINS = ['touchone0001@gmail.com']
-    TWILIO_ACCOUNT_SID = 'AC5e5097c08f1957d7e590079ca378a298'
-    TWILIO_AUTH_TOKEN = 'e23b6c3db552b6da832b2441d6d5e8e7'
-    TWILIO_NUMBER = 'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
+    TWILIO_ACCOUNT_SID = 'ACfa2f374c7f24b74c6849fe081fdd9e26'
+    TWILIO_AUTH_TOKEN = 'c7fbb80be7f81d96e0b6882e2614a9be'
+    TWILIO_NUMBER = '+19798032477'#'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
     RQ_DASHBOARD_USERNAME = 'rq'
     RQ_DASHBOARD_PASSWORD =  'password'
     RQ_DASHBOARD_REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
