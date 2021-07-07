@@ -47,6 +47,11 @@ def token_required(f):
             pass
         return f(*args, **kwargs)
     return decorated
+if os.environ.get('CUSTOM_ENV_VAR'):
+    @property
+    def specs_url(self):
+        return url_for(self.endpoint('specs'), _external=True, _scheme='https')
+    Api.specs_url = specs_url
 
 api = Blueprint('api', __name__, template_folder = '../templates')
 apisec = Api( app=api, doc='/docs', version='1.9.0', title='Odaaay API.', \
