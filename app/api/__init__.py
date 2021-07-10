@@ -47,22 +47,22 @@ def token_required(f):
             pass
         return f(*args, **kwargs)
     return decorated
-#v=1
-i#f v==1:
-  #  @property
-   # def specs_url(self):
-    #    return url_for(self.endpoint('specs'), _external=True, _scheme='https')
-    #Api.specs_url = specs_url
-
-class MyApi(Api):
+v=1
+if v==1:
     @property
     def specs_url(self):
-        """Monkey patch for HTTPS"""
-        scheme = 'http' if '8000' in self.base_url else 'https'
-        return url_for(self.endpoint('specs'), _external=True, _scheme=scheme)
+        return url_for(self.endpoint('specs'), _external=True, _scheme='https')
+    Api.specs_url = specs_url
+
+#class MyApi(Api):
+    #@property
+    #def specs_url(self):
+        #"""Monkey patch for HTTPS"""
+        #scheme = 'http' if '8000' in self.base_url else 'https'
+        #return url_for(self.endpoint('specs'), _external=True, _scheme=scheme)
 
 api = Blueprint('api', __name__, template_folder = '../templates')
-apisec = MyApi( app=api, doc='/docs', version='1.9.0', title='Odaaay API.', \
+apisec = Api( app=api, doc='/docs', version='1.9.0', title='Odaaay API.', \
     description='This documentation contains all routes to access the Odaaay API. \npip install googletransSome routes require authorization and can only be gotten \
     from the odaaay company', license='../LICENSE', license_url='www.odaaay.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
