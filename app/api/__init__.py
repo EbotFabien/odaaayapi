@@ -47,7 +47,7 @@ def token_required(f):
             pass
         return f(*args, **kwargs)
     return decorated
-v=1
+v=0
 if v==1:
     @property
     def specs_url(self):
@@ -127,43 +127,6 @@ class Login_email(Resource):
         count=5
         req_data = request.get_json()
         phone_login=req_data['phone_login']
-        if phone_login == False :
-            email=req_data['email'] or None
-            password=req_data['password'] or None
-            user = Users.query.filter_by(email=email).first()
-            if user : 
-                if user.verified_email == True:
-                    if user.verify_password(password):
-                        token = jwt.encode({
-                            'user': user.username,
-                            'uuid': user.uuid,
-                            'iat': datetime.utcnow()
-                        },
-                        app.config.get('SECRET_KEY'),
-                        algorithm='HS256')
-                        string_token = str(token)
-                        return {
-                            'status': 1,
-                            'res': 'success',
-                            'token': string_token
-                        }, 200
-
-                
-                    else:
-                        if user.tries < count:
-                            user.tries +=1
-                            db.session.commit()
-                            return {'res': 'Your Password is wrong '}, 401
-                        if user.tries >= count:
-                            user.verified_email=False
-                            db.session.commit()
-                            return {'res': 'Reset your Password '}, 401
-                else:
-                    return {'status': 4,'res': 'user is  not verified'}, 401
-
-            else:
-                return {'res': 'User does not exist '}, 401
-            
         
         if phone_login == True:
                 number=req_data['phone'] or None
@@ -232,138 +195,9 @@ class Login_email(Resource):
 
     
 
-@login.doc(
-    params={
-            },
 
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@login.route('/auth/check_reset')
-class _check_reset(Resource):
-    @login.expect(schema.check_pass)
-    def post(self):
-        req_data = request.get_json()
-        email=req_data['email']
-        password=req_data['password']
-        #code=req_data['code']
-        check_email =Users.query.filter_by(email=email).first()
-        if check_email:#.code == int(code):
-            check_email.passwordhash(password)
-            check_email.tries = 0
-            user.verified_email=True
-            db.session.commit()
-            return{
-                    'status':1,
-                    'res':'code has been reset',
-                    
-                },200
-        else:
-            return{
-                    'status':0,
-                    'res':'code is not same',
-                    
-                },400
 
-@login.doc(
-    params={
-            },
 
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@login.route('/auth/checkresetcode')
-class _check_reset(Resource):
-    @login.expect(schema.check_code)
-    def post(self):
-        req_data = request.get_json()
-        email=req_data['email']
-        code=req_data['code']
-        check_email =Users.query.filter_by(email=email).first()
-        if check_email.code == int(code) and not (datetime.utcnow() > check_email.code_expires_in):
-            check_email.tries = 0
-            user.verified_email=True
-            db.session.commit()
-            return{
-                    'status':1,
-                    'res':'code has been reset',
-                    
-                },200
-        else:
-            return{
-                    'status':0,
-                    'res':'code is not same or expired',
-                    
-                },400
-
-@login.doc(
-    params={
-            },
-
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@login.route('/auth/reset_code')
-class _reset_code(Resource):
-    @login.expect(schema.reset_pass)
-    def post(self):
-        req_data = request.get_json()
-        email=req_data['email']
-        phone_num=req_data['number']
-        email1 =Users.query.filter_by(email=email).first()
-        phon=Users.query.filter_by(phone=phone_num).first()
-        code_sent=int(phone.generate_code())
-        regex1 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
-        regex2 = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
-        if re.search(regex1,str(email)) or re.search(regex2,str(email)):
-                email1.code=code_sent
-                email1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                db.session.commit()
-                mail.send_email(app,[email1.email],code_sent)
-                return{
-                        'status':1,
-                        'res':'Mail sent',
-                        
-                    },200
-        if  phon:
-            phone.send_confirmation_code(phone_num)
-            return{
-                    'status':1,
-                    'res':'Phone_code sent',
-                        
-                    },200
-        else:
-            return{
-                    "status":0,
-                    "res":"Fail"
-                },400
 @signup.doc(
     responses={
         200: 'ok',
@@ -386,66 +220,38 @@ class Signup_email(Resource):
     @signup.expect(schema.signupdataemail)
     def post(self):
         signup_data = request.get_json()
+        count=5
         if signup_data:
-            email = signup_data['email'] or None 
             username = signup_data['user_name'] or None 
-            password = signup_data['password'] or None
+            code = signup_data['code'] or None
             phone_number = signup_data['phone_number'] or None
 
-            if email and username and password is not None:
-                user = Users.query.filter_by(email=email).first() #filter by user handle
             
-                if user :
-                    if user.verified_email == False:
-                        verification_code = phone.generate_code()
-                        user.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+            if phone_number and username is not None:
+                user = Users.query.filter_by(phone=phone_number).first()
+                if user:
+                    if user.verified_phone==False:
+                        verification_code=phone.generate_code()
                         user.code = verification_code
-                        mail.send_email(app,[user.email],verification_code)
-                        return { 
-                            'res':'user already exist,verification code sent',
-                            'status': 0
-                        }, 200
+                        user.code_expires_in = datetime.utcnow() + timedelta(minutes=5)
+                        db.session.commit()
+                        phone.send_confirmation_code(phone_number,verification_code)
+                        return {
+                            'status': 1,
+                            'Phone':phone_number,
+                            'res': 'verification sms sent'
+                            }, 200
                     else:
                         return { 
                             'res':'user already exist',
-                            'status': 3
+                            'status': 0
                         }, 200
-                else:
-                    verification_code = phone.generate_code()
-
-                    if verification_code:
-                        newuser = Users(username,str(uuid.uuid4()),True, signup_data['email'])
-                        newuser.code = verification_code
-                        newuser.passwordhash(password)
-                        newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                        db.session.add(newuser)
-                        db.session.commit()
-                        #send code to email
-                        mail.send_email(app,[signup_data['email']],verification_code) #check this
-                        return {
-                            'res': 'success',
-                            'user_name':username,
-                            'email': signup_data['email'],
-                            'status': 1
-                        }, 200
-                    else:
-                        return {
-                            'status': 0,
-                            'res':'error'
-                        }, 201
-            if phone_number is not None:
-                user = Users.query.filter_by(phone=phone_number).first()
-                if user:
-                    return { 
-                        'res':'user already exist',
-                        'status': 0
-                    }, 200
                 else:
                     verification_code=phone.generate_code()
-                    newuser = Users(str(phone_number),str(uuid.uuid4()),True, str(phone_number),phone_number)
+                    newuser = Users(username,str(uuid.uuid4()),True, None,phone_number)
                     db.session.commit()
                     newuser.code = verification_code
-                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
+                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=5)
                     db.session.add(newuser)
                     db.session.commit()
                     phone.send_confirmation_code(phone_number,verification_code)
@@ -454,30 +260,40 @@ class Signup_email(Resource):
                         'Phone':phone_number,
                         'res': 'verification sms sent'
                         }, 200
-            if email and username and password and phone_number is not None:
-                user = Users.query.filter_by(email=email).first()
-                if user:
-                    return { 
-                        'res':'user already exist',
-                        'status': 0
-                    }, 200
-                else:
-                    verification_code=phone.generate_code()
-                    newuser = Users(user_name,str(uuid.uuid4()),False, email,phone_number)
-                    db.session.commit()
-                    newuser.code = verification_code
-                    newuser.passwordhash(password)
-                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                    db.session.commit()
-                    phone.send_confirmation_code(phone_number,verification_code)
-                    mail.send_email(app,[signup_data['email']],verification_code) #check this
-                    return {
-                        'status': 1,
-                        'user_name':user_name,
-                        'email':email,
-                        'Phone':phone_number,
-                        'res': 'verification sms  and email sent'
+
+            if code and phone_number is not None:
+                user1 = Users.query.filter_by(phone=phone_number).first()
+                if user1:
+                    if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                        user1.verified_phone=True
+                        user1.tries =0
+                        db.session.commit()
+                        token = jwt.encode({
+                            'user': user1.username,
+                            'uuid': user1.uuid,
+                            'exp': datetime.utcnow() + timedelta(days=30),
+                            'iat': datetime.utcnow()
+                        },
+                        app.config.get('SECRET_KEY'),
+                        algorithm='HS256')
+                        return {
+                            'status': 1,
+                            'res': 'success',
+                            'token': str(token)
                         }, 200
+                    else:
+                        if user1.tries < count:
+                            user1.tries +=1
+                            db.session.commit()
+                            return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+
+                        if user1.tries >= count:
+                            user1.verified_phone=False
+                            db.session.commit()
+                            return {'res': 'Reset your code '}, 401
+                   
+                else:
+                    return {'res': 'User does not exist'}, 401
         else:
             return {
                 'status': 0,

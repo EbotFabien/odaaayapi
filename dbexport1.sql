@@ -45,17 +45,6 @@ CREATE TABLE public."Not_Interested" (
 ALTER TABLE public."Not_Interested" OWNER TO postgres;
 
 --
--- Name: alembic_version; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.alembic_version (
-    version_num character varying(32) NOT NULL
-);
-
-
-ALTER TABLE public.alembic_version OWNER TO postgres;
-
---
 -- Name: clap; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -744,15 +733,6 @@ COPY public."Not_Interested" (user_id, post_id) FROM stdin;
 
 
 --
--- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.alembic_version (version_num) FROM stdin;
-2e08d6b83a96
-\.
-
-
---
 -- Data for Name: clap; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -987,14 +967,6 @@ SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
 
 --
--- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.alembic_version
-    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
-
-
---
 -- Name: clap clap_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1131,14 +1103,6 @@ ALTER TABLE ONLY public.translated
 
 
 --
--- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1196,35 +1160,11 @@ CREATE INDEX ix_translated_timestamp ON public.translated USING btree ("timestam
 
 
 --
--- Name: Blocked Blocked_blocked_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Blocked"
-    ADD CONSTRAINT "Blocked_blocked_id_fkey" FOREIGN KEY (blocked_id) REFERENCES public.users(id);
-
-
---
--- Name: Blocked Blocked_blocker_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Blocked"
-    ADD CONSTRAINT "Blocked_blocker_id_fkey" FOREIGN KEY (blocker_id) REFERENCES public.users(id);
-
-
---
 -- Name: Not_Interested Not_Interested_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Not_Interested"
     ADD CONSTRAINT "Not_Interested_post_id_fkey" FOREIGN KEY (post_id) REFERENCES public.posts(id);
-
-
---
--- Name: Not_Interested Not_Interested_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Not_Interested"
-    ADD CONSTRAINT "Not_Interested_user_id_fkey" FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -1236,30 +1176,6 @@ ALTER TABLE ONLY public.clap
 
 
 --
--- Name: clap clap_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.clap
-    ADD CONSTRAINT clap_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
--- Name: followers followers_followed_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.followers
-    ADD CONSTRAINT followers_followed_id_fkey FOREIGN KEY (followed_id) REFERENCES public.users(id);
-
-
---
--- Name: followers followers_follower_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.followers
-    ADD CONSTRAINT followers_follower_id_fkey FOREIGN KEY (follower_id) REFERENCES public.users(id);
-
-
---
 -- Name: notification notification_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1268,27 +1184,11 @@ ALTER TABLE ONLY public.notification
 
 
 --
--- Name: notification notification_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.notification
-    ADD CONSTRAINT notification_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- Name: posts posts_Country_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.posts
     ADD CONSTRAINT "posts_Country_fkey" FOREIGN KEY ("Country") REFERENCES public.country(id);
-
-
---
--- Name: posts posts_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT posts_author_fkey FOREIGN KEY (author) REFERENCES public.users(id);
 
 
 --
@@ -1332,14 +1232,6 @@ ALTER TABLE ONLY public.rating
 
 
 --
--- Name: rating rating_rater_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.rating
-    ADD CONSTRAINT rating_rater_fkey FOREIGN KEY (rater) REFERENCES public.users(id);
-
-
---
 -- Name: rating rating_ratingtype_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1356,27 +1248,11 @@ ALTER TABLE ONLY public.report
 
 
 --
--- Name: report report_reporter_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.report
-    ADD CONSTRAINT report_reporter_fkey FOREIGN KEY (reporter) REFERENCES public.users(id);
-
-
---
 -- Name: report report_rtype_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.report
     ADD CONSTRAINT report_rtype_fkey FOREIGN KEY (rtype) REFERENCES public.reporttype(id);
-
-
---
--- Name: report report_user_reported_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.report
-    ADD CONSTRAINT report_user_reported_fkey FOREIGN KEY (user_reported) REFERENCES public.users(id);
 
 
 --
@@ -1388,35 +1264,11 @@ ALTER TABLE ONLY public.save
 
 
 --
--- Name: save save_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.save
-    ADD CONSTRAINT save_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
 -- Name: setting setting_language_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.setting
     ADD CONSTRAINT setting_language_id_fkey FOREIGN KEY (language_id) REFERENCES public.language(id);
-
-
---
--- Name: setting setting_users_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.setting
-    ADD CONSTRAINT setting_users_id_fkey FOREIGN KEY (users_id) REFERENCES public.users(id);
-
-
---
--- Name: task task_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.task
-    ADD CONSTRAINT task_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --

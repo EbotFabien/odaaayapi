@@ -31,6 +31,7 @@ def recreate_db():
         #db.drop_all()
         db.create_all()
         db.session.commit()
+        print('ok')
 
 @manager.command
 def run():

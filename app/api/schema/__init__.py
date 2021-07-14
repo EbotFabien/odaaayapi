@@ -18,8 +18,8 @@ signupdata = apisec.model('Signup', {
     #'phonenumber': fields.String(required=True, description="Users phone number")
 })
 full_login =  apisec.model('full_login', {
-    'email': fields.String(required=False, description="Email"),
-    'password': fields.String(required=False, description="Users Password"),
+    #'email': fields.String(required=False, description="Email"),
+    #'password': fields.String(required=False, description="Users Password"),
     #'username':fields.String(required=False, description="The username for the application"),
     'phone':  fields.String(required=False, description="Users phone number"),
     'code':fields.String(required=False, description="verification code"),
@@ -84,8 +84,9 @@ check_code =apisec.model('check_code',{
 
 signupdataemail= apisec.model('signup',{
     'user_name': fields.String(required=False, description="Users Name"),
-    'email': fields.String(required=False, description="Users Email"),
-    'password':fields.String(required=False, description="Password"),
+    'code':fields.String(required=False, description="verification code"),
+    #'email': fields.String(required=False, description="Users Email"),
+    #'password':fields.String(required=False, description="Password"),
     'phone_number':fields.String(required=False, description="Phone Number"),
 })
 
