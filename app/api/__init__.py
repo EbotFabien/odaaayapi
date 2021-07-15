@@ -226,7 +226,40 @@ class Signup_email(Resource):
             code = signup_data['code'] or None
             phone_number = signup_data['phone_number'] or None
 
-            
+            if code is not None:
+                user1 = Users.query.filter_by(phone=phone_number).first()
+                if user1:
+                    if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                        user1.verified_phone=True
+                        user1.tries =0
+                        db.session.commit()
+                        token = jwt.encode({
+                            'user': user1.username,
+                            'uuid': user1.uuid,
+                            'exp': datetime.utcnow() + timedelta(days=30),
+                            'iat': datetime.utcnow()
+                        },
+                        app.config.get('SECRET_KEY'),
+                        algorithm='HS256')
+                        return {
+                            'status': 1,
+                            'res': 'success',
+                            'token': str(token)
+                        }, 200
+                    else:
+                        if user1.tries < count:
+                            user1.tries +=1
+                            db.session.commit()
+                            return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+
+                        if user1.tries >= count:
+                            user1.verified_phone=False
+                            db.session.commit()
+                            return {'res': 'Reset your code '}, 401
+                   
+                else:
+                    return {'res': 'User does not exist'}, 401
+                    
             if phone_number and username is not None:
                 user = Users.query.filter_by(phone=phone_number).first()
                 if user:
@@ -261,39 +294,7 @@ class Signup_email(Resource):
                         'res': 'verification sms sent'
                         }, 200
 
-            if code and phone_number is not None:
-                user1 = Users.query.filter_by(phone=phone_number).first()
-                if user1:
-                    if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
-                        user1.verified_phone=True
-                        user1.tries =0
-                        db.session.commit()
-                        token = jwt.encode({
-                            'user': user1.username,
-                            'uuid': user1.uuid,
-                            'exp': datetime.utcnow() + timedelta(days=30),
-                            'iat': datetime.utcnow()
-                        },
-                        app.config.get('SECRET_KEY'),
-                        algorithm='HS256')
-                        return {
-                            'status': 1,
-                            'res': 'success',
-                            'token': str(token)
-                        }, 200
-                    else:
-                        if user1.tries < count:
-                            user1.tries +=1
-                            db.session.commit()
-                            return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
-
-                        if user1.tries >= count:
-                            user1.verified_phone=False
-                            db.session.commit()
-                            return {'res': 'Reset your code '}, 401
-                   
-                else:
-                    return {'res': 'User does not exist'}, 401
+            
         else:
             return {
                 'status': 0,
