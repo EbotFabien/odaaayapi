@@ -303,7 +303,7 @@ class Posts(db.Model):
     picture_url = db.Column(db.String(200))
     audio_url = db.Column(db.String(200))
     video_url = db.Column(db.String(200))
-    Country = db.Column(db.Integer, db.ForeignKey('country.id'), nullable=False)
+    Country = db.Column(db.Integer, db.ForeignKey('country.id'), nullable=True)
     translate = db.Column(db.Boolean, nullable=False, default=False)
     summarize = db.Column(db.Boolean, nullable=False, default=False)
     created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -386,16 +386,16 @@ class Posts(db.Model):
             self.clap.remove(user)
 
    
-    def __init__(self, uploader, title, posttype, content, lang, uploader_id, post_url=None, video_url=None, thumb_url=None):
-        self.content = content
+    def __init__(self, uploader, title, posttype, content, lang, post_url=None, video_url=None, thumb_url=None):
+        self.text_content = content
         self.title = title
         self.uuid = secure_filename(title)+'_'+shorty[0:3]
-        self.uploader_id = uploader
+        self.author = uploader
         self.post_type = posttype
         self.orig_lang = lang
         self.thumb_url = thumb_url
-        self.uploader = Users.query.filter_by(id=uploader_id).first().username
-        self.uploader_date = datetime.utcnow()
+        #self.uploader = Users.query.filter_by(id=uploader_id).first().username
+        #elf.uploader_date = datetime.utcnow()
         self.post_url = post_url
         self.video_url = video_url   
     

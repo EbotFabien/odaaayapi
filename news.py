@@ -34,6 +34,23 @@ def recreate_db():
         print('ok')
 
 @manager.command
+def languages():
+    with app.app_context():
+        language_dict = {'en':"english", 'es':"espagnol", 'ar':"arab", 'pt':"portugese", 'sw':"swahili", 'fr':"french", 'ha':"hausa"}
+        #lan=Language.query.all()
+        #db.session.commit()
+        #print(lan)
+        #print('ok')
+        '''for i in language_dict:
+            lan=Language(lang_type="N",code=i,name=language_dict[i])
+            db.session.add(lan)
+            db.session.commit()'''
+        lan1=Posttype(content="Text")
+        lan2=Posttype(content="Video")
+        db.session.add(lan1)
+        db.session.add(lan2)
+        db.session.commit()
+@manager.command
 def run():
     logo()
     # Error tracking and logging with sentry
@@ -66,6 +83,7 @@ def test():
 
 if __name__ == "__main__":
     recreate_db()
+    #languages()
     manager.run()
     
     #run()

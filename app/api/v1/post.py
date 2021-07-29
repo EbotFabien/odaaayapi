@@ -84,11 +84,16 @@ postcreationdata = post.model('postcreationdata', {
 Updatedata = post.model('Updatedata',{
     'id':  fields.String(required=True),
     'title': fields.String(required=True),
-    'content': fields.String(required=True)
+    'text_content': fields.String(required=True)
 })
 
 deletedata =post.model('deletedata',{
     'id':fields.String(required=True)
+})
+
+userdata =post.model('userdata',{
+    'id':fields.String(required=True),
+    'username':fields.String(required=True),
 })
 
 
@@ -97,10 +102,10 @@ postdata = post.model('postreturndata', {
     'uuid':fields.String(required=True),
     'title': fields.String(required=True),
     'post_url': fields.String(required=True),
-    'uploader': fields.String(required=True),
-    'content': fields.String(required=True),
+    'uploader_data': fields.List(fields.Nested(userdata)),
+    'text_content': fields.String(required=True),
     'thumb_url': fields.String(required=False),
-    'uploader_date': fields.DateTime(required=True)
+    'created_on': fields.DateTime(required=True)
 })
 user_post_sav = post.model('postreturnuserdata', {
     'id': fields.Integer(required=True),
@@ -108,15 +113,15 @@ user_post_sav = post.model('postreturnuserdata', {
     'title': fields.String(required=True),
     'post_url': fields.String(required=True),
     'thumb_url': fields.String(required=True),
-    'uploader': fields.String(required=True),
-    'content': fields.String(required=True),
-    'uploader_date': fields.DateTime(required=True)
+    'author': fields.String(required=True),
+    'text_content': fields.String(required=True),
+    'created_on': fields.DateTime(required=True)
 })
 
 langpostdata = post.model('langpostreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
-    'content': fields.String(required=True),
+    'text_content': fields.String(required=True),
 })
 
 multiplepost = post.model('multiple',{  #check this
@@ -212,7 +217,7 @@ class Post(Resource):
                     "results": marshal(results, langpostdata)
                 }, 200
             else:
-                posts = Posts.query.order_by(Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
+                posts = Posts.query.order_by(Posts.created_on.desc()).paginate(int(start), int(count), False).items
                 return {
                     "start": start,
                     "limit": limit,
@@ -222,7 +227,7 @@ class Post(Resource):
                     "results": marshal(posts, postdata)
                 }, 200
         else:
-            posts = Posts.query.order_by(Posts.uploader_date.desc()).all()
+            posts = Posts.query.order_by(Posts.created_on.desc()).all()
             return marshal(posts, postdata), 200
 
     @token_required
@@ -291,10 +296,10 @@ class Post(Resource):
         post_done=Posts.query.filter_by(title=title).first()
         if post_done is None:
             if ptype == 1:
-                newPost = Posts(user.id, title, ptype, content, language.id, user.id)
+                newPost = Posts(user.id, title, ptype, content, language.id)
                 db.session.add(newPost)
                 db.session.commit()
-                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                #newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
@@ -303,16 +308,16 @@ class Post(Resource):
                     'status': 1,
                     'res': 'Post was made'
                 }, 200
-            if ptype == 4:
+            if ptype == 2:
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
-                newPost = Posts(user.id, title, ptype, content, language.id, user.id, thumb_url=thumb_url_, post_url=post_url_)
+                newPost = Posts(user.id, title, ptype, content, language.id, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.post_url=post_url_
                 newPost.thumb_url=thumb_url_
                 db.session.commit()
-                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                #newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)

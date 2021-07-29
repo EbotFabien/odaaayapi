@@ -42,7 +42,7 @@ class localFlask(Flask):
 def createapp(configname):
     app = localFlask(__name__)
     app.config.from_object(config[configname])
-    CORS(app)
+    CORS(app, resources=r'/api/*')
     bycrypt.init_app(app)
     db.init_app(app)
     mail.init_app(app)
