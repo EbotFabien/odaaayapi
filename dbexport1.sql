@@ -216,7 +216,7 @@ CREATE TABLE public.posts (
     picture_url character varying(200),
     audio_url character varying(200),
     video_url character varying(200),
-    "Country" integer NOT NULL,
+    "Country" integer,
     translate boolean NOT NULL,
     summarize boolean NOT NULL,
     created_on timestamp without time zone,
@@ -761,6 +761,13 @@ COPY public.followers (follower_id, followed_id) FROM stdin;
 --
 
 COPY public.language (id, lang_type, code, name) FROM stdin;
+22	N	en	english
+23	N	es	espagnol
+24	N	ar	arab
+25	N	pt	portugese
+26	N	sw	swahili
+27	N	fr	french
+28	N	ha	hausa
 \.
 
 
@@ -777,6 +784,7 @@ COPY public.notification (id, name, user_id, post_id, seen, "timestamp", payload
 --
 
 COPY public.posts (id, title, uuid, description, post_url, thumb_url, text_content, picture_url, audio_url, video_url, "Country", translate, summarize, created_on, author, post_type, orig_lang) FROM stdin;
+1	Trump Dies	Trump_Dies_kXT	\N	\N	\N	He Dies of cancer	\N	\N	\N	\N	f	f	2021-07-29 17:20:50.989495	1	1	22
 \.
 
 
@@ -793,6 +801,8 @@ COPY public.postsummary (id, post_id, content, language_id, status, "timestamp")
 --
 
 COPY public.posttype (id, content) FROM stdin;
+1	Text
+2	Video
 \.
 
 
@@ -865,6 +875,7 @@ COPY public.translated (id, title, content, language_id, post_id, tags, status, 
 --
 
 COPY public.users (id, username, email, phone, uuid, password_hash, bio, picture, code, user_visibility, last_code, code_expires_in, verified_email, verified_phone, tries, created_on) FROM stdin;
+1	Fabien	\N	+237650898222	f9564acc-9fe6-4078-90e1-75137d369aa5	\N	\N	\N	976409	t	\N	2021-07-29 15:21:37.60638	f	f	0	\N
 \.
 
 
@@ -886,7 +897,7 @@ SELECT pg_catalog.setval('public.country_id_seq', 1, false);
 -- Name: language_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.language_id_seq', 1, false);
+SELECT pg_catalog.setval('public.language_id_seq', 28, true);
 
 
 --
@@ -900,7 +911,7 @@ SELECT pg_catalog.setval('public.notification_id_seq', 1, false);
 -- Name: posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.posts_id_seq', 1, false);
+SELECT pg_catalog.setval('public.posts_id_seq', 1, true);
 
 
 --
@@ -914,7 +925,7 @@ SELECT pg_catalog.setval('public.postsummary_id_seq', 1, false);
 -- Name: posttype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.posttype_id_seq', 1, false);
+SELECT pg_catalog.setval('public.posttype_id_seq', 2, true);
 
 
 --
@@ -963,7 +974,7 @@ SELECT pg_catalog.setval('public.setting_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 1, true);
 
 
 --
@@ -1160,35 +1171,19 @@ CREATE INDEX ix_translated_timestamp ON public.translated USING btree ("timestam
 
 
 --
--- Name: Not_Interested Not_Interested_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Not_Interested"
-    ADD CONSTRAINT "Not_Interested_post_id_fkey" FOREIGN KEY (post_id) REFERENCES public.posts(id);
-
-
---
--- Name: clap clap_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.clap
-    ADD CONSTRAINT clap_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
-
-
---
--- Name: notification notification_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.notification
-    ADD CONSTRAINT notification_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
-
-
---
 -- Name: posts posts_Country_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.posts
     ADD CONSTRAINT "posts_Country_fkey" FOREIGN KEY ("Country") REFERENCES public.country(id);
+
+
+--
+-- Name: posts posts_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_author_fkey FOREIGN KEY (author) REFERENCES public.users(id);
 
 
 --
@@ -1216,35 +1211,11 @@ ALTER TABLE ONLY public.postsummary
 
 
 --
--- Name: postsummary postsummary_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.postsummary
-    ADD CONSTRAINT postsummary_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
-
-
---
--- Name: rating rating_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.rating
-    ADD CONSTRAINT rating_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
-
-
---
 -- Name: rating rating_ratingtype_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.rating
     ADD CONSTRAINT rating_ratingtype_fkey FOREIGN KEY (ratingtype) REFERENCES public.ratingtype(id);
-
-
---
--- Name: report report_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.report
-    ADD CONSTRAINT report_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
@@ -1256,14 +1227,6 @@ ALTER TABLE ONLY public.report
 
 
 --
--- Name: save save_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.save
-    ADD CONSTRAINT save_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
 -- Name: setting setting_language_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1272,27 +1235,11 @@ ALTER TABLE ONLY public.setting
 
 
 --
--- Name: translated translated_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.translated
-    ADD CONSTRAINT translated_id_fkey FOREIGN KEY (id) REFERENCES public.posts(id);
-
-
---
 -- Name: translated translated_language_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.translated
     ADD CONSTRAINT translated_language_id_fkey FOREIGN KEY (language_id) REFERENCES public.language(id);
-
-
---
--- Name: translated translated_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.translated
-    ADD CONSTRAINT translated_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
