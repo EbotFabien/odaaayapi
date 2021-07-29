@@ -123,7 +123,7 @@ update_settings = user.model('Full_settings',{
 })
 user_prefs = user.model('Preference', {
     'id': fields.Integer(required=True),
-    'language_id': fields.Integer(required=True),
+    'language_id': fields.Integer(required=True),#fix data for language,so as to pass code
     'users_id': fields.Integer(required=True),
     'theme': fields.String(required=True),
     'post': fields.Boolean(required=True),
@@ -469,7 +469,6 @@ class Userprefs(Resource):
             user.username = req_data['username']
             user.email = req_data['email']
             user.user_visibility = req_data['user_visibility']
-            user.N_S_F_W =req_data['N_S_F_W']
             db.session.commit()
             return {
                 "status":1,
@@ -483,10 +482,7 @@ class Userprefs(Resource):
         if user_settings:
             user_settings.language_id = req_data['language']
             user_settings.theme = req_data['theme']
-            user_settings.post = req_data['post']
-            user_settings.messages = req_data['messages']
-            user_settings.saves = req_data['saves']
-            user_settings.users_id =req_data['users'] 
+            user_settings.N_S_F_W =req_data['N_S_F_W']
             db.session.commit()
             return {
                 "status":1,
@@ -1029,7 +1025,7 @@ class  No_savings(Resource):
               },
     responses={
         200: 'ok',
-        201: 'created',
+        201: 'created',  
         204: 'No Content',    
         301: 'Resource was moved',
         304: 'Resource was not Modified',

@@ -19,7 +19,7 @@ import re
 from app.services import mail
 from .v1 import user, info, token, search, post
 from app.models import Report, Users, Language, Save, Setting, \
-         Posttype, Rating, Ratingtype
+         Posttype, Rating, Ratingtype,Translated,Posts
 # API security
 authorizations = {
     'KEY': {

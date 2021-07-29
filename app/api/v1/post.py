@@ -382,7 +382,7 @@ class Article_check(Resource):
                     'status': 1,
                     'res': url,
                     'title':title,
-                    'thumbnail':thumbnail,
+                    'thumb':thumbnail,
                     'content':str(document.readable)
 
             }, 200
