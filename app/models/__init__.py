@@ -389,7 +389,7 @@ class Posts(db.Model):
     def __init__(self, uploader, title, posttype, content, lang, post_url=None, video_url=None, thumb_url=None):
         self.text_content = content
         self.title = title
-        self.uuid = secure_filename(title)+'_'+shorty[0:3]
+        self.uuid = uuid#secure_filename(title)+'_'+shorty[0:3]
         self.author = uploader
         self.post_type = posttype
         self.orig_lang = lang
