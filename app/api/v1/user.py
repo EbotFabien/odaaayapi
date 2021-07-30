@@ -89,7 +89,8 @@ userdata = user.model('Profile', {
 })
 postsdata = user.model('postsdata',{
     'id': fields.Integer(required=True),
-    'title': fields.String(required=True)
+    'title': fields.String(required=True),
+    'text_content': fields.String(required=True),
 })
 
 saved = user.model('saved', {

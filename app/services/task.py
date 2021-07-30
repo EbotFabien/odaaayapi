@@ -17,6 +17,9 @@ from app.services.mail import send_email
 import os
 from tqdm import tqdm
 from googletrans import Translator
+from flask import current_app as app
+from app import db, cache, logging
+from sqlalchemy import or_, and_, distinct, func
 #from rake_nltk import Rake
 #from multi_rake import Rake
 
@@ -80,7 +83,7 @@ def translate_posts(post_id, user_id):
         for j in languages:
             if j == user_default_lang:
                 current_lang = Language.query.filter_by(code=user_default_lang).first()
-                table = language_dict.get(user_default_lang)
+                #table = language_dict.get(user_default_lang)
                 #keywords = rake.apply(sum_content)
                 if post is not None:
                     new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
@@ -91,10 +94,10 @@ def translate_posts(post_id, user_id):
         p = 1
         for i in tqdm(languages):
             # _set_task_progress(p/len(languages) * 100)
-            for j in language_dict:
+            for j in languages:
                 if i == j and i != user_default_lang:
                    current_lang = Language.query.filter_by(code=i).first()
-                   table = language_dict.get(i)
+                   # table = language_dict.get(i)
                    #keywords = rake.apply(content_translation[i])
                    new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
                    if new_check is None:

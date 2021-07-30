@@ -14,6 +14,7 @@ from time import time
 import json, shortuuid, bleach
 from markdown import markdown
 from werkzeug.utils import secure_filename
+import rq,redis
 
 
 Not_Interested = db.Table('Not_Interested',
@@ -295,7 +296,7 @@ class Posts(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160))
-    uuid = db.Column(db.String(1000))
+    uuid = db.Column(db.String(1000))#check
     description = db.Column(db.String(200))
     post_url = db.Column(db.String(200))
     thumb_url = db.Column(db.String(200))
