@@ -295,7 +295,7 @@ class Posts(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160))
-    uuid = db.Column(db.String(60))
+    uuid = db.Column(db.String(1000))
     description = db.Column(db.String(200))
     post_url = db.Column(db.String(200))
     thumb_url = db.Column(db.String(200))
@@ -389,7 +389,7 @@ class Posts(db.Model):
     def __init__(self, uploader, title, posttype, content, lang, post_url=None, video_url=None, thumb_url=None):
         self.text_content = content
         self.title = title
-        self.uuid = uuid#secure_filename(title)+'_'+shorty[0:3]
+        self.uuid = secure_filename(title)+'_'+shorty[0:3]
         self.author = uploader
         self.post_type = posttype
         self.orig_lang = lang
