@@ -76,7 +76,7 @@ COnfirminvitation= user.model('COnfirminvitation',{
 sinvitation= user.model('sinvitation',{
     'email': fields.String(required=False, description="invitee Email")
 })
-userdata = user.model('Profile', {
+userdata = user.model('userdata', {
     'id': fields.Integer(required=True),
     'username': fields.String(required=True),
     'profile_picture': fields.String(required=True),
@@ -91,6 +91,7 @@ postsdata = user.model('postsdata',{
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'text_content': fields.String(required=True),
+    'uploader_data': fields.List(fields.Nested(userdata)),
 })
 
 saved = user.model('saved', {

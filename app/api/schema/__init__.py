@@ -118,12 +118,16 @@ element = apisec.model('element', {
 user_saved_datas = apisec.model('user_saved_datas', {
     'id': fields.Integer(required=True),
 })
+users_dat = apisec.model('users_dat', {
+    'id': fields.Integer(required=True),
+    'username': fields.String(required=True),
+})
 
 postdata = apisec.model('postreturndata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'uuid': fields.String(required=True),
-    'author': fields.String(required=True),
+    'uploader_data': fields.List(fields.Nested(users_dat)),
     'post_type': fields.Integer(required=True),
     'text_content': fields.String(required=True),
     'post_url': fields.String(required=True),
