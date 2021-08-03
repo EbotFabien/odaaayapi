@@ -41,10 +41,10 @@ def languages():
         #db.session.commit()
         #print(lan)
         #print('ok')
-        '''for i in language_dict:
+        for i in language_dict:
             lan=Language(lang_type="N",code=i,name=language_dict[i])
             db.session.add(lan)
-            db.session.commit()'''
+            db.session.commit()
         lan1=Posttype(content="Text")
         lan2=Posttype(content="Video")
         db.session.add(lan1)
@@ -83,7 +83,7 @@ def test():
 
 if __name__ == "__main__":
     recreate_db()
-    #languages()
+    languages()
     manager.run()
     
     #run()

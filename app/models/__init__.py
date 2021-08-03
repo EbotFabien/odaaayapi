@@ -295,15 +295,15 @@ class Rating(db.Model):
 class Posts(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(160))
-    uuid = db.Column(db.String(1000))#check
-    description = db.Column(db.String(200))
-    post_url = db.Column(db.String(200))
-    thumb_url = db.Column(db.String(200))
+    title = db.Column(db.String(10000))
+    uuid = db.Column(db.String(1000000))#check
+    description = db.Column(db.String(10000))
+    post_url = db.Column(db.String(10000))
+    thumb_url = db.Column(db.String(10000))
     text_content = db.Column(db.Text)
-    picture_url = db.Column(db.String(200))
-    audio_url = db.Column(db.String(200))
-    video_url = db.Column(db.String(200))
+    picture_url = db.Column(db.String(10000))
+    audio_url = db.Column(db.String(10000))
+    video_url = db.Column(db.String(10000))
     Country = db.Column(db.Integer, db.ForeignKey('country.id'), nullable=True)
     translate = db.Column(db.Boolean, nullable=False, default=False)
     summarize = db.Column(db.Boolean, nullable=False, default=False)
@@ -491,9 +491,8 @@ class Save(db.Model):
         backref=db.backref('postsdat_a', uselist=False), uselist=False)
 
     
-    def __init__(self, user, content,post):
+    def __init__(self, user,post):
         self.user_id = user
-        self.content = content
         self.post_id = post
 
     def __repr__(self):
@@ -506,8 +505,7 @@ class country(db.Model):
     name = db.Column(db.String)
     code = db.Column(db.String)
 
-    def __init__(self, content):
-        self.content = content
+    
 
     def __repr__(self):
         return '<country>%r' %self.id

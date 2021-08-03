@@ -887,3 +887,50 @@ class Discovery(Resource):
                     'res': 'request failed'
                 },400
             #fff
+
+
+@post.doc(
+    security='KEY',
+    params={ 'post_id': 'Value of post ID '
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/specific/post')
+
+class Post(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            post_id= request.args.get('post_id')
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            
+            if post_id and user:
+                posts = Posts.query.filter_by(id=post_id).first()
+                return {
+
+                    "results": marshal(posts, postdata)
+                }, 200
+            else:
+                return{
+                        'status':0,
+                        'res': 'request failed'
+                    },400
+            
+        else:
+            return{
+                    'status':0,
+                    'res': 'request failed'
+                },400

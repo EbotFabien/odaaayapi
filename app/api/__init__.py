@@ -701,7 +701,7 @@ class save_post(Resource):
                 "res":"Post has already been saved"
             } 
         if post:
-            save= Save(user.id,post.content,post.id)
+            save= Save(user.id,post.id)
             db.session.add(save)
             db.session.commit()
             return{
