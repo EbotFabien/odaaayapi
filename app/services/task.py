@@ -12,7 +12,7 @@ import sys
 import time
 from flask import render_template
 from rq import get_current_job
-from app.models import Users, Posts, Task,Translated, Language
+from app.models import Users, Posts, Task,Translated, Language,Postsummary
 from app.services.mail import send_email
 import os
 from tqdm import tqdm
@@ -109,3 +109,32 @@ def translate_posts(post_id, user_id):
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
+
+def summarize_posts(post_id, user_id):
+    #languages = ['en', 'es', 'pt', 'sw', 'ha', 'ar', 'fr']
+    post = Posts.query.get(post_id)
+    user = Users.query.get(user_id)
+    post_auto_lang = translator.detect(post.title)
+    user_default_lang = str(post_auto_lang.lang)
+    post_language = Language.query.filter_by(code=user_default_lang).first()
+    sum_content = ''
+
+    if post.post_url is None:
+        try:
+            parser = HtmlParser.from_string(post.content, '', Tokenizer(post_language.name))
+            stemmer = Stemmer(post_language.name)
+            summarizer = Summarizer(stemmer)
+            summarizer.stop_words = get_stop_words(post_language.name)
+
+            for sentence in summarizer(parser.document, 4):
+                sum_content += '\n'+str(sentence)
+            new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
+            if new_check is None:
+                new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id, tags=str('dddd'))
+                db.session.add(new_row)
+                db.session.commit()
+        except:
+            _set_task_progress(100)
+            app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+
+    

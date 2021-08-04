@@ -79,6 +79,8 @@ postcreationdata = post.model('postcreationdata', {
     'thumb': fields.String(required=False, default=None),
     'content': fields.String(required=True),
     'lang':fields.String(required=True),
+    'translate':fields.Boolean(required=False, default=False),
+    'summarize':fields.Boolean(required=False, default=False),
 })
 
 Updatedata = post.model('Updatedata',{
@@ -287,6 +289,8 @@ class Post(Resource):
         title=req_data['title']
         content=req_data['content']
         ptype= req_data['type']
+        translated= req_data['translate'] 
+        summarized= req_data['type'] 
         got_language = req_data['lang']
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
@@ -299,7 +303,15 @@ class Post(Resource):
                 newPost = Posts(user.id, title, ptype, content, language.id)
                 db.session.add(newPost)
                 db.session.commit()
-                #newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                newPost.summarize=summarized
+                newPost.translate=translated
+                db.session.commit()
+                if summarized and translated == True:
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if translated == True :
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if summarized == True :
+                    newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
@@ -316,8 +328,15 @@ class Post(Resource):
                 db.session.commit()
                 newPost.post_url=post_url_
                 newPost.thumb_url=thumb_url_
+                newPost.summarize=summarized
+                newPost.translate=translated
                 db.session.commit()
-                #newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if summarized and translated == True:
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if translated == True :
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if summarized == True :
+                    newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)

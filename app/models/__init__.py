@@ -202,6 +202,9 @@ class Postsummary(db.Model):
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     status = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    postdata = db.relationship('Posts', 
+        primaryjoin=(post_id == Posts.id),
+        backref='summarizedpost', lazy='dynamic')
 
     def __repr__(self):
         return '<Postsummary %r>' % self.id
@@ -216,7 +219,9 @@ class Translated(db.Model):
     tags = db.Column(db.Text)
     status = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-
+    postdata = db.relationship('Posts', 
+        primaryjoin=(post_id == Posts.id),
+        backref='transpost', lazy='dynamic')
 
     def __repr__(self):
         return '<Translated %r>' % self.id
@@ -405,6 +410,13 @@ class Posts(db.Model):
         task = Task(id=rq_job.get_id(), name=name, user_id=userid, description=descr)
         db.session.add(task)
         return task
+
+    def launch_summary_task(self, name, userid, descr):
+        rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
+        task = Task(id=rq_job.get_id(), name=name, user_id=userid, description=descr)
+        db.session.add(task)
+        return task
+    
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(user=self, complete=False).all()
