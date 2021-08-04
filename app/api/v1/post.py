@@ -312,7 +312,7 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 db.session.commit()
-                post_auto_lang = translator.detect(post.title)
+                post_auto_lang = translator.detect(title)
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
