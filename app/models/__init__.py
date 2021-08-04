@@ -405,12 +405,14 @@ class Posts(db.Model):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
         task = Task(id=rq_job.get_id(), name=name, user_id=userid, description=descr)
         db.session.add(task)
+        db.session.commit()
         return task
 
     def launch_summary_task(self, name, userid, descr):
         rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
         task = Task(id=rq_job.get_id(), name=name, user_id=userid, description=descr)
         db.session.add(task)
+        db.session.commit()
         return task
     
 

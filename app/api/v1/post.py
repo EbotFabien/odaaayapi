@@ -290,6 +290,7 @@ class Post(Resource):
         content=req_data['content']
         ptype= req_data['type']
         translated= req_data['translate'] 
+        print(translated)
         summarized= req_data['type'] 
         got_language = req_data['lang']
         token = request.headers['API-KEY']
@@ -308,9 +309,10 @@ class Post(Resource):
                 db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if translated == True :
+
+                if translated == True and summarized == False:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if summarized == True :
+                if summarized == True and translated == False :
                     newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
