@@ -402,7 +402,8 @@ class Posts(db.Model):
         self.video_url = video_url   
     
     def launch_translation_task(self, name, userid, descr):
-        rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
+        with app.app_context():
+            rq_job = app.task_queue.enqueue('app.services.task.' + name, self.id, userid)
         task = Task(id=rq_job.get_id(), name=name, user_id=userid, description=descr)
         db.session.add(task)
         db.session.commit()
