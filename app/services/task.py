@@ -67,8 +67,9 @@ def export_posts(user_id):
 def translate_posts(post_id, user_id):
     languages = ['en', 'es', 'pt', 'sw', 'ha', 'ar', 'fr']
     post = Posts.query.get(post_id)
-    user = Users.query.get(user_id)
-    post_auto_lang = translator.detect(post.title)
+    if post:
+        user = Users.query.get(user_id)
+        post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
