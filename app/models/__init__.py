@@ -202,9 +202,7 @@ class Postsummary(db.Model):
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     status = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    postdata = db.relationship('Posts', 
-        primaryjoin=(post_id == Posts.id),
-        backref='summarizedpost', lazy='dynamic')
+    
 
     def __repr__(self):
         return '<Postsummary %r>' % self.id
@@ -219,9 +217,7 @@ class Translated(db.Model):
     tags = db.Column(db.Text)
     status = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    postdata = db.relationship('Posts', 
-        primaryjoin=(post_id == Posts.id),
-        backref='transpost', lazy='dynamic')
+    
 
     def __repr__(self):
         return '<Translated %r>' % self.id
