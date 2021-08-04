@@ -18,13 +18,13 @@ import os
 from tqdm import tqdm
 from googletrans import Translator
 from flask import current_app as app
-from app import db, cache, logging ,create_app
+from app import db, cache, logging ,createapp
 from sqlalchemy import or_, and_, distinct, func
 #from rake_nltk import Rake
 #from multi_rake import Rake
 
 
-app = create_app()
+app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 app.app_context().push()
 
 
