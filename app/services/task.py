@@ -77,7 +77,7 @@ def translate_posts(post_id, user_id):
    # rake = Rake()
 
     if post.post_url is None:
-        parser = HtmlParser.from_string(post.content, '', Tokenizer(post_language.name))
+        parser = HtmlParser.from_string(post.text_content, '', Tokenizer(post_language.name))
         stemmer = Stemmer(post_language.name)
         summarizer = Summarizer(stemmer)
         summarizer.stop_words = get_stop_words(post_language.name)
@@ -126,7 +126,7 @@ def summarize_posts(post_id, user_id):
 
     if post.post_url is None:
         try:
-            parser = HtmlParser.from_string(post.content, '', Tokenizer(post_language.name))
+            parser = HtmlParser.from_string(post.text_content, '', Tokenizer(post_language.name))
             stemmer = Stemmer(post_language.name)
             summarizer = Summarizer(stemmer)
             summarizer.stop_words = get_stop_words(post_language.name)

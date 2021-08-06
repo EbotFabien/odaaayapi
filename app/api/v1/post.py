@@ -559,18 +559,46 @@ class ShoutPost(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(id=req_data['Post_id']).first()
         
-        if post.has_clapped(user):
-            return{
-                "status":0,
-                "res":"You have already clapped on this post"
-            }, 200
         if user:
-            post.add_clap(user)
-            db.session.commit()
-            return{
-                "status":1,
-                "res":"You have clapped on this post"
-            }, 200
+            if post.has_clapped(user):
+                return{
+                    "status":0,
+                    "res":"You have already clapped on this post"
+                }, 200
+            if user:
+                post.add_clap(user)
+                db.session.commit()
+                return{
+                    "status":1,
+                    "res":"You have clapped on this post"
+                }, 200
+            else:
+                return{
+                    "status":0,
+                    "res":"Insert token"
+                }, 200 
+        else:
+                return{
+                    "status":0,
+                    "res":"Insert token"
+                }, 200 
+    @post.expect(Clap_post)   
+    @token_required
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        
+        if user:
+            if post.has_clapped(user):
+                post.remove_clap(user)
+                db.session.commit()
+                return{
+                    "status":1,
+                    "res":"You have deleted the clap"
+                }, 200
         else:
             return{
                 "status":0,

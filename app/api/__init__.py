@@ -20,6 +20,7 @@ from app.services import mail
 from .v1 import user, info, token, search, post
 from app.models import Report, Users, Language, Save, Setting, \
          Posttype, Rating, Ratingtype,Translated,Posts
+from sqlalchemy import or_, and_, desc,asc
 # API security
 authorizations = {
     'KEY': {
@@ -501,7 +502,7 @@ class Discover(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.id)).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -519,7 +520,7 @@ class Discover(Resource):
                     }, 200
         else:
             posts_trending = Posts.query.limit(10).all()
-            posts_feed = Posts.query.limit(10).all()
+            posts_feed = Posts.query.limit(10).order_by(desc(Posts.id)).all()
             posts_discover = Posts.query.limit(10).all()
             return {
                 'feed': marshal(posts_feed, schema.postdata)
@@ -540,7 +541,7 @@ class Related(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.id)).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -558,7 +559,7 @@ class Related(Resource):
                     }, 200
         else:
             posts_trending = Posts.query.limit(10).all()
-            posts_feed = Posts.query.limit(10).all()
+            posts_feed = Posts.query.limit(10).order_by(desc(Posts.id)).all()
             posts_discover = Posts.query.limit(10).all()
             return {
                 'feed': marshal(posts_feed, schema.postdata)
@@ -573,7 +574,7 @@ class Article(Resource):
                 lang  = request.args.get('lang', None)
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid = id).first()
-                translated_feed = Translated.query.filter_by(post_id= posts_feed.id).first()
+                translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                 return {
                     "results": {
                         "lang": lang,
@@ -612,7 +613,7 @@ class Report_post_(Resource):
                 }
 
         if post:
-            Report_sent=Report(req_data['reason'],user.email,user.id,post.id,post.uploader_id,req_data['type'][0])
+            Report_sent=Report(reason=req_data['reason'],reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=req_data['type'])
             db.session.add(Report_sent)
             db.session.commit()
             return{
@@ -714,6 +715,45 @@ class save_post(Resource):
                     "status":0,
                     "res":"Fail"
                 }
+
+@home.route('/post/recent')
+class save_post(Resource): 
+    @token_required
+    #@cache.cached(300, key_prefix='all_posts')
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            next = "/api/v1/post?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            user= 1
+            if user:
+                user_saves=Posts.query.order_by(desc(Posts.id)).paginate(int(start), int(count), False).items
+                if user_saves:
+                    return  {
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next,
+                        "previous": previous,
+                        "results": marshal(user_saves,schema.postdata)
+                    }, 200
+                else:
+                    return{
+                        "status":0,
+                        "res":"No posts"
+                    }
+            else:
+                 return{
+                        "status":0,
+                        "res":"User does not exist"
+                    }
+        else:
+            return{
+                        "status":0,
+                        "res":"Request failed"
+                    }
 
 @message.doc(
     security='KEY',
