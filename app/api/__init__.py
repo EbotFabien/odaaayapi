@@ -487,6 +487,8 @@ class Videos(Resource):
             return {
                 'feed': marshal(posts_feed, schema.postdata)
             }, 200 
+
+
 @home.route('/discover')
 class Discover(Resource):
     def get(self):
@@ -627,6 +629,24 @@ class Report_post_(Resource):
             }
             #fff
 
+@cache.cached(300, key_prefix='all_saves')
+@home.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @home.route('/Save/')
 class save_post(Resource): 
     @token_required
@@ -716,8 +736,26 @@ class save_post(Resource):
                     "res":"Fail"
                 }
 
+@cache.cached(300, key_prefix='all_recents')
+@home.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @home.route('/post/recent')
-class save_post(Resource): 
+class recent_post(Resource): 
     @token_required
     #@cache.cached(300, key_prefix='all_posts')
     def get(self):
