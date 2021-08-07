@@ -84,6 +84,8 @@ def translate_posts(post_id, user_id):
 
         for sentence in summarizer(parser.document, 4):
             sum_content += '\n'+str(sentence)
+        if sum_content == '':
+            sum_content = post.text_content
     try:
         for j in languages:
             if j == user_default_lang:
