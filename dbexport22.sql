@@ -45,6 +45,17 @@ CREATE TABLE public."Not_Interested" (
 ALTER TABLE public."Not_Interested" OWNER TO postgres;
 
 --
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.alembic_version (
+    version_num character varying(32) NOT NULL
+);
+
+
+ALTER TABLE public.alembic_version OWNER TO postgres;
+
+--
 -- Name: clap; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -733,6 +744,14 @@ COPY public."Not_Interested" (user_id, post_id) FROM stdin;
 
 
 --
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.alembic_version (version_num) FROM stdin;
+\.
+
+
+--
 -- Data for Name: clap; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -791,6 +810,12 @@ COPY public.notification (id, name, user_id, post_id, seen, "timestamp", payload
 --
 
 COPY public.posts (id, title, uuid, description, post_url, thumb_url, text_content, picture_url, audio_url, video_url, "Country", translate, summarize, created_on, author, post_type, orig_lang) FROM stdin;
+1	tRUmp dies	tRUmp_dies_4V2	\N	\N	\N	fuck you bitch	\N	\N	\N	\N	t	t	2021-08-04 11:02:43.342933	1	1	1
+2	tRUmp dies again	tRUmp_dies_again_Pbf	\N	\N	\N	fuck you bitch	\N	\N	\N	\N	t	t	2021-08-04 11:06:44.175233	1	1	1
+3	tRUmp dies again the second time	tRUmp_dies_again_the_second_time_5sr	\N	\N	\N	fuck you bitch	\N	\N	\N	\N	t	t	2021-08-04 11:10:42.483814	1	1	1
+4	Trump Dies	Trump_Dies_UsT	\N	\N	\N	Fuck you	\N	\N	\N	\N	t	t	2021-08-04 11:52:17.960825	1	1	1
+5	Sky Brown: How 13-year-old British skateboarder was urged on to bronze by gold medal winner Sakura	Sky_Brown_How_13-year-old_British_skateboarder_was_urged_on_to_bronze_by_gold_medal_winner_Sakura_3GC	\N	\N	\N	string	\N	\N	\N	\N	t	t	2021-08-04 13:58:06.666319	1	1	1
+6	Sky Brown: How 13-year-old British skateboarder was urged on to bronze by gold medal winner Sakura1	Sky_Brown_How_13-year-old_British_skateboarder_was_urged_on_to_bronze_by_gold_medal_winner_Sakura1_LaC	\N	\N	\N	string	\N	\N	\N	\N	t	t	2021-08-04 13:59:11.319724	1	1	1
 \.
 
 
@@ -867,6 +892,12 @@ COPY public.setting (id, language_id, users_id, theme, "N_S_F_W") FROM stdin;
 --
 
 COPY public.task (id, name, description, user_id, complete) FROM stdin;
+1e099bea-eb7e-4375-a296-dd344832f7b0	translate_posts	Translating  post ...	1	f
+bb5dca4e-104a-47c7-a8f3-4a231c22e993	translate_posts	Translating  post ...	1	f
+f7f60910-75ea-421d-a5d5-5f53dc982b28	summarize_posts	summarizing  post ...	1	f
+a54df40d-2fa8-4a53-98a0-640c29a853f4	translate_posts	Translating  post ...	1	f
+1837f752-7bd3-49da-a0f4-453a75eda346	translate_posts	Translating  post ...	1	f
+d8a5654e-eb31-4fc8-85f1-d2952932ec37	translate_posts	Translating  post ...	1	f
 \.
 
 
@@ -883,6 +914,7 @@ COPY public.translated (id, title, content, language_id, post_id, tags, status, 
 --
 
 COPY public.users (id, username, email, phone, uuid, password_hash, bio, picture, code, user_visibility, last_code, code_expires_in, verified_email, verified_phone, tries, created_on) FROM stdin;
+1	FAB	\N	+237650898222	ee536b10-9afb-4209-b4c6-e6ef3b79951f	\N	\N	\N	809741	t	\N	2021-08-04 13:18:56.356977	f	t	1	\N
 \.
 
 
@@ -918,7 +950,7 @@ SELECT pg_catalog.setval('public.notification_id_seq', 1, false);
 -- Name: posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.posts_id_seq', 1, false);
+SELECT pg_catalog.setval('public.posts_id_seq', 6, true);
 
 
 --
@@ -981,7 +1013,15 @@ SELECT pg_catalog.setval('public.setting_id_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 1, true);
+
+
+--
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.alembic_version
+    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
 
 
 --
