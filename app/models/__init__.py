@@ -195,17 +195,17 @@ class Users(db.Model):
                                     complete=False).first()
     
   
-class Postsummary(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
-    content = db.Column(db.String)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    status = db.Column(db.String)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+#class Postsummary(db.Model):
+ #   id = db.Column(db.Integer, primary_key = True)
+  #  post_id =db.Column(db.Integer,db.ForeignKey('posts.id'),nullable=False)
+  #  content = db.Column(db.String)
+  #  language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+  #  status = db.Column(db.String)
+  #  timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     
 
-    def __repr__(self):
-        return '<Postsummary %r>' % self.id
+   # def __repr__(self):
+    #    return '<Postsummary %r>' % self.id
 
 class Translated(db.Model):
     __searchable__ = ['title', 'content']
@@ -310,13 +310,14 @@ class Posts(db.Model):
     summarize = db.Column(db.Boolean, nullable=False, default=False)
     created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_name = db.Column(db.String(10000))
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
     orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
     ratings = db.relationship('Rating', backref='rating', lazy = True)
     
-    summarized = db.relationship('Postsummary', 
-        primaryjoin=(id == Postsummary.post_id),
-        backref='summarized', lazy='dynamic')
+    #summarized = db.relationship('Postsummary', 
+     #   primaryjoin=(id == Postsummary.post_id),
+      #  backref='summarized', lazy='dynamic')
     
     
     translatedposts = db.relationship('Translated',

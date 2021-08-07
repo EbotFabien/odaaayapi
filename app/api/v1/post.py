@@ -295,7 +295,6 @@ class Post(Resource):
         content=req_data['content']
         ptype= req_data['type']
         translated= req_data['translate'] 
-        print(translated)
         summarized= req_data['type'] 
         got_language = req_data['lang']
         token = request.headers['API-KEY']
@@ -311,6 +310,7 @@ class Post(Resource):
                 db.session.commit()
                 newPost.summarize=summarized
                 newPost.translate=translated
+                newPost.user_name=user.username
                 db.session.commit()
                 
                 if summarized and translated == True:
@@ -338,6 +338,7 @@ class Post(Resource):
                 newPost.thumb_url=thumb_url_
                 newPost.summarize=summarized
                 newPost.translate=translated
+                newPost.user_name=user.username
                 db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
