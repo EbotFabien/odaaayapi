@@ -394,9 +394,12 @@ class email_verification(Resource):
 class Home(Resource): 
     def get(self):
         # user getting data for their home screen
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user= Users.query.filter_by(uuid=data['uuid']).first()
+        try:
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+        except:
+            user=None
         if request.args:
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
@@ -414,7 +417,7 @@ class Home(Resource):
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
                     
-                    if user:
+                    if user is not None:
                         user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
                         return {
                             "start": start,
@@ -446,8 +449,8 @@ class Home(Resource):
             posts_trending = Posts.query.limit(10).all()
             posts_feed = Posts.query.limit(10).all()
             posts_discover = Posts.query.limit(10).all()
-            if user:
-                user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+            if user is not None:
+                user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
                 return {
                     'saves':marshal(user_saves,schema.saved),
                     'feed': marshal(posts_feed, schema.postdata)
