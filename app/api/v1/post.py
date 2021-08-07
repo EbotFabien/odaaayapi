@@ -549,10 +549,35 @@ class ShoutPost(Resource):
                     "status":0,
                     "res":"No request found"
                 }, 200    
+                
        
     @post.expect(Clap_post)   
     @token_required
-    def post1(self):
+    def delete(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        
+        if user:
+            if post.has_clapped(user):
+                post.remove_clap(user)
+                db.session.commit()
+                return{
+                    "status":1,
+                    "res":"You have deleted the clap"
+                }, 200
+        else:
+            return{
+                "status":0,
+                "res":"Insert token"
+            }, 200 
+    #delete route to be done
+
+    @post.expect(Clap_post)   
+    @token_required
+    def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
@@ -583,29 +608,7 @@ class ShoutPost(Resource):
                     "res":"Insert token"
                 }, 200 
 
-    @post.expect(Clap_post)   
-    @token_required
-    def delete(self):
-        req_data = request.get_json()
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
-        
-        if user:
-            if post.has_clapped(user):
-                post.remove_clap(user)
-                db.session.commit()
-                return{
-                    "status":1,
-                    "res":"You have deleted the clap"
-                }, 200
-        else:
-            return{
-                "status":0,
-                "res":"Insert token"
-            }, 200 
-    #delete route to be done
+    
 
 
 @post.doc(
