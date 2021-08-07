@@ -400,6 +400,7 @@ class Home(Resource):
             user= Users.query.filter_by(uuid=data['uuid']).first()
         except:
             user=None
+        saved=[]
         if request.args:
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
@@ -419,6 +420,9 @@ class Home(Resource):
                     
                     if user is not None:
                         user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+                        for i,j in zip(posts_feed,user_saves):
+                            if i.post_id == j.post_id :
+                                saved.append(j.post_id)
                         return {
                             "start": start,
                             "limit": limit,
@@ -428,7 +432,7 @@ class Home(Resource):
                             "previous": previous,
                             "totalPages": total,
                             "results": {
-                                'saves':marshal(user_saves,schema.saved),
+                                'post_saved':saved,
                                 'feed': marshal(posts_feed.items, schema.lang_post)
                             }
                         }, 200
@@ -451,8 +455,11 @@ class Home(Resource):
             posts_discover = Posts.query.limit(10).all()
             if user is not None:
                 user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
+                for i,j in zip(posts_feed,user_saves):
+                    if i.id == j.post_id :
+                        saved.append(j.post_id)
                 return {
-                    'saves':marshal(user_saves,schema.saved),
+                    'post_saved':saved,
                     'feed': marshal(posts_feed, schema.postdata)
                 }, 200       
             else:
