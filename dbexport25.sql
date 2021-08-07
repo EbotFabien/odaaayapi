@@ -232,6 +232,7 @@ CREATE TABLE public.posts (
     summarize boolean NOT NULL,
     created_on timestamp without time zone,
     author integer NOT NULL,
+    user_name character varying(10000),
     post_type integer NOT NULL,
     orig_lang integer
 );
@@ -259,44 +260,6 @@ ALTER TABLE public.posts_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.posts_id_seq OWNED BY public.posts.id;
-
-
---
--- Name: postsummary; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.postsummary (
-    id integer NOT NULL,
-    post_id integer NOT NULL,
-    content character varying,
-    language_id integer NOT NULL,
-    status character varying,
-    "timestamp" timestamp without time zone
-);
-
-
-ALTER TABLE public.postsummary OWNER TO postgres;
-
---
--- Name: postsummary_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.postsummary_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.postsummary_id_seq OWNER TO postgres;
-
---
--- Name: postsummary_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.postsummary_id_seq OWNED BY public.postsummary.id;
 
 
 --
@@ -687,13 +650,6 @@ ALTER TABLE ONLY public.posts ALTER COLUMN id SET DEFAULT nextval('public.posts_
 
 
 --
--- Name: postsummary id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.postsummary ALTER COLUMN id SET DEFAULT nextval('public.postsummary_id_seq'::regclass);
-
-
---
 -- Name: posttype id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -777,6 +733,7 @@ COPY public."Not_Interested" (user_id, post_id) FROM stdin;
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
+4004b0d62b29
 \.
 
 
@@ -838,15 +795,7 @@ COPY public.notification (id, name, user_id, post_id, seen, "timestamp", payload
 -- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.posts (id, title, uuid, description, post_url, thumb_url, text_content, picture_url, audio_url, video_url, "Country", translate, summarize, created_on, author, post_type, orig_lang) FROM stdin;
-\.
-
-
---
--- Data for Name: postsummary; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.postsummary (id, post_id, content, language_id, status, "timestamp") FROM stdin;
+COPY public.posts (id, title, uuid, description, post_url, thumb_url, text_content, picture_url, audio_url, video_url, "Country", translate, summarize, created_on, author, user_name, post_type, orig_lang) FROM stdin;
 \.
 
 
@@ -915,6 +864,7 @@ COPY public.setting (id, language_id, users_id, theme, "N_S_F_W") FROM stdin;
 --
 
 COPY public.task (id, name, description, user_id, complete) FROM stdin;
+4d381e51-a2bc-4a7a-9658-d1ec3574c289	translate_posts	Translating  post ...	1	f
 \.
 
 
@@ -923,6 +873,21 @@ COPY public.task (id, name, description, user_id, complete) FROM stdin;
 --
 
 COPY public.translated (id, title, content, language_id, post_id, tags, status, "timestamp") FROM stdin;
+1	Trump is going to jail again 51	1	1	1	dddd	\N	2021-08-07 10:02:53.19064
+3	Trump is going to jail again 99	1	1	2	dddd	\N	2021-08-07 10:05:23.3293
+5	Barrack is going to jail again 	1	1	3	dddd	\N	2021-08-07 10:07:40.432242
+7	Barrack12 is going to jail again 	1	1	4	dddd	\N	2021-08-07 10:14:26.596028
+8	sw	sw	1	4	dddd	\N	2021-08-07 10:14:26.612197
+9	pt	pt	1	4	dddd	\N	2021-08-07 10:14:26.622188
+10	fr	fr	1	4	dddd	\N	2021-08-07 10:14:26.628206
+11	ar	ar	1	4	dddd	\N	2021-08-07 10:14:26.634011
+12	es	es	1	4	dddd	\N	2021-08-07 10:14:26.641346
+13	ha	ha	1	4	dddd	\N	2021-08-07 10:14:26.64834
+14	Barrac15 is going to jail again 	1	1	6	dddd	\N	2021-08-07 10:18:56.09733
+15	Barrac is going to jail again 	1	1	7	dddd	\N	2021-08-07 10:20:03.980056
+16	Barra is going to jail again 	1	1	8	dddd	\N	2021-08-07 10:27:19.545111
+17	Barrah is going to jail again 	1	1	9	dddd	\N	2021-08-07 10:32:05.793219
+18	Barraf is going to jail again 	1	1	10	dddd	\N	2021-08-07 10:35:34.164801
 \.
 
 
@@ -968,13 +933,6 @@ SELECT pg_catalog.setval('public.notification_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.posts_id_seq', 1, false);
-
-
---
--- Name: postsummary_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.postsummary_id_seq', 1, false);
 
 
 --
@@ -1030,7 +988,7 @@ SELECT pg_catalog.setval('public.setting_id_seq', 1, false);
 -- Name: translated_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.translated_id_seq', 1, false);
+SELECT pg_catalog.setval('public.translated_id_seq', 19, true);
 
 
 --
@@ -1086,14 +1044,6 @@ ALTER TABLE ONLY public.notification
 
 ALTER TABLE ONLY public.posts
     ADD CONSTRAINT posts_pkey PRIMARY KEY (id);
-
-
---
--- Name: postsummary postsummary_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.postsummary
-    ADD CONSTRAINT postsummary_pkey PRIMARY KEY (id);
 
 
 --
@@ -1206,13 +1156,6 @@ CREATE INDEX ix_posts_created_on ON public.posts USING btree (created_on);
 
 
 --
--- Name: ix_postsummary_timestamp; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX ix_postsummary_timestamp ON public.postsummary USING btree ("timestamp");
-
-
---
 -- Name: ix_report_timestamp; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1319,14 +1262,6 @@ ALTER TABLE ONLY public.posts
 
 ALTER TABLE ONLY public.posts
     ADD CONSTRAINT posts_post_type_fkey FOREIGN KEY (post_type) REFERENCES public.posttype(id);
-
-
---
--- Name: postsummary postsummary_language_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.postsummary
-    ADD CONSTRAINT postsummary_language_id_fkey FOREIGN KEY (language_id) REFERENCES public.language(id);
 
 
 --
