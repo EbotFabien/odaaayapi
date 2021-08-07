@@ -342,9 +342,9 @@ class Post(Resource):
                 db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if translated == True :
+                if translated == True and summarized == False:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if summarized == True :
+                if summarized == True and translated == False :
                     newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
@@ -406,7 +406,15 @@ class Article_check(Resource):
                 for i in metas:
                     if i.get('property') == "og:image":
                         thumbnail=i.get('content')
+                parser = HtmlParser.from_string(document.readable, '', Tokenizer(LANGUAGE))
+                stemmer = Stemmer(LANGUAGE)
+                summarizer = Summarizer(stemmer)
+                summarizer.stop_words = get_stop_words(LANGUAGE)
 
+                for sentence in summarizer(parser.document, 4):
+                    sum_content += '\n'+str(sentence)
+                if sum_content == '':
+                    sum_content = document.readable
                 title=soup.find('title').get_text()
 
             
@@ -416,7 +424,7 @@ class Article_check(Resource):
                     'res': url,
                     'title':title,
                     'thumb':thumbnail,
-                    'content':str(document.readable)
+                    'content':sum_content
 
             }, 200
             else:

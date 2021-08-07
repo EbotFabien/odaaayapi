@@ -225,7 +225,8 @@ class Signup_email(Resource):
         if signup_data:
             username = signup_data['user_name'] or None 
             code = signup_data['code'] or None
-            phone_number = signup_data['phone_number'] or None
+            phone_ = signup_data['phone_number'] or None
+            phone_number = "".join(phone_.split())
 
             if code is not None:
                 user1 = Users.query.filter_by(phone=phone_number).first()
@@ -433,7 +434,7 @@ class Home(Resource):
                             "totalPages": total,
                             "results": {
                                 'post_saved':saved,
-                                'feed': marshal(posts_feed.items, schema.lang_post)
+                                "feed": marshal(posts_feed.items, schema.lang_post)
                             }
                         }, 200
                     else:
