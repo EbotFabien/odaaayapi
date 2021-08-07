@@ -96,22 +96,22 @@ def translate_posts(post_id, user_id):
                     new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
                     db.session.add(new_row)
                     db.session.commit()
-        title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
-        content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
-        p = 1
-        for i in tqdm(languages):
-            # _set_task_progress(p/len(languages) * 100)
-            for j in languages:
-                if i == j and i != user_default_lang:
-                   current_lang = Language.query.filter_by(code=i).first()
-                   # table = language_dict.get(i)
-                   #keywords = rake.apply(content_translation[i])
-                   new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
-                   if new_check is None:
-                        new_row = Translated(post_id=post_id,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=str('ddddddd'))#[x[0] for x in keywords[:5]]))
-                        db.session.add(new_row)
-                        db.session.commit()
-                        p += 1         
+                    title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
+                    content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
+                    p = 1
+                    for i in tqdm(languages):
+                        # _set_task_progress(p/len(languages) * 100)
+                        for j in languages:
+                            if i == j and i != user_default_lang:
+                                current_lang = Language.query.filter_by(code=i).first()
+                                # table = language_dict.get(i)
+                                #keywords = rake.apply(content_translation[i])
+                                new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
+                                if new_check is None:
+                                        new_row = Translated(post_id=post_id,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=str('ddddddd'))#[x[0] for x in keywords[:5]]))
+                                        db.session.add(new_row)
+                                        db.session.commit()
+                                        p += 1         
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
