@@ -394,6 +394,9 @@ class email_verification(Resource):
 class Home(Resource): 
     def get(self):
         # user getting data for their home screen
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
         if request.args:
             start  = request.args.get('start', None)
             limit  = request.args.get('limit', None)
@@ -402,6 +405,7 @@ class Home(Resource):
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
+            
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
@@ -409,25 +413,49 @@ class Home(Resource):
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
-                    return {
-                        "start": start,
-                        "limit": limit,
-                        "count": count,
-                        "next": next_url,
-                        "lang": lang,
-                        "previous": previous,
-                        "totalPages": total,
-                        "results": {
-                            'feed': marshal(posts_feed.items, schema.lang_post)
-                        }
-                    }, 200
+                    
+                    if user:
+                        user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+                        return {
+                            "start": start,
+                            "limit": limit,
+                            "count": count,
+                            "next": next_url,
+                            "lang": lang,
+                            "previous": previous,
+                            "totalPages": total,
+                            "results": {
+                                'saves':marshal(user_saves,schema.saved),
+                                'feed': marshal(posts_feed.items, schema.lang_post)
+                            }
+                        }, 200
+                    else:
+                        return {
+                            "start": start,
+                            "limit": limit,
+                            "count": count,
+                            "next": next_url,
+                            "lang": lang,
+                            "previous": previous,
+                            "totalPages": total,
+                            "results": {
+                                'feed': marshal(posts_feed.items, schema.lang_post)
+                            }
+                        }, 200
         else:
             posts_trending = Posts.query.limit(10).all()
             posts_feed = Posts.query.limit(10).all()
             posts_discover = Posts.query.limit(10).all()
-            return {
-                'feed': marshal(posts_feed, schema.postdata)
-            }, 200       
+            if user:
+                user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
+                return {
+                    'saves':marshal(user_saves,schema.saved),
+                    'feed': marshal(posts_feed, schema.postdata)
+                }, 200       
+            else:
+                return {
+                    'feed': marshal(posts_feed, schema.postdata)
+                }, 200 
 
 @cache.cached(300, key_prefix='all_video_posts')
 @home.doc(
