@@ -21,7 +21,7 @@ from .v1 import user, info, token, search, post
 from app.models import Report, Users, Language, Save, Setting, \
          Posttype, Rating, Ratingtype,Translated,Posts
 from sqlalchemy import or_, and_, desc,asc
-# API security
+# API security eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZmFiaWVuIiwidXVpZCI6ImJlNTM1NDBlLWExMzItNDJiNy1iNzlkLTI4MWFhZGM1MWZjMyIsImV4cCI6MTYzMDg2ODQ1OCwiaWF0IjoxNjI4Mjc2NDU4fQ.u4KyP0J3qzV0coE3-kozIKI0sc8ZrEUYMWvUbQbSHQM
 authorizations = {
     'KEY': {
         'type': 'apiKey',
@@ -48,7 +48,7 @@ def token_required(f):
             pass
         return f(*args, **kwargs)
     return decorated
-v=0
+v=1
 if v==1:
     @property
     def specs_url(self):
