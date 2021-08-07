@@ -135,6 +135,8 @@ def summarize_posts(post_id, user_id):
 
             for sentence in summarizer(parser.document, 4):
                 sum_content += '\n'+str(sentence)
+            if sum_content == '':
+                sum_content = post.text_content
             new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
             if new_check is None:
                 new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id, tags=str('dddd'))

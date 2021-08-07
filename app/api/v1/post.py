@@ -312,7 +312,6 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 db.session.commit()
-                post_auto_lang = translator.detect(title)
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -549,7 +548,7 @@ class ShoutPost(Resource):
                     "status":0,
                     "res":"No request found"
                 }, 200    
-                
+
        
     @post.expect(Clap_post)   
     @token_required
