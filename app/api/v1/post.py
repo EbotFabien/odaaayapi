@@ -552,7 +552,7 @@ class ShoutPost(Resource):
        
     @post.expect(Clap_post)   
     @token_required
-    def post(self):
+    def post1(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
@@ -582,6 +582,7 @@ class ShoutPost(Resource):
                     "status":0,
                     "res":"Insert token"
                 }, 200 
+
     @post.expect(Clap_post)   
     @token_required
     def delete(self):
