@@ -130,7 +130,8 @@ class Login_email(Resource):
         phone_login=req_data['phone_login']
         
         if phone_login == True:
-                number=req_data['phone'] or None
+                number_=req_data['phone'] or None
+                number = "".join(number_.split())
                 code=req_data['code'] or None
                 user1 = Users.query.filter_by(phone=number).first()
                 if user1:
