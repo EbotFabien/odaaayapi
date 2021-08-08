@@ -45,17 +45,6 @@ CREATE TABLE public."Not_Interested" (
 ALTER TABLE public."Not_Interested" OWNER TO postgres;
 
 --
--- Name: alembic_version; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.alembic_version (
-    version_num character varying(32) NOT NULL
-);
-
-
-ALTER TABLE public.alembic_version OWNER TO postgres;
-
---
 -- Name: clap; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -729,15 +718,6 @@ COPY public."Not_Interested" (user_id, post_id) FROM stdin;
 
 
 --
--- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.alembic_version (version_num) FROM stdin;
-4004b0d62b29
-\.
-
-
---
 -- Data for Name: clap; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -766,20 +746,6 @@ COPY public.followers (follower_id, followed_id) FROM stdin;
 --
 
 COPY public.language (id, lang_type, code, name) FROM stdin;
-1	N	en	english
-2	N	es	espagnol
-3	N	ar	arab
-4	N	pt	portugese
-5	N	sw	swahili
-6	N	fr	french
-7	N	ha	hausa
-8	N	en	english
-9	N	es	espagnol
-10	N	ar	arab
-11	N	pt	portugese
-12	N	sw	swahili
-13	N	fr	french
-14	N	ha	hausa
 \.
 
 
@@ -804,10 +770,6 @@ COPY public.posts (id, title, uuid, description, post_url, thumb_url, text_conte
 --
 
 COPY public.posttype (id, content) FROM stdin;
-1	Text
-2	Video
-3	Text
-4	Video
 \.
 
 
@@ -864,7 +826,6 @@ COPY public.setting (id, language_id, users_id, theme, "N_S_F_W") FROM stdin;
 --
 
 COPY public.task (id, name, description, user_id, complete) FROM stdin;
-4d381e51-a2bc-4a7a-9658-d1ec3574c289	translate_posts	Translating  post ...	1	f
 \.
 
 
@@ -873,21 +834,6 @@ COPY public.task (id, name, description, user_id, complete) FROM stdin;
 --
 
 COPY public.translated (id, title, content, language_id, post_id, tags, status, "timestamp") FROM stdin;
-1	Trump is going to jail again 51	1	1	1	dddd	\N	2021-08-07 10:02:53.19064
-3	Trump is going to jail again 99	1	1	2	dddd	\N	2021-08-07 10:05:23.3293
-5	Barrack is going to jail again 	1	1	3	dddd	\N	2021-08-07 10:07:40.432242
-7	Barrack12 is going to jail again 	1	1	4	dddd	\N	2021-08-07 10:14:26.596028
-8	sw	sw	1	4	dddd	\N	2021-08-07 10:14:26.612197
-9	pt	pt	1	4	dddd	\N	2021-08-07 10:14:26.622188
-10	fr	fr	1	4	dddd	\N	2021-08-07 10:14:26.628206
-11	ar	ar	1	4	dddd	\N	2021-08-07 10:14:26.634011
-12	es	es	1	4	dddd	\N	2021-08-07 10:14:26.641346
-13	ha	ha	1	4	dddd	\N	2021-08-07 10:14:26.64834
-14	Barrac15 is going to jail again 	1	1	6	dddd	\N	2021-08-07 10:18:56.09733
-15	Barrac is going to jail again 	1	1	7	dddd	\N	2021-08-07 10:20:03.980056
-16	Barra is going to jail again 	1	1	8	dddd	\N	2021-08-07 10:27:19.545111
-17	Barrah is going to jail again 	1	1	9	dddd	\N	2021-08-07 10:32:05.793219
-18	Barraf is going to jail again 	1	1	10	dddd	\N	2021-08-07 10:35:34.164801
 \.
 
 
@@ -896,7 +842,6 @@ COPY public.translated (id, title, content, language_id, post_id, tags, status, 
 --
 
 COPY public.users (id, username, email, phone, uuid, password_hash, bio, picture, code, user_visibility, last_code, code_expires_in, verified_email, verified_phone, tries, created_on) FROM stdin;
-1	FAB	\N	+237650898222	ee536b10-9afb-4209-b4c6-e6ef3b79951f	\N	\N	\N	541928	t	\N	2021-08-07 08:40:24.653758	f	t	1	\N
 \.
 
 
@@ -918,7 +863,7 @@ SELECT pg_catalog.setval('public.country_id_seq', 1, false);
 -- Name: language_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.language_id_seq', 14, true);
+SELECT pg_catalog.setval('public.language_id_seq', 1, false);
 
 
 --
@@ -939,7 +884,7 @@ SELECT pg_catalog.setval('public.posts_id_seq', 1, false);
 -- Name: posttype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.posttype_id_seq', 4, true);
+SELECT pg_catalog.setval('public.posttype_id_seq', 1, false);
 
 
 --
@@ -988,22 +933,14 @@ SELECT pg_catalog.setval('public.setting_id_seq', 1, false);
 -- Name: translated_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.translated_id_seq', 19, true);
+SELECT pg_catalog.setval('public.translated_id_seq', 1, false);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, true);
-
-
---
--- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.alembic_version
-    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
+SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
 
 --
@@ -1193,11 +1130,27 @@ ALTER TABLE ONLY public."Blocked"
 
 
 --
+-- Name: Not_Interested Not_Interested_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Not_Interested"
+    ADD CONSTRAINT "Not_Interested_post_id_fkey" FOREIGN KEY (post_id) REFERENCES public.posts(id);
+
+
+--
 -- Name: Not_Interested Not_Interested_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Not_Interested"
     ADD CONSTRAINT "Not_Interested_user_id_fkey" FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: clap clap_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.clap
+    ADD CONSTRAINT clap_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
@@ -1225,6 +1178,14 @@ ALTER TABLE ONLY public.followers
 
 
 --
+-- Name: notification notification_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification
+    ADD CONSTRAINT notification_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
+
+
+--
 -- Name: notification notification_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1233,35 +1194,11 @@ ALTER TABLE ONLY public.notification
 
 
 --
--- Name: posts posts_Country_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: rating rating_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT "posts_Country_fkey" FOREIGN KEY ("Country") REFERENCES public.country(id);
-
-
---
--- Name: posts posts_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT posts_author_fkey FOREIGN KEY (author) REFERENCES public.users(id);
-
-
---
--- Name: posts posts_orig_lang_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT posts_orig_lang_fkey FOREIGN KEY (orig_lang) REFERENCES public.language(id);
-
-
---
--- Name: posts posts_post_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT posts_post_type_fkey FOREIGN KEY (post_type) REFERENCES public.posttype(id);
+ALTER TABLE ONLY public.rating
+    ADD CONSTRAINT rating_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
@@ -1278,6 +1215,14 @@ ALTER TABLE ONLY public.rating
 
 ALTER TABLE ONLY public.rating
     ADD CONSTRAINT rating_ratingtype_fkey FOREIGN KEY (ratingtype) REFERENCES public.ratingtype(id);
+
+
+--
+-- Name: report report_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.report
+    ADD CONSTRAINT report_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
@@ -1302,6 +1247,14 @@ ALTER TABLE ONLY public.report
 
 ALTER TABLE ONLY public.report
     ADD CONSTRAINT report_user_reported_fkey FOREIGN KEY (user_reported) REFERENCES public.users(id);
+
+
+--
+-- Name: save save_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.save
+    ADD CONSTRAINT save_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -1342,6 +1295,14 @@ ALTER TABLE ONLY public.task
 
 ALTER TABLE ONLY public.translated
     ADD CONSTRAINT translated_language_id_fkey FOREIGN KEY (language_id) REFERENCES public.language(id);
+
+
+--
+-- Name: translated translated_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.translated
+    ADD CONSTRAINT translated_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id);
 
 
 --
