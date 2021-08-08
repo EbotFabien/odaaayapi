@@ -606,6 +606,22 @@ class Related(Resource):
                 'feed': marshal(posts_feed, schema.postdata)
             }, 200
 
+@cache.cached(300, key_prefix='article')
+@home.doc(
+    security='KEY',
+    params={'lang':'Language'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @home.route('/article/<id>')
 class Article(Resource):
     def get(self, id):
