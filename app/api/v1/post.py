@@ -12,7 +12,7 @@ from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
-from app.models import Save , Users, Posts, Language,Translated,Report,Notification
+from app.models import Save , Users, Posts, Language,Translated,Report,Notification,Posttype
 from app import db, cache, logging
 import json
 from tqdm import tqdm
@@ -289,6 +289,16 @@ class Post(Resource):
     @post.expect(postcreationdata)
     @token_required
     def post(self):
+        language_dict = {'en':"english", 'es':"espagnol", 'ar':"arab", 'pt':"portugese", 'sw':"swahili", 'fr':"french", 'ha':"hausa"}
+        for i in language_dict:
+            lan=Language(lang_type="N",code=i,name=language_dict[i])
+            db.session.add(lan)
+            db.session.commit()
+        lan1=Posttype(content="Text")
+        lan2=Posttype(content="Video")
+        db.session.add(lan1)
+        db.session.add(lan2)
+        db.session.commit()
         req_data = request.get_json()
         args = uploader.parse_args()
         title=req_data['title']
