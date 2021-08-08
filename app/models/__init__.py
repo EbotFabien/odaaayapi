@@ -426,7 +426,7 @@ class Translated(db.Model):
     status = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    posts_ = db.relationship('Posts',
+    posts = db.relationship('Posts',
         primaryjoin=(post_id == Posts.id),
         backref='translations', uselist=False)
     
