@@ -422,7 +422,7 @@ class Home(Resource):
                     
                     if user is not None:
                         user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
-                        if user_saves is not None:
+                        try:
                             for i,j in zip(posts_feed,user_saves):
                                 if i.post_id == j.post_id :
                                     saved.append(j.post_id)
@@ -439,7 +439,7 @@ class Home(Resource):
                                     "feed": marshal(posts_feed.items, schema.lang_post)
                                 }
                             }, 200
-                        else:
+                        except:
                             return {
                             "start": start,
                             "limit": limit,
