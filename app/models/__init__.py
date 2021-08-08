@@ -207,20 +207,6 @@ class Users(db.Model):
    # def __repr__(self):
     #    return '<Postsummary %r>' % self.id
 
-class Translated(db.Model):
-    __searchable__ = ['title', 'content']
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(250), nullable = False, unique=True)
-    content = db.Column(db.String, nullable = False)
-    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
-    post_id = db.Column(db.Integer,db.ForeignKey('posts.id'), nullable=False)
-    tags = db.Column(db.Text)
-    status = db.Column(db.String)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    
-
-    def __repr__(self):
-        return '<Translated %r>' % self.id
 
 
         
@@ -320,9 +306,7 @@ class Posts(db.Model):
       #  backref='summarized', lazy='dynamic')
     
     
-    translatedposts = db.relationship('Translated',
-        primaryjoin=(id == Translated.post_id),
-        backref='translations', lazy='dynamic')
+    
 
     clap = db.relationship(
         'Users',secondary=clap,
@@ -429,6 +413,26 @@ class Posts(db.Model):
 
     def __repr__(self):
         return '<Post>%r' %self.title
+
+
+class Translated(db.Model):
+    __searchable__ = ['title', 'content']
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), nullable = False, unique=True)
+    content = db.Column(db.String, nullable = False)
+    language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    post_id = db.Column(db.Integer,db.ForeignKey('posts.id'), nullable=False)
+    tags = db.Column(db.Text)
+    status = db.Column(db.String)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    posts_ = db.relationship('Posts',
+        primaryjoin=(post_id == Posts.post_id),
+        backref='translations', lazy='dynamic')
+    
+
+    def __repr__(self):
+        return '<Translated %r>' % self.id
 
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
