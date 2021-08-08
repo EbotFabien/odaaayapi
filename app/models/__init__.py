@@ -428,7 +428,7 @@ class Translated(db.Model):
 
     posts_ = db.relationship('Posts',
         primaryjoin=(post_id == Posts.id),
-        backref='translations', lazy='dynamic')
+        backref='translations', uselist=False)
     
 
     def __repr__(self):
