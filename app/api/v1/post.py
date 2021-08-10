@@ -295,7 +295,7 @@ class Post(Resource):
         content=req_data['content']
         ptype= req_data['type']
         translated= req_data['translate'] 
-        summarized= req_data['type'] 
+        summarized= req_data['summarize'] 
         got_language = req_data['lang']
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
