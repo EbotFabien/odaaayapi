@@ -636,7 +636,7 @@ class Article(Resource):
                 return {
                     "results": {
                         "lang": lang,
-                        'translated_feed':marshal(translated_feed, schema.postdata),
+                        'translated_feed':marshal(translated_feed, schema.lang_post),
                         'article': marshal(posts_feed, schema.postdata)
                     }
                 }, 200
