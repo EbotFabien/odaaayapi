@@ -72,7 +72,7 @@ def translate_posts(post_id, user_id):
         post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
-    sum_content = ''
+    sum_content = None
     # tag collector
    # rake = Rake()
 
@@ -84,7 +84,7 @@ def translate_posts(post_id, user_id):
 
         for sentence in summarizer(parser.document, 4):
             sum_content += '\n'+str(sentence)
-        if sum_content == '':
+        if sum_content is None:
             sum_content = post.text_content
     try:
         for j in languages:
@@ -124,7 +124,7 @@ def summarize_posts(post_id, user_id):
     post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
-    sum_content = ''
+    sum_content = None
 
     if post.post_url is None:
         try:
@@ -135,7 +135,7 @@ def summarize_posts(post_id, user_id):
 
             for sentence in summarizer(parser.document, 4):
                 sum_content += '\n'+str(sentence)
-            if sum_content == '':
+            if sum_content is None:
                 sum_content = post.text_content
             new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
             if new_check is None:
