@@ -621,7 +621,7 @@ class Related(Resource):
         401: 'Unauthorized request from client to server',
         403: 'Forbidden request from client to server',
         404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
+        500: 'internal server error, please contact admin and report '
     })
 @home.route('/article/<id>')
 class Article(Resource):
