@@ -394,7 +394,7 @@ class Article_check(Resource):
             LANGUAGE = "english"
             SENTENCES_COUNT = 10
             url= req_data["Link"]
-            sum_content=''
+            sum_content=None
             x = requests.get(url)
             if x is not None:
                 
@@ -413,9 +413,11 @@ class Article_check(Resource):
 
                 for sentence in summarizer(parser.document, 4):
                     sum_content += '\n'+str(sentence)
-                if sum_content == '':
-                    sum_content = document.readable
+                
                 title=soup.find('title').get_text()
+
+                if sum_content == None:
+                    sum_content = document.readable
 
             
 
