@@ -19,7 +19,7 @@ import re
 from app.services import mail
 from .v1 import user, info, token, search, post
 from app.models import Report, Users, Language, Save, Setting, \
-         Posttype, Rating, Ratingtype,Translated,Posts
+         Posttype, Rating, Ratingtype,Translated,Posts,Reporttype
 from sqlalchemy import or_, and_, desc,asc
 # API security eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZmFiaWVuIiwidXVpZCI6ImJlNTM1NDBlLWExMzItNDJiNy1iNzlkLTI4MWFhZGM1MWZjMyIsImV4cCI6MTYzMDg2ODQ1OCwiaWF0IjoxNjI4Mjc2NDU4fQ.u4KyP0J3qzV0coE3-kozIKI0sc8ZrEUYMWvUbQbSHQM
 authorizations = {
@@ -663,6 +663,20 @@ class Report_post_(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(uuid=req_data['post_id']).first()
+        lan=Reporttype(content="Fake news")
+        lan1=Reporttype(content="Vulgar Language")
+        lan2=Reporttype(content="Bad Translation")
+        lan3=Reporttype(content="Copyright")
+        lan4=Reporttype(content="Others")
+        db.session.add(lan)
+        db.session.add(lan1)
+        db.session.add(lan2)
+        db.session.add(lan3)
+        db.session.add(lan4)
+        db.session.commit()
+        typo =[1,2,3,4]
+        rep=req_data['type']
+        Length=len(req_data['type'])
   
         if user is None:
             return{
@@ -671,13 +685,45 @@ class Report_post_(Resource):
                 }
 
         if post:
-            Report_sent=Report(reason=req_data['reason'],reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=req_data['type'])
-            db.session.add(Report_sent)
-            db.session.commit()
-            return{
-                "status":1,
-                "res":"Post has been reported"
-            }          
+            if  req_data['reason'] is None:
+                for i in typo:
+                    for a in rep:
+                        if i==a:
+                            Report_sent=Report(reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=a)
+                            db.session.add(Report_sent)
+                            db.session.commit()
+                return{
+                    "status":1,
+                    "res":"Post has been reported"
+                }          
+            if  req_data['reason'] is not  None:
+                if Length == 1:
+                    Report_sent=Report(reason=req_data['reason'],reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=5)
+                    db.session.add(Report_sent)
+                    db.session.commit()
+                    return{
+                        "status":1,
+                        "res":"Post has been reported"
+                    }          
+                if Length > 1:
+                    for i in typo:
+                        for a in rep:
+                            if i == a:
+                                Report_sent=Report(reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=a)
+                                db.session.add(Report_sent)
+                                db.session.commit()
+
+                    return{
+                        "status":1,
+                        "res":"Post has been reported"
+                    }   
+
+            else:
+                return{
+                    "status":0,
+                    "res":"Fail"
+                }
+             
         else:
             return{
                 "status":0,
