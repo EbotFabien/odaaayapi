@@ -93,7 +93,7 @@ def translate_posts(post_id, user_id):
                 if post is not None:
                     if sum_content == '':
                         sum_content = post.text_content
-                    new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
+                    new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
                     db.session.add(new_row)
                     db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
