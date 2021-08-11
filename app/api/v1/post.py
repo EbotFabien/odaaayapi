@@ -332,7 +332,7 @@ class Post(Resource):
 
                     new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=newPost.id,title=post.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
                         db.session.add(new_row)
                         db.session.commit()
                 for i in followers_:
@@ -355,7 +355,7 @@ class Post(Resource):
                 newPost.user_name=user.username
                 db.session.commit()
 
-                parser = HtmlParser.from_string(post.text_content, '', Tokenizer(language.name))
+                parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
                 stemmer = Stemmer(language.name)
                 summarizer = Summarizer(stemmer)
                 summarizer.stop_words = get_stop_words(language.name)
@@ -365,7 +365,7 @@ class Post(Resource):
 
                 new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
                 if new_check is None:
-                    new_row = Translated(post_id=newPost.id,title=post.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
+                    new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
                     db.session.add(new_row)
                     db.session.commit()
                 for i in followers_:
