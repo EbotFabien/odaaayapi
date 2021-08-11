@@ -523,6 +523,7 @@ CREATE TABLE public.translated (
     id integer NOT NULL,
     title character varying(250) NOT NULL,
     content character varying NOT NULL,
+    fullcontent character varying NOT NULL,
     language_id integer NOT NULL,
     post_id integer NOT NULL,
     tags text,
@@ -746,6 +747,20 @@ COPY public.followers (follower_id, followed_id) FROM stdin;
 --
 
 COPY public.language (id, lang_type, code, name) FROM stdin;
+1	N	en	english
+2	N	es	espagnol
+3	N	ar	arab
+4	N	pt	portugese
+5	N	sw	swahili
+6	N	fr	french
+7	N	ha	hausa
+8	N	en	english
+9	N	es	espagnol
+10	N	ar	arab
+11	N	pt	portugese
+12	N	sw	swahili
+13	N	fr	french
+14	N	ha	hausa
 \.
 
 
@@ -770,6 +785,10 @@ COPY public.posts (id, title, uuid, description, post_url, thumb_url, text_conte
 --
 
 COPY public.posttype (id, content) FROM stdin;
+1	Text
+2	Video
+3	Text
+4	Video
 \.
 
 
@@ -833,7 +852,7 @@ COPY public.task (id, name, description, user_id, complete) FROM stdin;
 -- Data for Name: translated; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.translated (id, title, content, language_id, post_id, tags, status, "timestamp") FROM stdin;
+COPY public.translated (id, title, content, fullcontent, language_id, post_id, tags, status, "timestamp") FROM stdin;
 \.
 
 
@@ -863,7 +882,7 @@ SELECT pg_catalog.setval('public.country_id_seq', 1, false);
 -- Name: language_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.language_id_seq', 1, false);
+SELECT pg_catalog.setval('public.language_id_seq', 14, true);
 
 
 --
@@ -884,7 +903,7 @@ SELECT pg_catalog.setval('public.posts_id_seq', 1, false);
 -- Name: posttype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.posttype_id_seq', 1, false);
+SELECT pg_catalog.setval('public.posttype_id_seq', 4, true);
 
 
 --
@@ -1191,6 +1210,38 @@ ALTER TABLE ONLY public.notification
 
 ALTER TABLE ONLY public.notification
     ADD CONSTRAINT notification_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: posts posts_Country_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT "posts_Country_fkey" FOREIGN KEY ("Country") REFERENCES public.country(id);
+
+
+--
+-- Name: posts posts_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_author_fkey FOREIGN KEY (author) REFERENCES public.users(id);
+
+
+--
+-- Name: posts posts_orig_lang_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_orig_lang_fkey FOREIGN KEY (orig_lang) REFERENCES public.language(id);
+
+
+--
+-- Name: posts posts_post_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_post_type_fkey FOREIGN KEY (post_type) REFERENCES public.posttype(id);
 
 
 --

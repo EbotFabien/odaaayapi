@@ -420,7 +420,7 @@ class Translated(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False)
-    fulcontent = db.Column(db.String)
+    fullcontent = db.Column(db.String, nullable = False)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     post_id = db.Column(db.Integer,db.ForeignKey('posts.id'), nullable=False)
     tags = db.Column(db.Text)
