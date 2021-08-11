@@ -305,6 +305,7 @@ class Post(Resource):
         post_done=Posts.query.filter_by(title=title).first()
         if post_done is None:
             if ptype == 1:
+                sum_content = None
                 newPost = Posts(user.id, title, ptype, content, language.id)
                 db.session.add(newPost)
                 db.session.commit()
@@ -320,6 +321,20 @@ class Post(Resource):
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 if summarized == True and translated == False :
                     newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
+                if summarized and translated == False:
+                    parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
+                    stemmer = Stemmer(language.name)
+                    summarizer = Summarizer(stemmer)
+                    summarizer.stop_words = get_stop_words(language.name)
+
+                    for sentence in summarizer(parser.document, 4):
+                        sum_content += '\n'+str(sentence)
+
+                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=newPost.id,title=post.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
+                        db.session.add(new_row)
+                        db.session.commit()
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
@@ -331,21 +346,28 @@ class Post(Resource):
             if ptype == 2:
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
+                sum_content = None
                 newPost = Posts(user.id, title, ptype, content, language.id, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.post_url=post_url_
                 newPost.thumb_url=thumb_url_
-                newPost.summarize=summarized
-                newPost.translate=translated
                 newPost.user_name=user.username
                 db.session.commit()
-                if summarized and translated == True:
-                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if translated == True and summarized == False:
-                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if summarized == True and translated == False :
-                    newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
+
+                parser = HtmlParser.from_string(post.text_content, '', Tokenizer(language.name))
+                stemmer = Stemmer(language.name)
+                summarizer = Summarizer(stemmer)
+                summarizer.stop_words = get_stop_words(language.name)
+
+                for sentence in summarizer(parser.document, 4):
+                    sum_content += '\n'+str(sentence)
+
+                new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
+                if new_check is None:
+                    new_row = Translated(post_id=newPost.id,title=post.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
+                    db.session.add(new_row)
+                    db.session.commit()
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
@@ -411,7 +433,7 @@ class Article_check(Resource):
                 summarizer = Summarizer(stemmer)
                 summarizer.stop_words = get_stop_words(LANGUAGE)
 
-                for sentence in summarizer(parser.document, 4):
+                for sentence in summarizer(parser.document, 10):
                     sum_content += '\n'+str(sentence)
                 
                 title=soup.find('title').get_text()

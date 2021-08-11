@@ -149,6 +149,7 @@ lang_post = apisec.model('trans_post', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'content': fields.String(required=True),
+    'fullcontent':fields.String(required=True),
     'language_id': fields.Integer(required=True),
     'tags': fields.String(required=True),
     'posts': fields.List(fields.Nested(postdata)),
