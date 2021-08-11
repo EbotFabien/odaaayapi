@@ -72,7 +72,7 @@ def translate_posts(post_id, user_id):
         post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
-    sum_content = None
+    sum_content = ''
     # tag collector
    # rake = Rake()
 
@@ -91,7 +91,7 @@ def translate_posts(post_id, user_id):
                 #table = language_dict.get(user_default_lang)
                 #keywords = rake.apply(sum_content)
                 if post is not None:
-                    if sum_content == None:
+                    if sum_content == '':
                         sum_content = post.text_content
                     new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
                     db.session.add(new_row)
@@ -125,7 +125,7 @@ def summarize_posts(post_id, user_id):
     post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
-    sum_content = None
+    sum_content = ''
 
     if post.post_url is None:
         try:
@@ -139,7 +139,7 @@ def summarize_posts(post_id, user_id):
             
             new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
             if new_check is None:
-                if sum_content == None:
+                if sum_content == '':
                     sum_content = post.text_content
                 new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id,fullcontent=post.text_content, tags=str('dddd'))
                 db.session.add(new_row)

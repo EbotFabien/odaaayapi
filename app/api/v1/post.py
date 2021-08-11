@@ -305,7 +305,7 @@ class Post(Resource):
         post_done=Posts.query.filter_by(title=title).first()
         if post_done is None:
             if ptype == 1:
-                sum_content = None
+                sum_content = ''
                 newPost = Posts(user.id, title, ptype, content, language.id)
                 db.session.add(newPost)
                 db.session.commit()
@@ -346,7 +346,7 @@ class Post(Resource):
             if ptype == 2:
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
-                sum_content = None
+                sum_content = ''
                 newPost = Posts(user.id, title, ptype, content, language.id, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
                 db.session.commit()
@@ -416,7 +416,7 @@ class Article_check(Resource):
             LANGUAGE = "english"
             SENTENCES_COUNT = 10
             url= req_data["Link"]
-            sum_content=None
+            sum_content=''
             x = requests.get(url)
             if x is not None:
                 
@@ -438,7 +438,7 @@ class Article_check(Resource):
                 
                 title=soup.find('title').get_text()
 
-                if sum_content == None:
+                if sum_content == '':
                     sum_content = document.readable
 
             
