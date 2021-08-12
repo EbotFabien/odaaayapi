@@ -680,7 +680,7 @@ class Article(Resource):
     })
 @home.route('/reportpost/')
 class Report_post_(Resource):
-    @home.expect(schema.Report_post)   
+    @home.expect(schema.Reported_post)   
     @token_required
     def post(self):
         req_data = request.get_json()

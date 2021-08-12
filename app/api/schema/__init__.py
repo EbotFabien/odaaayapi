@@ -27,7 +27,7 @@ full_login =  apisec.model('full_login', {
 
 })
 
-Report_post = apisec.model('Report_post',{
+Reported_post = apisec.model('Reported_post',{
     'type':  fields.List(fields.Integer(required=True)),
     'post_id':fields.String(required=True),
     'reason':fields.String(required=False),
