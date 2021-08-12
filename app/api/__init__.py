@@ -633,13 +633,23 @@ class Article(Resource):
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid = id).first()
                 translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
-                return {
-                    "results": {
-                        "lang": lang,
-                        'translated_feed':marshal(translated_feed, schema.lang_post),
-                        'article': marshal(posts_feed, schema.postdata)
-                    }
-                }, 200
+                if translated_feed :
+                    return {
+                        "results": {
+                            "lang": lang,
+                            'translated_feed':marshal(translated_feed, schema.lang_post)
+                        }
+                    }, 200
+                else:
+                    current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                    
+                    return {
+                        "results": {
+                            "lang": lang,
+                            "original_lang": current_lang.code,
+                            'article': marshal(posts_feed, schema.postdata)
+                        }
+                    }, 200
             else:
                 return {
                     'status': 0,
