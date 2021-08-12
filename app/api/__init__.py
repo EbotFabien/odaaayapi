@@ -642,12 +642,13 @@ class Article(Resource):
                     }, 200
                 else:
                     current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
-                    
+                    translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                     return {
                         "results": {
                             "lang": lang,
                             "original_lang": current_lang.code,
-                            'article': marshal(posts_feed, schema.postdata)
+                            'translated_feed':marshal(translated_feed, schema.lang_post),
+                            'res':"This post can't been translated"
                         }
                     }, 200
             else:
