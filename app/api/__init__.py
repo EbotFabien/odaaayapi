@@ -715,7 +715,7 @@ class Report_post_(Resource):
                 for i in typo:
                     for a in rep:
                         if i==a:
-                            Report_sent=Report(reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=a)
+                            Report_sent=Report(reporter=user.id,post_id=post.id,user_reported=post.author,rtype=a)
                             db.session.add(Report_sent)
                             db.session.commit()
                 return{
@@ -724,7 +724,7 @@ class Report_post_(Resource):
                 }          
             if  req_data['reason'] is not  None:
                 if Length == 1:
-                    Report_sent=Report(reason=req_data['reason'],reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=5)
+                    Report_sent=Report(reason=req_data['reason'],reporter=user.id,post_id=post.id,user_reported=post.author,rtype=5)
                     db.session.add(Report_sent)
                     db.session.commit()
                     return{
@@ -735,7 +735,7 @@ class Report_post_(Resource):
                     for i in typo:
                         for a in rep:
                             if i == a:
-                                Report_sent=Report(reporter=user.id,post_id=post.id,user_reported=post.uploader_id,rtype=a)
+                                Report_sent=Report(reporter=user.id,post_id=post.id,user_reported=post.author,rtype=a)
                                 db.session.add(Report_sent)
                                 db.session.commit()
 
