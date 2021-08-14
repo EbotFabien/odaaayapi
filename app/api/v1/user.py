@@ -87,6 +87,7 @@ userdata = user.model('userdata', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
+
 postsdata = user.model('postsdata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -1030,7 +1031,7 @@ class  Posts_(Resource):
                     posts_feeds = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random())
                     posts_feed =posts_feeds.paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
-                    if Type == "saves":
+                    if Type == "savings":
                         if posts_feed:
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
