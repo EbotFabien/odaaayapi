@@ -1043,14 +1043,14 @@ class  Posts_(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random())
-                    posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id)
+                    posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
-                            user_posts=posts_feeds.paginate(int(start), int(count), False).items
+                            user_posts=posts_feeds.join(Save).filter(Save.user_id==user.id).paginate(int(start), int(count), False).items
                             for i in user_saves:
                                 for j in user_posts:
                                     if j.post_id != i.post_id :
