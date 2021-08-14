@@ -680,9 +680,10 @@ class User_Random(Resource):
             channel = Users.query.order_by(func.random()).paginate(int(start),int(count), False).items
             followed =[]
             followers=user.is_followers()
-            for i,j in zip(channel,followers):
-                            if i.id == j.id :
-                                followed.append(i.id)
+            for i in channel:
+                for j in followers:
+                    if i.id == j.id :
+                        followed.append(i.id)
 
             for i in channel:
                 if i.id == user.id:
