@@ -646,7 +646,7 @@ class User_upload_profile_pic(Resource):
 
 @user.doc(
     security='KEY',
-    params={ 'user_id': 'Specify the user_id associated with the person',
+    params={ 
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
              'count': 'Number results per page',
