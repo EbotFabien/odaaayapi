@@ -1035,19 +1035,19 @@ class  Posts_(Resource):
                         if posts_feed:
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
-                            user_posts=posts_feeds
+                            user_posts=posts_feeds.paginate(int(start), int(count), False).items
                             for i,j in zip(user_posts,user_saves):
                                 if i.post_id != j.post_id :
                                     print(i)
                                     user_posts.remove(i)
-                            news=user_posts.paginate(int(start), int(count), False)
+                            #news=user_posts.paginate(int(start), int(count), False)
                             return{
                                 "start":start,
                                 "limit":limit,
                                 "count":count,
                                 "next":next,
                                 "previous":previous,
-                                "results":marshal(news.items,lang_post)
+                                "results":marshal(user_posts,lang_post)
                                         
                             },200
 
