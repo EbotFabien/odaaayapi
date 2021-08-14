@@ -1054,7 +1054,8 @@ class  Posts_(Resource):
                             for i in user_saves:
                                 for j in user_posts:
                                     if j.post_id != i.post_id :
-                                        user_posts.remove(j)
+                                        #user_posts.remove(j)
+                                        print(1)
                             #news=user_posts.paginate(int(start), int(count), False)
                             return{
                                 "start":start,
