@@ -1061,6 +1061,7 @@ class  Posts_(Resource):
                                 "limit":limit,
                                 "count":count,
                                 "next":next,
+                                "length":len(user_posts),
                                 "previous":previous,
                                 "results":marshal(user_posts,lang_post)
                                         
