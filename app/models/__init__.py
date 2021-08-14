@@ -52,7 +52,7 @@ shorty=shortuuid.uuid()
 class Users(db.Model):
     __searchable__ = ['username']
     id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(120), nullable=False)
+    username = db.Column(db.String(120), nullable=False)#unique True
     email = db.Column(db.String(120), nullable=True)
     phone = db.Column(db.String(120), nullable=True)
     uuid = db.Column(db.String(60), nullable=False)
