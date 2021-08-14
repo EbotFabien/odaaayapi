@@ -1035,7 +1035,7 @@ class  Posts_(Resource):
                         if posts_feed:
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
-                            user_posts=posts_feeds
+                            user_posts=posts_feeds.all()
                             for i,j in zip(user_posts,user_saves):
                                 if i.post_id != j.post_id :
                                   user_posts.remove(i)
@@ -1046,7 +1046,6 @@ class  Posts_(Resource):
                                 "count":count,
                                 "next":next,
                                 "previous":previous,
-                                'number of saves':count,
                                 "results":marshal(news.items,lang_post)
                                         
                             },200
