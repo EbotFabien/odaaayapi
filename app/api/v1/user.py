@@ -683,6 +683,10 @@ class User_Random(Resource):
             for i,j in zip(channel,followers):
                             if i.id == j.id :
                                 followed.append(i.id)
+
+            for i in channel:
+                if i.id == user.id:
+                    channel.remove(i)                
             return{
                 "start":start,
                 "limit":limit,
