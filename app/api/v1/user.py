@@ -1051,11 +1051,9 @@ class  Posts_(Resource):
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
                             user_posts=posts_feeds.paginate(int(start), int(count), False).items
-                            for i in user_posts:
-                                for j in user_saves:
-                                    if i.post_id != j.post_id :
-                                       # user_posts.remove(i)
-                                       print(i)
+                            for i,j in zip(user_posts,user_saves):
+                                if i.post_id != j.post_id :
+                                    user_posts.remove(i)
                             #news=user_posts.paginate(int(start), int(count), False)
                             return{
                                 "start":start,
