@@ -665,6 +665,7 @@ class User_upload_profile_pic(Resource):
     })
 @user.route('/user/Randomusers')
 class User_Random(Resource):
+     @token_required
      def get(self):
         if request.args:
             start = request.args.get('start',None)
@@ -672,13 +673,23 @@ class User_Random(Resource):
             count = request.args.get('count',None)
             next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            token = request.headers['API-KEY']
+            req_data = request.get_json()
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user = Users.query.filter_by(uuid=data['uuid']).first()
             channel = Users.query.order_by(func.random()).paginate(int(start),int(count), False).items
+            followed =[]
+            followers=user.is_followers()
+            for i,j in zip(channel,followers):
+                            if i.id == j.id :
+                                followed.append(i.id)
             return{
                 "start":start,
                 "limit":limit,
                 "count":count,
                 "next":next,
                 "previous":previous,
+                "followed":followed,
                 "results":marshal(channel,User_R_data)
             }, 200
         else:
