@@ -4,7 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import requests as rqs
 from flask import abort, request, session,Blueprint
-from app.models import Users, followers, Setting,Notification,clap,Save,Posts
+from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated
 from flask import current_app as app
 from app import db, cache, logging
 from sqlalchemy import or_, and_, distinct, func
@@ -87,11 +87,20 @@ userdata = user.model('userdata', {
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
-postsdata = user.model('postsdata',{
+postsdata = user.model('postsdata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'author': fields.Integer(required=True),
+    'user_name': fields.String(required=True),
+    'post_type': fields.Integer(required=True),
     'text_content': fields.String(required=True),
-    'uploader_data': fields.List(fields.Nested(userdata)),
+    'post_url': fields.String(required=True),
+    'audio_url': fields.String(required=True),
+    'video_url': fields.String(required=True),
+    'created_on ': fields.DateTime(required=True),
+    'thumb_url': fields.String(required=False),
+    'tags': fields.String(required=True),
 })
 
 saved = user.model('saved', {
@@ -186,6 +195,16 @@ ip_data = user.model('address',{
 })
 Notification_seen = user.model('Notification_seen',{
     'notification_id':fields.String(required=True)
+})
+
+lang_post = user.model('lang_post', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True),
+    'fullcontent':fields.String(required=True),
+    'language_id': fields.Integer(required=True),
+    'tags': fields.String(required=True),
+    'posts': fields.List(fields.Nested(postsdata)),
 })
 
 @user.doc(
@@ -967,56 +986,6 @@ class  No_claps_(Resource):
 
 
 
-@user.doc(
-    security='KEY',
-    params={ 
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
-              },
-    responses={
-        200: 'ok',
-        201: 'created',
-        204: 'No Content',    
-        301: 'Resource was moved',
-        304: 'Resource was not Modified',
-        400: 'Bad Request to server',
-        401: 'Unauthorized request from client to server',
-        403: 'Forbidden request from client to server',
-        404: 'Resource Not found',
-        500: 'internal server error, please contact admin and report issue'
-    })
-@user.route('/user/savings')
-class  No_savings(Resource):
-    @token_required
-    def get(self):
-        if request.args:
-            token = request.headers['API-KEY']
-            start = request.args.get('start',None)
-            limit = request.args.get('limit',None)
-            count = request.args.get('count',None)
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
-            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
-            user = Users.query.filter_by(uuid=data['uuid']).first()
-            saves=Save.query.filter_by(user_id=user.id).paginate(int(start),int(count), False).items
-            if saves:
-                return{
-                    "start":start,
-                    "limit":limit,
-                    "count":count,
-                    "next":next,
-                    "previous":previous,
-                    'number of saves':count,
-                    "results":marshal(saves,saved)
-                            
-                },200
-
-            else:
-                return{
-                        "status":0,
-                        "res":"Fail"
-                    },400
 
 @user.doc(
     security='KEY',
@@ -1024,6 +993,8 @@ class  No_savings(Resource):
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
              'count': 'Number results per page',
+             'lang': 'i18n',
+             'type':'savings or posts',
               },
     responses={
         200: 'ok',
@@ -1046,28 +1017,64 @@ class  Posts_(Resource):
             start = request.args.get('start',None)
             limit = request.args.get('limit',None)
             count = request.args.get('count',None)
+            lang = request.args.get('lang', None)
+            Type = request.args.get('type', None)
+            language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
-            previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
+            next = "/api/v1/posts?"+start+"&limit="+limit+"&count="+count
+            previous = "api/v1/posts?start="+start+"&limit"+limit+"&count="+count
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            posts=Posts.query.filter_by(author=user.id).paginate(int(start),int(count), False).items
-            if posts:
-                return{
-                    "start":start,
-                    "limit":limit,
-                    "count":count,
-                    "next":next,
-                    "previous":previous,
-                    'number of saves':count,
-                    "results":marshal(posts,postsdata)
-                            
-                },200
+            for i in language_dict:
+                if i == lang:
+                    current_lang = Language.query.filter_by(code=i).first()
+                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random())
+                    posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                    total = (posts_feed.total/int(count))
+                    if Type == "saves":
+                        if posts_feed:
+                            savess=[]
+                            user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
+                            user_posts=posts_feeds
+                            for i,j in zip(user_posts,user_saves):
+                                if i.post_id == j.post_id :
+                                  savess.append(i)
+                            news=savess.paginate(int(start), int(count), False)
+                            return{
+                                "start":start,
+                                "limit":limit,
+                                "count":count,
+                                "next":next,
+                                "previous":previous,
+                                'number of saves':count,
+                                "results":marshal(news.items,lang_post)
+                                        
+                            },200
 
-            else:
-                return{
-                        "status":0,
-                        "res":"Fail"
-                    },400
+                        else:
+                            return{
+                                    "status":0,
+                                    "res":"Fail"
+                                },400
+
+                    if Type == "posts":
+
+                        if posts_feed:
+                            return{
+                                "start":start,
+                                "limit":limit,
+                                "count":count,
+                                "next":next,
+                                "total":total,
+                                "previous":previous,
+                                "results":marshal(posts_feed.items,lang_post)
+                                        
+                            },200
+
+                        else:
+                            return{
+                                    "status":0,
+                                    "res":"Fail"
+                                },400
 
 
 

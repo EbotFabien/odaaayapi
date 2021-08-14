@@ -415,14 +415,16 @@ class Home(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random()).paginate(int(start), int(count), False)
+                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random())
+                    posts_feed =posts_feeds.paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
                     
                     if user is not None:
-                        user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).paginate(int(start), int(count), False).items
-                        for i,j in zip(posts_feed.items,user_saves):
+                        user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
+                        user_posts=posts_feeds.all()
+                        for i,j in zip(user_posts,user_saves):
                             if i.post_id == j.post_id :
                                 saved.append(j.post_id)
                         return {
@@ -689,17 +691,17 @@ class Report_post_(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         post= Posts.query.filter_by(uuid=req_data['post_id']).first()
-        lan=Reporttype(content="Fake news")
-        lan1=Reporttype(content="Vulgar Language")
-        lan2=Reporttype(content="Bad Translation")
-        lan3=Reporttype(content="Copyright")
-        lan4=Reporttype(content="Others")
-        db.session.add(lan)
-        db.session.add(lan1)
-        db.session.add(lan2)
-        db.session.add(lan3)
-        db.session.add(lan4)
-        db.session.commit()
+        #lan=Reporttype(content="Fake news")
+        #lan1=Reporttype(content="Vulgar Language")
+        #lan2=Reporttype(content="Bad Translation")
+        #lan3=Reporttype(content="Copyright")
+        #lan4=Reporttype(content="Others")
+        #db.session.add(lan)
+        #db.session.add(lan1)
+        #db.session.add(lan2)
+        #db.session.add(lan3)
+        #db.session.add(lan4)
+        #db.session.commit()
         typo =[1,2,3,4]
         rep=req_data['type']
         Length=len(req_data['type'])
@@ -732,6 +734,9 @@ class Report_post_(Resource):
                         "res":"Post has been reported"
                     }          
                 if Length > 1:
+                    Report_sent=Report(reason=req_data['reason'],reporter=user.id,post_id=post.id,user_reported=post.author,rtype=5)
+                    db.session.add(Report_sent)
+                    db.session.commit()
                     for i in typo:
                         for a in rep:
                             if i == a:
