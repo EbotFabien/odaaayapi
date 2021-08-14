@@ -423,8 +423,8 @@ class Home(Resource):
                     
                     if user is not None:
                         user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
-                        user_posts=Translated.query.filter_by(language_id=current_lang.id).all()
-                        for i,j in user_posts:
+                        user_posts=posts_feeds.all()
+                        for i in user_posts:
                             for j in user_saves:
                                 if i.post_id == j.post_id :
                                     saved.append(j.post_id)
