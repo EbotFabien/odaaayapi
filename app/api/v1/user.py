@@ -1051,7 +1051,10 @@ class  Posts_(Resource):
                         if posts_feed:
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
-                            user_posts=posts_feeds.join(Save).filter(Save.user_id==user.id).paginate(int(start), int(count), False).items
+                            #user_posts=posts_feeds.join(Save).filter(Save.user_id==user.id).paginate(int(start), int(count), False).items
+                            user_posts= Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Save,(Save.post_id == Translated.post_id)).filter(
+                                            Save.user_id==user.id).paginate(int(start), int(count), False).items 
                             for i in user_saves:
                                 for j in user_posts:
                                     if j.post_id != i.post_id :
