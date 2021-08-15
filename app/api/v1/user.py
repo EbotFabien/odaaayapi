@@ -1044,7 +1044,9 @@ class  Posts_(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts.author==user.id)
+                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Posts,(Posts.id == Translated.post_id)).filter(
+                                            Posts.author==user.id)
                     posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
@@ -1132,7 +1134,9 @@ class Data(Resource):
             for i in language_dict:
                     if i == lang:
                         current_lang = Language.query.filter_by(code=i).first()
-                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts.author==user2.id)
+                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Posts,(Posts.id == Translated.post_id)).filter(
+                                            Posts.author==user2.id)
                         posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         if posts_feed:
