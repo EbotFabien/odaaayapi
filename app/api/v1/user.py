@@ -1044,7 +1044,7 @@ class  Posts_(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id)
+                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts.author==user.id)
                     posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
@@ -1092,3 +1092,70 @@ class  Posts_(Resource):
 
 
 
+@user.doc(
+    security='KEY',
+    params={ 'uuid': 'Specify the uuid associated with the person',
+             'start': 'Value to start from ',
+             'lang': 'i18n',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page' },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/profile')
+class Data(Resource):
+    @token_required
+    #@user.marshal_with(userinfo)
+    def get(self):
+        user_id = request.args.get('uuid')
+        lang = request.args.get('lang', None)
+        start = request.args.get('start',None)
+        limit = request.args.get('limit',None)
+        count = request.args.get('count',None)
+        language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        next = "/api/v1/profile?"+start+"&limit="+limit+"&count="+count
+        previous = "api/v1/profile?start="+start+"&limit"+limit+"&count="+count
+        user2 = Users.query.filter_by(uuid=user_id).first()
+        if user:
+            for i in language_dict:
+                    if i == lang:
+                        current_lang = Language.query.filter_by(code=i).first()
+                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts.author==user2.id)
+                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                        total = (posts_feed.total/int(count))
+                        if posts_feed:
+                                return{
+                                    "start":start,
+                                    "limit":limit,
+                                    "count":count,
+                                    "next":next,
+                                    "total":total,
+                                    "previous":previous,
+                                    "user_data":marshal(user,userdata),
+                                    "results":marshal(posts_feed.items,lang_post)
+                                            
+                                },200
+
+                        else:
+                            return{
+                                    "status":0,
+                                    "res":"Fail"
+                                },400
+
+        else: 
+            return{
+                    "status":0,
+                    "res":"User doesn't exist"
+                }, 200
