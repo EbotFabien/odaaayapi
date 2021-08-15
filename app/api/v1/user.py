@@ -83,7 +83,7 @@ userdata = user.model('userdata', {
     'email': fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=False),
-    'user_number': fields.String(required=True),
+    'phone': fields.String(required=True),
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
