@@ -636,10 +636,12 @@ class Article(Resource):
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid = id).first()
                 translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                count_claps=posts_feed.No__claps()
                 if translated_feed :
                     return {
                         "results": {
                             "lang": lang,
+                            "shouts":count_claps,
                             'translated_feed':marshal(translated_feed, schema.lang_post)
                         }
                     }, 200
@@ -650,6 +652,7 @@ class Article(Resource):
                         "results": {
                             "lang": lang,
                             "original_lang": current_lang.code,
+                            "shouts":count_claps,
                             'translated_feed':marshal(translated_feed, schema.lang_post),
                             'res':"This post can't been translated"
                         }
