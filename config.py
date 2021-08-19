@@ -52,6 +52,7 @@ class Config(object):
     QUEUES = ['default']
     ADMINS = ['touchone0001@gmail.com']
     TWILIO_ACCOUNT_SID = 'ACfa2f374c7f24b74c6849fe081fdd9e26'
+    TWILIO_SERVICE = 'VA31999ccb95ccf86a3dacbf3c4d36ce4a'
     TWILIO_AUTH_TOKEN = 'c7fbb80be7f81d96e0b6882e2614a9be'
     TWILIO_NUMBER = '+19798032477'#'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
     RQ_DASHBOARD_USERNAME = 'rq'

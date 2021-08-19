@@ -136,18 +136,18 @@ class Login_email(Resource):
                 user1 = Users.query.filter_by(phone=number).first()
                 if user1:
                     if code is None:
-                        verification_code=phone.generate_code()
-                        user1.code = verification_code
-                        user1.code_expires_in = datetime.utcnow() + timedelta(minutes=2)
-                        db.session.commit()
-                        phone.send_confirmation_code(number,verification_code)
+                        phone.sendverification(number)
                         return {
                             'status': 1,
                             'res': 'verification sms sent'
                             }, 200
                     
                     if code:
-                        if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                        check=phone.checkverification(user1.phone_number,code)
+                        if check == "approved":
+                            user1.verified_phone=True
+                            user1.tries =0
+                            db.session.commit()
                             token = jwt.encode({
                                 'user': user1.username,
                                 'uuid': user1.uuid,
@@ -163,7 +163,7 @@ class Login_email(Resource):
                                 }, 200
                         
                         if code:
-                            if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                            if check == "approved":
                                 user1.verified_phone=True
                                 user1.tries =0
                                 db.session.commit()
@@ -232,7 +232,8 @@ class Signup_email(Resource):
             if code is not None:
                 user1 = Users.query.filter_by(phone=phone_number).first()
                 if user1:
-                    if (str(user1.code) == str(code)) and not (datetime.utcnow() > user1.code_expires_in):
+                    check=phone.checkverification(user1.phone_number,code)
+                    if check == "approved":
                         user1.verified_phone=True
                         user1.tries =0
                         db.session.commit()
@@ -268,10 +269,8 @@ class Signup_email(Resource):
                 if user:
                     if user.verified_phone==False:
                         verification_code=phone.generate_code()
-                        user.code = verification_code
-                        user.code_expires_in = datetime.utcnow() + timedelta(minutes=5)
                         db.session.commit()
-                        phone.send_confirmation_code(phone_number,verification_code)
+                        phone.sendverification(phone_number)
                         return {
                             'status': 1,
                             'Phone':phone_number,
@@ -285,12 +284,9 @@ class Signup_email(Resource):
                 else:
                     verification_code=phone.generate_code()
                     newuser = Users(username,str(uuid.uuid4()),True, None,phone_number)
-                    db.session.commit()
-                    newuser.code = verification_code
-                    newuser.code_expires_in = datetime.utcnow() + timedelta(minutes=5)
                     db.session.add(newuser)
                     db.session.commit()
-                    phone.send_confirmation_code(phone_number,verification_code)
+                    phone.sendverification(phone_number)
                     return {
                         'status': 1,
                         'Phone':phone_number,
@@ -650,7 +646,7 @@ class Article(Resource):
                     translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                     return {
                         "results": {
-                            "lang": lang,
+                            "lang": lang,     
                             "original_lang": current_lang.code,
                             "shouts":count_claps,
                             'translated_feed':marshal(translated_feed, schema.lang_post),

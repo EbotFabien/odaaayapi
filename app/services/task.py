@@ -27,7 +27,6 @@ from sqlalchemy import or_, and_, distinct, func
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 app.app_context().push()
 
-
 translator = Translator()
 
 def _set_task_progress(progress):
