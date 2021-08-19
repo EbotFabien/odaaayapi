@@ -143,7 +143,7 @@ class Login_email(Resource):
                             }, 200
                     
                     if code:
-                        check=phone.checkverification(user1.phone_number,code)
+                        check=phone.checkverification(user1.phone,code)
                         if check == "approved":
                             user1.verified_phone=True
                             user1.tries =0
@@ -232,7 +232,7 @@ class Signup_email(Resource):
             if code is not None:
                 user1 = Users.query.filter_by(phone=phone_number).first()
                 if user1:
-                    check=phone.checkverification(user1.phone_number,code)
+                    check=phone.checkverification(user1.phone,code)
                     if check == "approved":
                         user1.verified_phone=True
                         user1.tries =0
