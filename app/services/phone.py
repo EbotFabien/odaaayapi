@@ -1,10 +1,11 @@
 from twilio.rest import Client
 from flask import current_app as app
 import random
+from config import Config
 
-account_sid = app.config.get('TWILIO_ACCOUNT_SID')
-auth_token = app.config.get('TWILIO_AUTH_TOKEN')
-services = app.config.get('TWILIO_SERVICE')
+account_sid = Config.TWILIO_ACCOUNT_SID
+auth_token = Config.TWILIO_AUTH_TOKEN
+services = Config.TWILIO_SERVICE
 client = Client(account_sid, auth_token)
 
 def generate_code():
