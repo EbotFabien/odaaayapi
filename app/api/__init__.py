@@ -144,7 +144,7 @@ class Login_email(Resource):
                     
                     if code:
                         check=phone.checkverification(user1.phone,code)
-                        if check == "approved":
+                        if check.status == "approved":
                             user1.verified_phone=True
                             user1.tries =0
                             db.session.commit()
@@ -163,7 +163,7 @@ class Login_email(Resource):
                                 }, 200
                         
                         if code:
-                            if check == "approved":
+                            if check.status == "approved":
                                 user1.verified_phone=True
                                 user1.tries =0
                                 db.session.commit()
@@ -233,7 +233,8 @@ class Signup_email(Resource):
                 user1 = Users.query.filter_by(phone=phone_number).first()
                 if user1:
                     check=phone.checkverification(user1.phone,code)
-                    if check == "approved":
+
+                    if check.status == "approved":
                         user1.verified_phone=True
                         user1.tries =0
                         db.session.commit()
