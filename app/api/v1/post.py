@@ -293,10 +293,16 @@ class Post(Resource):
         args = uploader.parse_args()
         title=req_data['title']
         content=req_data['content']
+        post_auto_lang = translator.detect(title)
+        lang = str(post_auto_lang.lang)
         ptype= req_data['type']
         translated= req_data['translate'] 
         summarized= req_data['summarize'] 
         got_language = req_data['lang']
+        if lang == got_language:
+            print('language good')
+        else:
+            got_language=lang
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
@@ -354,16 +360,23 @@ class Post(Resource):
                 newPost.thumb_url=thumb_url_
                 newPost.user_name=user.username
                 db.session.commit()
+                if summarized and translated == True:
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
-                parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
-                stemmer = Stemmer(language.name)
-                summarizer = Summarizer(stemmer)
-                summarizer.stop_words = get_stop_words(language.name)
+                if translated == True and summarized == False:
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if summarized == True and translated == False :
+                    newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
+                if summarized and translated == False:
+                    parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
+                    stemmer = Stemmer(language.name)
+                    summarizer = Summarizer(stemmer)
+                    summarizer.stop_words = get_stop_words(language.name)
 
-                for sentence in summarizer(parser.document, 4):
-                    sum_content += '\n'+str(sentence)
+                    for sentence in summarizer(parser.document, 4):
+                        sum_content += '\n'+str(sentence)
 
-                new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
+                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
                 if new_check is None:
                     new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
                     db.session.add(new_row)
