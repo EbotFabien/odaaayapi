@@ -481,8 +481,7 @@ class Userprefs(Resource):
             user = Users.query.filter_by(uuid=data['uuid']).first()
             user_settings = Setting.query.filter_by(users_id=user.id).first()
             return {
-                "user": marshal(user, userdata),
-                "user_prefs": marshal(user_settings, user_prefs)
+                "user": marshal(user, userdata)
                 }, 200
         else:
            return {
