@@ -47,6 +47,16 @@ clap = db.Table('clap',
 
 shorty=shortuuid.uuid()
 
+class Language(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    settings = db.relationship('Setting', backref='setting', lazy=True)
+    lang_type = db.Column(db.String(30), nullable=False)
+    code = db.Column(db.String(16), nullable=False)
+    name = db.Column(db.String(40), nullable=False)
+
+    
+    def __repr__(self):
+        return '<Language>%r' %self.name
 
         
 class Users(db.Model):
@@ -59,11 +69,13 @@ class Users(db.Model):
     password_hash = db.Column(db.String(256),nullable=True)
     bio = db.Column(db.String(350), nullable=True)
     picture =  db.Column(db.String(120), nullable=True)
-    code = db.Column(db.Integer, nullable=True)
+    background =  db.Column(db.String(120), nullable=True)
+    country = db.Column(db.String(120), nullable=True)
     user_visibility = db.Column(db.Boolean, nullable=False, default=True)
     user_ratings = db.relationship('Rating', backref = "userrating", lazy = True)
     user_setting = db.relationship('Setting', backref = "usersetting", lazy = True)
-    last_code = db.Column(db.Integer)
+    language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=True)
+    handle = db.Column(db.String(120), nullable=True)
     code_expires_in = db.Column(db.DateTime)
     verified_email = db.Column(db.Boolean, nullable=False, default=False)
     verified_phone = db.Column(db.Boolean, nullable=False, default=False)
@@ -74,6 +86,10 @@ class Users(db.Model):
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
     
+    Lang= db.relationship(
+        'Users',secondary=Language,
+        primaryjoin=(id == language_id),
+         backref=db.backref('Lang_', lazy='dynamic'), lazy='dynamic')
 
     followed = db.relationship(
         'Users', secondary=followers,
@@ -259,7 +275,6 @@ class Setting(db.Model):
     def __init__(self, language, users, theme):
         self.language_id = language
         self.theme = theme
-        self.post = post
         self.users_id = users
 
     def __repr__(self):
@@ -435,16 +450,7 @@ class Translated(db.Model):
     def __repr__(self):
         return '<Translated %r>' % self.id
 
-class Language(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    settings = db.relationship('Setting', backref='setting', lazy=True)
-    lang_type = db.Column(db.String(30), nullable=False)
-    code = db.Column(db.String(16), nullable=False)
-    name = db.Column(db.String(40), nullable=False)
 
-    
-    def __repr__(self):
-        return '<Language>%r' %self.name
 
 
 

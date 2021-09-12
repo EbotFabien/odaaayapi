@@ -76,14 +76,25 @@ COnfirminvitation= user.model('COnfirminvitation',{
 sinvitation= user.model('sinvitation',{
     'email': fields.String(required=False, description="invitee Email")
 })
+
+langdata= user.model('langdata',{
+    'id': fields.Integer(required=True),
+    'code': fields.String(required=True),
+    'name': fields.String(required=True),
+})
+
 userdata = user.model('userdata', {
     'id': fields.Integer(required=True),
     'username': fields.String(required=True),
-    'profile_picture': fields.String(required=True),
+    'picture': fields.String(required=True),
     'email': fields.String(required=True),
+    'country':fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=False),
+    'background': fields.String(required=False),
+    'Lang':fields.List(fields.Nested(langdata)),
     'phone': fields.String(required=True),
+    'handle':fields.String(required=True),
     'verified': fields.Boolean(required=True),
     'user_visibility': fields.Boolean(required=True)
 })
@@ -118,19 +129,19 @@ notification_ =user.model('notification_',{
     'timestamp': fields.String(required=True),
 })
 update_settings = user.model('Full_settings',{
-    'user_id' :fields.Integer(required=True),
-    'username':  fields.String(required=True),
-    'email': fields.String(required=True),
-    'uuid': fields.String(required=True),
-    'user_number': fields.String(required=True),
-    'verified': fields.Boolean(required=True),
-    'user_visibility': fields.Boolean(required=True),
-    'setting_id':fields.Integer(required=True),
-    'language_id': fields.Integer(required=True),
-    'theme': fields.String(required=True),
-    'post': fields.Boolean(required=True),
-    'saves': fields.Boolean(required=True),
-    'N_S_F_W': fields.Boolean(required=True),
+    'type':  fields.String(required=True),
+    'username':  fields.String(required=False),
+    'email': fields.String(required=False),
+    'phone': fields.String(required=False),
+    'newphone':fields.String(required=False),
+    'language_id': fields.Integer(required=False),
+    'bio': fields.String(required=False),
+    'background': fields.String(required=False),
+    'country':fields.String(required=False),
+    'picture': fields.String(required=False),
+    'handle':fields.String(required=False),
+    'code':fields.String(required=False),
+    'user_visibility': fields.Boolean(required=False)
     
 })
 user_prefs = user.model('Preference', {
@@ -480,41 +491,71 @@ class Userprefs(Resource):
 
     @token_required
     @user.expect(update_settings)
-    def put(self):
+    def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        user_settings = Setting.query.filter_by(users_id=user.id).first()
 
-        if req_data['user_id'] == user.id:
-            user.username = req_data['username']
-            user.email = req_data['email']
-            user.user_visibility = req_data['user_visibility']
+        
+        if req_data['type'] =='settings':
+            user.username=req_data['username'] or None
+            user.email=req_data['email'] or None
+            user.country=req_data['country'] or None
+            user.language_id=req_data['language_id'] or None
+            user.handle=req_data['handle'] or None
+            user.bio =req_data['bio'] or None
+            #backgroundpicture
             db.session.commit()
             return {
-                "status":1,
-                "res":"User_data updated"
-            }, 200 
+                    "status":1,
+                    "res":"User_data updated"
+                }, 200 
+        if req_data['type'] =='security':
+            ph =req_data['phone'] or None
+            if user.phone == ph :
+                phone.sendverification(req_data['newphone'])
+                return {
+                            'status': 1,
+                            'res': 'verification sms sent'
+                        }, 200
+            else:
+                return {
+                    "status":0,
+                    "res":"This phone number doesn't belong to this user"
+                }, 200 
+        if req_data['type'] =='deactivate':
+            user.user_visibility=req_data['user_visibility']
+            db.sesssion.commit()
+
+
+        if req_data['type'] =='code':
+            code=req_data['code'] or None
+            if code is not None:
+                check=phone.checkverification(req_data['newphone'],code)
+                if check.status == "approved":
+                    user.verified_phone=True
+                    user.tries =0
+                    db.session.commit()
+                token = jwt.encode({
+                    'user': user1.username,
+                    'uuid': user1.uuid,
+                    'exp': datetime.utcnow() + timedelta(days=30),
+                    'iat': datetime.utcnow()
+                },
+                app.config.get('SECRET_KEY'),
+                algorithm='HS256')
+                return {
+                    'status': 1,
+                    'res':'success',
+                    'token': str(token)
+                    }, 200
+
         else:
             return {
-                "status":0,
-                "res":"You not User"
-            }, 200
-        if user_settings:
-            user_settings.language_id = req_data['language']
-            user_settings.theme = req_data['theme']
-            user_settings.N_S_F_W =req_data['N_S_F_W']
-            db.session.commit()
-            return {
-                "status":1,
-                "res":"User_settings updated"
-            }, 200
-
-
-
-
-
+                "status":0
+            }, 400
+        
 
         
 

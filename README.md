@@ -96,3 +96,7 @@ Updates and alerts pushed via Zoom or gmail:
 - bakariwarday@gmail.com
 - Join [SlackGroup](https://join.slack.com/t/newsapp-global/shared_invite/zt-fejgqdzk-5uOwp7cefQwGDOaUHCv9wg) 
 
+#upgrade db
+$ flask db stamp head
+$ flask db migrate
+$ flask db upgrade
