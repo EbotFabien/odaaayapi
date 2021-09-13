@@ -134,7 +134,7 @@ update_settings = user.model('Full_settings',{
     'email': fields.String(required=False),
     'phone': fields.String(required=False),
     'newphone':fields.String(required=False),
-    'language_id': fields.Integer(required=False),
+    'language_id': fields.String(required=False),
     'bio': fields.String(required=False),
     'background': fields.String(required=False),
     'country':fields.String(required=False),
@@ -498,10 +498,11 @@ class Userprefs(Resource):
 
         
         if req_data['type'] =='settings':
+            language= Language.query.filter_by(code=req_data['language_id']).first()
             user.username=req_data['username'] or None
             user.email=req_data['email'] or None
             user.country=req_data['country'] or None
-            user.language_id=req_data['language_id'] or None
+            user.language_id=language.id
             user.handle=req_data['handle'] or None
             user.bio =req_data['bio'] or None
             #backgroundpicture
@@ -522,7 +523,7 @@ class Userprefs(Resource):
                 return {
                     "status":0,
                     "res":"This phone number doesn't belong to this user"
-                }, 200 
+                }, 400 
         if req_data['type'] =='deactivate':
             user.user_visibility=req_data['user_visibility']
             db.sesssion.commit()
@@ -549,7 +550,11 @@ class Userprefs(Resource):
                     'res':'success',
                     'token': str(token)
                     }, 200
-
+            else:
+                return {
+                "status":0,
+                "res":"No code"
+            }, 400
         else:
             return {
                 "status":0
