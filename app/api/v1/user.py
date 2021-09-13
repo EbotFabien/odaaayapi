@@ -550,6 +550,7 @@ class Userprefs(Resource):
                     'res':'success',
                     'token': str(token)
                     }, 200
+
             else:
                 return {
                 "status":0,

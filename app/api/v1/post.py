@@ -565,11 +565,11 @@ class ShoutPost(Resource):
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user= Users.query.filter_by(uuid=data['uuid']).first()
-            posts = Posts.query.filter_by(id=post_id).first()
+            posts = Posts.query.filter_by(uuid=post_id).first()
             if user:
                 if posts:
                     count_claps=posts.No__claps()
-                    clappedpost=Posts.query.filter_by(id=post_id).order_by(Posts.id.desc()).paginate(int(start), int(count), False).items
+                    clappedpost=Posts.query.filter_by(uuid=post_id).order_by(Posts.id.desc()).paginate(int(start), int(count), False).items
                     return  {
                     "start": start,
                     "limit": limit,
@@ -604,7 +604,7 @@ class ShoutPost(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        post= Posts.query.filter_by(uuid=req_data['Post_id']).first()
         
         if user:
             if post.has_clapped(user):
@@ -628,7 +628,7 @@ class ShoutPost(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        post= Posts.query.filter_by(uuid=req_data['Post_id']).first()
         
         if user:
             if post.has_clapped(user):

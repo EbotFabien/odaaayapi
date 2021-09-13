@@ -848,7 +848,7 @@ class save_post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
-        post= Posts.query.filter_by(id=req_data['Post_id']).first()
+        post= Posts.query.filter_by(uuid=req_data['Post_id']).first()
         Saves= Save.query.filter(and_(Save.user_id == user.id , Save.post_id == post.id)).first()
         if Saves:
             return{
