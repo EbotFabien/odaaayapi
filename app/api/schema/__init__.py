@@ -34,7 +34,7 @@ Reported_post = apisec.model('Reported_post',{
 })
 
 saves_post = apisec.model('saves_post',{
-    'Post_id':fields.Integer(required=True)
+    'Post_id':fields.String(required=True)
 })
 
 

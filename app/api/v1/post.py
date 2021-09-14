@@ -535,7 +535,7 @@ class UsersPost(Resource):
     params={'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'count': 'Number results per page',
-            'post_id':'Post ID of post'
+            'post_id':'Post UUID of post'
             },
     responses={
         200: 'ok',
