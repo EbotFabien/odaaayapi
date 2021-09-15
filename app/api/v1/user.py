@@ -648,16 +648,16 @@ class User_upload_profile_pic(Resource):
                     os.makedirs(destination)
                 profilepic_ = '%s%s' % (destination+'/', orig_name)
                 file.save(profilepic_)
-                user.profile_picture ='/profilepic/'+user.uuid+'/'+orig_name
+                user.picture ='/profilepic/'+user.uuid+'/'+orig_name
                 db.session.commit()
-                colors = colorgram.extract(profilepic_, 3)
+                #colors = colorgram.extract(profilepic_, 3)
 
-                first_color = colors[0]
-                RGB=first_color.rgb
+                #first_color = colors[0]
+                #RGB=first_color.rgb
                 return {
                     'status':1,
-                    'res':'picture uploaded',
-                    'pic':RGB
+                    'res':'picture uploaded'
+                    #'pic':RGB
                 }
             if args['file'].mimetype == 'image/png':
                 name = args['name']
@@ -668,16 +668,16 @@ class User_upload_profile_pic(Resource):
                     os.makedirs(destination)
                 profilepic_ = '%s%s' % (destination+'/', orig_name)
                 file.save(profilepic_)
-                user.profile_picture ='/profilepic/'+user.uuid+'/'+orig_name
+                user.picture ='/profilepic/'+user.uuid+'/'+orig_name
                 db.session.commit()
-                colors = colorgram.extract(profilepic_, 3)
+                #colors = colorgram.extract(profilepic_, 3)
 
-                first_color = colors[0]
-                RGB=first_color.rgb
+                #first_color = colors[0]
+                #RGB=first_color.rgb
                 return {
                     'status':1,
-                    'res':'picture uploaded',
-                    'pic':RGB
+                    'res':'picture uploaded'
+                    #'pic':RGB
                 }
             else:
                 return{
