@@ -81,6 +81,7 @@ class Users(db.Model):
     verified_phone = db.Column(db.Boolean, nullable=False, default=False)
     tries = db.Column(db.Integer,default=0)
     created_on = db.Column(db.DateTime)
+    rescue=db.Column(db.String)
     
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')

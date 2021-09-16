@@ -78,9 +78,7 @@ sinvitation= user.model('sinvitation',{
 })
 
 langdata= user.model('langdata',{
-    'id': fields.Integer(required=True),
-    'code': fields.String(required=True),
-    'name': fields.String(required=True),
+    'code': fields.String(required=True)
 })
 
 userdata = user.model('userdata', {
@@ -91,6 +89,7 @@ userdata = user.model('userdata', {
     'country':fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=False),
+    'rescue':fields.String(required=False),
     'background': fields.String(required=False),
     'Lang':fields.List(fields.Nested(langdata)),
     'phone': fields.String(required=True),
@@ -496,7 +495,8 @@ class Userprefs(Resource):
 
         
         if req_data['type'] =='settings':
-            language= Language.query.filter_by(code=req_data['language_id']).first()
+            lang=req_data['language_id'] or None
+            language= Language.query.filter_by(code=lang).first()
             user.username=req_data['username'] or None
             user.email=req_data['email'] or None
             user.country=req_data['country'] or None
@@ -512,8 +512,10 @@ class Userprefs(Resource):
                 }, 200 
         if req_data['type'] =='security':
             ph =req_data['phone'] or None
+            ph = "".join(ph.split())
+            NP=req_data['newphone'] or None
             if user.phone == ph :
-                phone.sendverification(req_data['newphone'])
+                phone.sendverification(NP)
                 return {
                             'status': 1,
                             'res': 'verification sms sent'
@@ -524,16 +526,19 @@ class Userprefs(Resource):
                     "res":"This phone number doesn't belong to this user"
                 }, 400 
         if req_data['type'] =='deactivate':
-            user.user_visibility=req_data['user_visibility']
+            visi=req_data['user_visibility'] or None
+            user.user_visibility=visi
             db.sesssion.commit()
 
 
         if req_data['type'] =='code':
             code=req_data['code'] or None
+            NP=req_data['newphone'] or None
+            NP = "".join(NP.split())
             if code is not None:
-                check=phone.checkverification(req_data['newphone'],code)
+                check=phone.checkverification(NP,code)
                 if check.status == "approved":
-                    user.phone=req_data['newphone']
+                    user.phone=NP
                     user.verified_phone=True
                     user.tries =0
                     db.session.commit()
@@ -544,7 +549,7 @@ class Userprefs(Resource):
                 else:
                     return {
                         'status': 0,
-                        'res':'Failed',
+                        'res':'This phone number cannot receive a code,please use rescue number',
                         }, 400
 
             else:
@@ -552,6 +557,10 @@ class Userprefs(Resource):
                 "status":0,
                 "res":"No code"
             }, 400
+        if req_data['type'] =='rescue':
+            uu=str(uuid.uuid4())
+            user.rescue=uu
+            db.session.commit()
         else:
             return {
                 "status":0
