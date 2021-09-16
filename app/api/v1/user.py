@@ -533,22 +533,19 @@ class Userprefs(Resource):
             if code is not None:
                 check=phone.checkverification(req_data['newphone'],code)
                 if check.status == "approved":
+                    user.phone=req_data['newphone']
                     user.verified_phone=True
                     user.tries =0
                     db.session.commit()
-                token = jwt.encode({
-                    'user': user1.username,
-                    'uuid': user1.uuid,
-                    'exp': datetime.utcnow() + timedelta(days=30),
-                    'iat': datetime.utcnow()
-                },
-                app.config.get('SECRET_KEY'),
-                algorithm='HS256')
-                return {
-                    'status': 1,
-                    'res':'success',
-                    'token': str(token)
-                    }, 200
+                    return {
+                        'status': 1,
+                        'res':'success',
+                        }, 200
+                else:
+                    return {
+                        'status': 0,
+                        'res':'Failed',
+                        }, 400
 
             else:
                 return {
