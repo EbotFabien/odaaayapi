@@ -136,9 +136,7 @@ update_settings = user.model('Full_settings',{
     'newphone':fields.String(required=False),
     'language_id': fields.String(required=False),
     'bio': fields.String(required=False),
-    'background': fields.String(required=False),
     'country':fields.String(required=False),
-    'picture': fields.String(required=False),
     'handle':fields.String(required=False),
     'code':fields.String(required=False),
     'user_visibility': fields.Boolean(required=False)
@@ -495,8 +493,7 @@ class Userprefs(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        back=req_data['background'] or None
-        pic=req_data['picture'] or None
+
         
         if req_data['type'] =='settings':
             language= Language.query.filter_by(code=req_data['language_id']).first()
