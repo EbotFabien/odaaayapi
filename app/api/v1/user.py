@@ -495,7 +495,8 @@ class Userprefs(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-
+        back=req_data['background'] or None
+        pic=req_data['picture'] or None
         
         if req_data['type'] =='settings':
             language= Language.query.filter_by(code=req_data['language_id']).first()
@@ -505,6 +506,7 @@ class Userprefs(Resource):
             user.language_id=language.id
             user.handle=req_data['handle'] or None
             user.bio =req_data['bio'] or None
+            
             #backgroundpicture
             db.session.commit()
             return {
