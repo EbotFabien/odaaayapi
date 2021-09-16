@@ -515,11 +515,18 @@ class Userprefs(Resource):
             ph = "".join(ph.split())
             NP=req_data['newphone'] or None
             if user.phone == ph :
-                phone.sendverification(NP)
-                return {
-                            'status': 1,
-                            'res': 'verification sms sent'
-                        }, 200
+                try:
+                    phone.sendverification(NP)
+                    return {
+                                'status': 1,
+                                'res': 'verification sms sent'
+                            }, 200
+                except:
+                    return {
+                        'status': 0,
+                        'res':'This phone number cannot receive a code,please use rescue number',
+                        }, 400
+
             else:
                 return {
                     "status":0,
