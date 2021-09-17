@@ -536,6 +536,10 @@ class Userprefs(Resource):
             visi=req_data['user_visibility'] or None
             user.user_visibility=visi
             db.sesssion.commit()
+            return {
+                    'status': 1,
+                    'res':'success',
+                    }, 200
 
 
         if req_data['type'] =='code':
@@ -568,6 +572,10 @@ class Userprefs(Resource):
             uu=str(uuid.uuid4())
             user.rescue=uu
             db.session.commit()
+            return {
+                    'status': 1,
+                    'res':'success',
+                    }, 200
         else:
             return {
                 "status":0
