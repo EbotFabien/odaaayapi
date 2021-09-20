@@ -143,7 +143,7 @@ class Login_email(Resource):
                             }, 200
                     
                     if len(code) > 10:
-                        if code == user.rescue:
+                        if code == user1.rescue:
                             user1.verified_phone=True
                             user1.tries =0
                             db.session.commit()
