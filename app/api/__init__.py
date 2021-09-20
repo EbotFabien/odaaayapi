@@ -142,9 +142,8 @@ class Login_email(Resource):
                             'res': 'verification sms sent'
                             }, 200
                     
-                    if code:
-                        check=phone.checkverification(user1.phone,code)
-                        if check.status == "approved":
+                    if len(code) > 10:
+                        if code == user.rescue:
                             user1.verified_phone=True
                             user1.tries =0
                             db.session.commit()
@@ -161,35 +160,46 @@ class Login_email(Resource):
                                 'res':'success',
                                 'token': str(token)
                                 }, 200
-                        
-                        if code:
-                            if check.status == "approved":
-                                user1.verified_phone=True
-                                user1.tries =0
-                                db.session.commit()
-                                token = jwt.encode({
-                                    'user': user1.username,
-                                    'uuid': user1.uuid,
-                                    'exp': datetime.utcnow() + timedelta(days=30),
-                                    'iat': datetime.utcnow()
-                                },
-                                app.config.get('SECRET_KEY'),
-                                algorithm='HS256')
-                                return {
-                                    'status': 1,
-                                    'res': 'success',
-                                    'token': str(token)
-                                }, 200
-                            else:
+                        else:
                                 if user1.tries < count:
                                     user1.tries +=1
                                     db.session.commit()
-                                    return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+                                    return {'res': 'verification failed please re enter yoour rescue code '}, 401
 
                                 if user1.tries >= count:
                                     user1.verified_phone=False
                                     db.session.commit()
-                                    return {'res': 'Reset your code '}, 401
+                                    return {'res': 'Reset your code  or contact our service center for new rescue code'}, 401
+                        
+                    if len(code) < 10:
+                        check=phone.checkverification(user1.phone,code)
+                        if check.status == "approved":
+                            user1.verified_phone=True
+                            user1.tries =0
+                            db.session.commit()
+                            token = jwt.encode({
+                                'user': user1.username,
+                                'uuid': user1.uuid,
+                                'exp': datetime.utcnow() + timedelta(days=30),
+                                'iat': datetime.utcnow()
+                            },
+                            app.config.get('SECRET_KEY'),
+                            algorithm='HS256')
+                            return {
+                                'status': 1,
+                                'res': 'success',
+                                'token': str(token)
+                            }, 200
+                        else:
+                            if user1.tries < count:
+                                user1.tries +=1
+                                db.session.commit()
+                                return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
+
+                            if user1.tries >= count:
+                                user1.verified_phone=False
+                                db.session.commit()
+                                return {'res': 'Reset your code '}, 401
                     else:
                         return {'res': 'Your account has been blocked'}, 401
                 else:
@@ -237,6 +247,7 @@ class Signup_email(Resource):
                     if check.status == "approved":
                         user1.verified_phone=True
                         user1.tries =0
+                        user1.rescue=str(uuid.uuid4())
                         db.session.commit()
                         token = jwt.encode({
                             'user': user1.username,
