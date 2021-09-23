@@ -158,6 +158,7 @@ class Login_email(Resource):
                             return {
                                 'status': 1,
                                 'res':'success',
+                                'uuid': user1.uuid,
                                 'token': str(token)
                                 }, 200
                         else:
@@ -188,6 +189,7 @@ class Login_email(Resource):
                             return {
                                 'status': 1,
                                 'res': 'success',
+                                'uuid': user1.uuid,
                                 'token': str(token)
                             }, 200
                         else:
@@ -260,6 +262,7 @@ class Signup_email(Resource):
                         return {
                             'status': 1,
                             'res': 'success',
+                            'uuid': user1.uuid,
                             'token': str(token)
                         }, 200
                     else:
