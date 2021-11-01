@@ -6,7 +6,7 @@ import requests as rqs
 from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated,Subs
 from flask import current_app as app
-from app import db, cache, logging
+from app import db, cache, logging, createapp
 from sqlalchemy import or_, and_, distinct, func
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
@@ -19,8 +19,10 @@ from app.services import mail,phone
 import stripe
 from flask import current_app as app
 
-with app.app_context():
-    stripe.api_key = app.config.get('stripe_secret_key')
+from config import Config
+
+#with app.app_context().push():
+stripe.api_key = Config.stripe_secret_key
 
 authorizations = {
     'KEY': {

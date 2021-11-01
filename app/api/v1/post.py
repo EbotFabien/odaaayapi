@@ -32,10 +32,10 @@ from sqlalchemy import or_,and_,func
 from googletrans import Translator
 import stripe
 from flask import current_app as app
+from config import Config
 
-
-with app.app_context():
-    stripe.api_key = app.config.get('stripe_secret_key')
+#with app.app_context().push():
+stripe.api_key = Config.stripe_secret_key
 
 
 translator = Translator()

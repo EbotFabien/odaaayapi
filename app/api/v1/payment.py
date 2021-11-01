@@ -13,7 +13,7 @@ from flask import abort, request,redirect, session,Blueprint,jsonify
 from flask import current_app as app
 import numpy as np
 from app.models import Save ,Subs, Users,Post_Access, Posts, Language,Translated,Report,Notification,Posttype,Account
-from app import db, cache, logging
+from app import db, cache, logging, createapp
 import json
 from tqdm import tqdm
 from werkzeug.datastructures import FileStorage
@@ -25,10 +25,10 @@ from sqlalchemy import or_,and_,func
 
 import stripe
 from flask import current_app as app
+from config import Config
 
-
-with app.app_context():
-    stripe.api_key = app.config.get('stripe_secret_key')
+#with app.app_context().push():
+stripe.api_key = Config.stripe_secret_key
 
 
 endpoint_secret = 'whsec_oN3IGfm2oUjOzAJ9bgAySwpfNx4yR8gZ'
@@ -110,7 +110,7 @@ paymentbuy =payment.model('paymentbuy',{
 @payment.route('/register')
 
 class Payment(Resource):
-    @post.expect(paymenttype)
+    @payment.expect(paymenttype)
     @token_required
     def post(self):
         req_data = request.get_json()
@@ -202,7 +202,7 @@ class Payment(Resource):
 @payment.route('/buy')
 
 class buy(Resource):
-    @post.expect(paymenttype)
+    @payment.expect(paymenttype)
     @token_required
     def post(self):
         req_data = request.get_json()
@@ -291,7 +291,7 @@ class buy(Resource):
 @payment.route('/portal')
 
 class Portal(Resource):
-    @post.expect(paymenttype)
+    @payment.expect(paymenttype)
     @token_required
     def post(self):
         req_data = request.get_json()

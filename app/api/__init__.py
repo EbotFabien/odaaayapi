@@ -7,7 +7,7 @@ from functools import wraps
 from tqdm import tqdm
 from flask import current_app as app
 from datetime import datetime, timedelta
-from app import db, limiter, cache,bycrypt
+from app import db, limiter, cache,bycrypt, createapp
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 import werkzeug
@@ -24,9 +24,10 @@ from app.models import Report, Users, Language, Save, Setting, \
 from sqlalchemy import or_, and_, desc,asc
 from flask import current_app as app
 
+from config import Config
 
-with app.app_context():
-    stripe.api_key = app.config.get('stripe_secret_key')
+#with app.app_context().push():
+stripe.api_key = Config.stripe_secret_key
 
 # API security eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZmFiaWVuIiwidXVpZCI6ImJlNTM1NDBlLWExMzItNDJiNy1iNzlkLTI4MWFhZGM1MWZjMyIsImV4cCI6MTYzMDg2ODQ1OCwiaWF0IjoxNjI4Mjc2NDU4fQ.u4KyP0J3qzV0coE3-kozIKI0sc8ZrEUYMWvUbQbSHQM
 authorizations = {
