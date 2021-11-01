@@ -19,8 +19,8 @@ from app.services import mail,phone
 import stripe
 from flask import current_app as app
 
-
-stripe.api_key = app.config.get('stripe_secret_key')
+with app.app_context():
+    stripe.api_key = app.config.get('stripe_secret_key')
 
 authorizations = {
     'KEY': {

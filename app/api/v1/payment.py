@@ -27,7 +27,9 @@ import stripe
 from flask import current_app as app
 
 
-stripe.api_key = app.config.get('stripe_secret_key') #Config.stripe_secret_key
+with app.app_context():
+    stripe.api_key = app.config.get('stripe_secret_key')
+
 
 endpoint_secret = 'whsec_oN3IGfm2oUjOzAJ9bgAySwpfNx4yR8gZ'
 
