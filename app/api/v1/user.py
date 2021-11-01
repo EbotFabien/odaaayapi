@@ -4,7 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import requests as rqs
 from flask import abort, request, session,Blueprint
-from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated
+from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated,Subs
 from flask import current_app as app
 from app import db, cache, logging
 from sqlalchemy import or_, and_, distinct, func
@@ -16,6 +16,11 @@ import requests
 from datetime import datetime, timedelta
 import json
 from app.services import mail,phone
+import stripe
+from flask import current_app as app
+
+
+stripe.api_key = app.config.get('stripe_secret_key')
 
 authorizations = {
     'KEY': {
@@ -372,9 +377,16 @@ class User_following(Resource):
         if user_to_follow is None :
             return {'status': 0,'res':'fail'}, 200
         if user_to_follow:
-            user.follow(user_to_follow)
-            db.session.commit()
-            return{'status': 1, 'res':'success'},200
+            if  user_to_follow.paid == True:
+                sub=Subs.query.filter(and_(Subs.product_user==user_to_follow.id,Subs.user_sub==user.id,Subs.valid==True)).first()
+                if sub is None:
+                    return {'status': 0, 'res':'please pay subscription'},400
+                else:
+                    return{'status': 1, 'res':'You have sub already'},200
+            else:
+                user.follow(user_to_follow)
+                db.session.commit()
+                return{'status': 1, 'res':'success'},200
         else:
             return {'status': 0, 'res':'fail'},200
     @token_required
@@ -390,9 +402,20 @@ class User_following(Resource):
         if user.is_following(user_to_unfollow) is None:
             return {'status': 0, 'res':'fails'}, 200
         if user.is_following(user_to_unfollow):
-            user.unfollow(user_to_unfollow)
-            db.session.commit()
-            return{'status': 1, 'res':'success'},200
+            if user_to_unfollow.paid==True:
+                product=Subs.query.filter(and_(Subs.user_sub==user.id,Subs.product_user==user.id,Subs.valid==True)).first()
+                if product:
+                    stripe.Subscription.modify(
+                    product.sub_id,
+                    cancel_at_period_end=True
+                    )
+                    return{'status': 1, 'res':'success'},200
+                else:
+                    return {'status': 0, 'res':'fail'},400
+            else:
+                user.unfollow(user_to_unfollow)
+                db.session.commit()
+                return{'status': 1, 'res':'success'},200
         else:
             return {'status': 0, 'res':user_to_unfollow.id},200
 

@@ -26,6 +26,8 @@ class Config(object):
     RESTPLUS_VALIDATE = True
     STRIPE_KEY_PUB = 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
     STRIPE_KEY_SEC = 'sk_test_IRUKv5saDJtl2B605DVTYm6I00Si1ogtf5'
+    stripe_secret_key= 'sk_test_IRUKv5saDJtl2B605DVTYm6I00Si1ogtf5'
+    stripe_publishable_key= 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings
     MAIL_SERVER = 'smtp.gmail.com'

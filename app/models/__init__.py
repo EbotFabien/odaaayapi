@@ -82,6 +82,11 @@ class Users(db.Model):
     tries = db.Column(db.Integer,default=0)
     created_on = db.Column(db.DateTime)
     rescue=db.Column(db.String)
+    product_id=db.Column(db.String)
+    customer_id=db.Column(db.String)
+    price_id=db.Column(db.String)
+    price=db.Column(db.Float)
+    paid= db.Column(db.Boolean, default=False)
     
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
@@ -225,7 +230,24 @@ class Users(db.Model):
    # def __repr__(self):
     #    return '<Postsummary %r>' % self.id
 
+class Subs(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_user = db.Column(db.Integer,db.ForeignKey('users.id'))
+    user_sub = db.Column(db.Integer,db.ForeignKey('users.id'))
+    sub_id = db.Column(db.String(60))
+    valid = db.Column(db.Boolean,default=True)
 
+    def __repr__(self):
+        return '<Subs %r>' %self.id
+
+class Account(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.Integer,db.ForeignKey('users.id'))
+    account_id = db.Column(db.String(60))
+    valid = db.Column(db.Boolean,default=False)
+
+    def __repr__(self):
+        return '<Account %r>' %self.id
 
         
 class Task(db.Model):
@@ -314,6 +336,16 @@ class Posts(db.Model):
     created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user_name = db.Column(db.String(10000))
+    donation_id = db.Column(db.String())
+    product_id = db.Column(db.String())
+    price_id = db.Column(db.String())
+    price = db.Column(db.Float()) 
+    mini = db.Column(db.Float()) 
+    maxi= db.Column(db.Float())
+    subs_only = db.Column(db.Boolean, default=False)
+    nsfw = db.Column(db.Boolean, default=False)
+    paid = db.Column(db.Boolean, default=False)
+    tags = db.Column(db.Text)
     post_type = db.Column(db.Integer, db.ForeignKey('posttype.id'), nullable=False)
     orig_lang = db.Column(db.Integer, db.ForeignKey('language.id'), default=1)
     ratings = db.relationship('Rating', backref='rating', lazy = True)
@@ -432,6 +464,23 @@ class Posts(db.Model):
         return '<Post>%r' %self.title
 
 
+
+
+class Post_Access(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.Integer,db.ForeignKey('users.id'))
+    post = db.Column(db.Integer,db.ForeignKey('posts.id'))
+    user_data=db.relationship("Users", 
+        primaryjoin=(user == Users.id),
+        backref=db.backref('uploader__data',  uselist=False),  uselist=False)
+    post_data=db.relationship("Posts", 
+        primaryjoin=(post == Posts.id),
+        backref=db.backref('uploader__data',  uselist=False),  uselist=False)
+
+    def __repr__(self):
+        return '<Post_Access %r>' %self.id
+
+
 class Translated(db.Model):
     __searchable__ = ['title', 'content']
     id = db.Column(db.Integer, primary_key=True)
@@ -534,3 +583,25 @@ class country(db.Model):
 
     def __repr__(self):
         return '<country>%r' %self.id
+
+
+
+class app_history(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task = db.Column(db.String)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id=user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    def __repr__(self):
+        return '<app_history>%r' %self.id
+
+
+class billing_history(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task = db.Column(db.String)
+    task = db.Column(db.Float)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id=user_id = db.Column(db.Integer, db.ForeignKey('users.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+
+    def __repr__(self):
+        return '<billing_history>%r' %self.id

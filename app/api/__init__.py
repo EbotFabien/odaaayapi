@@ -17,10 +17,15 @@ from flask import current_app as app
 from sqlalchemy import func,or_,and_
 import re
 from app.services import mail
-from .v1 import user, info, token, search, post
+import stripe
+from .v1 import user, info, token, search, post,payment
 from app.models import Report, Users, Language, Save, Setting, \
-         Posttype, Rating, Ratingtype,Translated,Posts,Reporttype
+         Posttype, Rating, Ratingtype,Translated,Posts,Reporttype,Post_Access
 from sqlalchemy import or_, and_, desc,asc
+from flask import current_app as app
+
+
+stripe.api_key = app.config.get('stripe_secret_key')
 # API security eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZmFiaWVuIiwidXVpZCI6ImJlNTM1NDBlLWExMzItNDJiNy1iNzlkLTI4MWFhZGM1MWZjMyIsImV4cCI6MTYzMDg2ODQ1OCwiaWF0IjoxNjI4Mjc2NDU4fQ.u4KyP0J3qzV0coE3-kozIKI0sc8ZrEUYMWvUbQbSHQM
 authorizations = {
     'KEY': {
@@ -29,6 +34,8 @@ authorizations = {
         'name': 'API-KEY'
     }
 }
+
+
 
 
 # The token decorator to protect my routes
@@ -78,6 +85,7 @@ apisec.add_namespace(user)
 apisec.add_namespace(token)
 apisec.add_namespace(post)
 apisec.add_namespace(search)
+apisec.add_namespace(payment)
 
 
 
@@ -146,6 +154,15 @@ class Login_email(Resource):
                         if code == user1.rescue:
                             user1.verified_phone=True
                             user1.tries =0
+                            if user1.customer_id == None:
+                                customer = stripe.Customer.create(
+                                    email=user1.phone+"@gmail.com",#see if phone number can be used
+                                    payment_method='pm_card_visa',
+                                    invoice_settings={
+                                        'default_payment_method': 'pm_card_visa',
+                                    },
+                                )
+                                user1.customer_id=customer['id']
                             db.session.commit()
                             token = jwt.encode({
                                 'user': user1.username,
@@ -177,6 +194,15 @@ class Login_email(Resource):
                         if check.status == "approved":
                             user1.verified_phone=True
                             user1.tries =0
+                            if user1.customer_id == None:
+                                customer = stripe.Customer.create(
+                                    email=user1.phone+"@gmail.com",#see if phone number can be used
+                                    payment_method='pm_card_visa',
+                                    invoice_settings={
+                                        'default_payment_method': 'pm_card_visa',
+                                    },
+                                )
+                                user1.customer_id=customer['id']
                             db.session.commit()
                             token = jwt.encode({
                                 'user': user1.username,
@@ -250,6 +276,15 @@ class Signup_email(Resource):
                         user1.verified_phone=True
                         user1.tries =0
                         user1.rescue=str(uuid.uuid4())
+                        if user1.customer_id == None:
+                            customer = stripe.Customer.create(
+                                email=user1.phone+"@gmail.com",#see if phone number can be used
+                                payment_method='pm_card_visa',
+                                invoice_settings={
+                                    'default_payment_method': 'pm_card_visa',
+                                },
+                            )
+                            user1.customer_id=customer['id']
                         db.session.commit()
                         token = jwt.encode({
                             'user': user1.username,
@@ -389,6 +424,7 @@ class email_verification(Resource):
     params={ 'start': 'Value to start from ',
             'limit': 'Total limit of the query',
             'lang': 'i18n',
+            'paid':'if is for paid posts or not',
             'count': 'Number results per page',
             'id': 'Article id'},
     responses={
@@ -419,6 +455,7 @@ class Home(Resource):
             limit  = request.args.get('limit', None)
             count = request.args.get('count', None)
             lang = request.args.get('lang', None)
+            pay = request.args.get('paid', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
@@ -426,46 +463,87 @@ class Home(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feeds = Translated.query.filter_by(language_id=current_lang.id).order_by(func.random())
-                    posts_feed =posts_feeds.paginate(int(start), int(count), False)
-                    total = (posts_feed.total/int(count))
-                    next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
-                    previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
-                    
-                    if user is not None:
-                        user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
-                        user_posts=posts_feeds.all()
-                        for i in user_posts:
-                            for j in user_saves:
-                                if i.post_id == j.post_id :
-                                    saved.append(j.post_id)
-                        return {
-                            "start": start,
-                            "limit": limit,
-                            "count": count,
-                            "next": next_url,
-                            "lang": lang,
-                            "previous": previous,
-                            "totalPages": total,
-                            "results": {
-                                'post_saved':saved,
-                                "feed": marshal(posts_feed.items, schema.lang_post)
-                            }
-                        }, 200
-                    else:
-                        return {
-                            "start": start,
-                            "limit": limit,
-                            "count": count,
-                            "next": next_url,
-                            "lang": lang,
-                            "previous": previous,
-                            "totalPages": total,
-                            "results": {
-                                'feed': marshal(posts_feed.items, schema.lang_post)
-                            }
-                        }, 200
-        else:
+                    if pay == None:
+                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random(Posts.id)).filter(Posts.paid ==False)
+                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                        total = (posts_feed.total/int(count))
+                        next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+                        previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+                        
+                        if user is not None:
+                            user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
+                            user_posts=posts_feeds.all()
+                            for i in user_posts:
+                                for j in user_saves:
+                                    if i.post_id == j.post_id :
+                                        saved.append(j.post_id)
+                            return {
+                                "start": start,
+                                "limit": limit,
+                                "count": count,
+                                "next": next_url,
+                                "lang": lang,
+                                "previous": previous,
+                                "totalPages": total,
+                                "results": {
+                                    'post_saved':saved,
+                                    "feed": marshal(posts_feed.items, schema.lang_post)
+                                }
+                            }, 200
+                        else:
+                            return {
+                                "start": start,
+                                "limit": limit,
+                                "count": count,
+                                "next": next_url,
+                                "lang": lang,
+                                "previous": previous,
+                                "totalPages": total,
+                                "results": {
+                                    'feed': marshal(posts_feed.items, schema.lang_post)
+                                }
+                            }, 200
+                    if pay == 'paid':
+                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random(Posts.id)).filter(Posts.paid ==True)
+                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                        total = (posts_feed.total/int(count))
+                        next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
+                        previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
+                        
+                        if user is not None:
+                            user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
+                            user_posts=posts_feeds.all()
+                            for i in user_posts:
+                                for j in user_saves:
+                                    if i.post_id == j.post_id :
+                                        saved.append(j.post_id)
+                            return {
+                                "start": start,
+                                "limit": limit,
+                                "count": count,
+                                "next": next_url,
+                                "lang": lang,
+                                "previous": previous,
+                                "totalPages": total,
+                                "results": {
+                                    'post_saved':saved,
+                                    "feed": marshal(posts_feed.items, schema.lang_post)
+                                }
+                            }, 200
+                        else:
+                            return {
+                                "start": start,
+                                "limit": limit,
+                                "count": count,
+                                "next": next_url,
+                                "lang": lang,
+                                "previous": previous,
+                                "totalPages": total,
+                                "results": {
+                                    'feed': marshal(posts_feed.items, schema.lang_post)
+                                }
+                            }, 200
+        '''else:
             posts_trending = Posts.query.limit(10).all()
             posts_feed = Posts.query.limit(10).all()
             posts_discover = Posts.query.limit(10).all()
@@ -481,7 +559,7 @@ class Home(Resource):
             else:
                 return {
                     'feed': marshal(posts_feed, schema.postdata)
-                }, 200 
+                }, 200 '''
 
 @cache.cached(300, key_prefix='all_video_posts')
 @home.doc(
@@ -558,7 +636,7 @@ class Discover(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.id)).filter(Posts.thumb_url != None).paginate(int(start), int(count), False)
+                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.id)).filter(and_(Posts.thumb_url != None,Posts.paid == False)).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
                     previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(limit), count=int(count)) if posts_feed.has_prev else None 
@@ -641,13 +719,110 @@ class Related(Resource):
 class Article(Resource):
     def get(self, id):
         language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+        try:
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+        except:
+            user=None
         if request.args:
             if id:
                 lang  = request.args.get('lang', None)
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid = id).first()
+                user1= Users.query.filter_by(id=posts_feed.author).first()
                 translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                 count_claps=posts_feed.No__claps()
+                if user is not None:
+                    if posts_feed.subs_only == True:
+                        follow=user.is_following(user1)
+                        if follow:
+                            if posts_feed.paid == True:
+                                access=Post_Access.query.filter(and_(Post_Access.user==user.id,Post_Access.post==posts_feed.id)).first()
+                                if access:
+                                    if translated_feed :
+                                        return {
+                                            "results": {
+                                                "lang": lang,
+                                                "shouts":count_claps,
+                                                'translated_feed':marshal(translated_feed, schema.lang_post)
+                                            }
+                                        }, 200
+                                    else:
+                                        current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                                        translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                                        return {
+                                            "results": {
+                                                "lang": lang,     
+                                                "original_lang": current_lang.code,
+                                                "shouts":count_claps,
+                                                'translated_feed':marshal(translated_feed, schema.lang_post),
+                                                'res':"This post can't been translated"
+                                            }
+                                        }, 200
+                                else:
+                                    return {
+                                            "status":0,
+                                            "res":"Please pay for post"
+                                        }, 200
+                        else:
+                            return {
+                                        "status":1,
+                                        "res":"Please subscribe to have access to this post"
+                                    }, 200
+                    
+                    elif posts_feed.paid == True:
+                                access=Post_Access.query.filter(and_(Post_Access.user==user.id,Post_Access.post==posts_feed.id)).first()
+                                if access:
+                                    if translated_feed :
+                                        return {
+                                            "results": {
+                                                "lang": lang,
+                                                "shouts":count_claps,
+                                                'translated_feed':marshal(translated_feed, schema.lang_post)
+                                            }
+                                        }, 200
+                                    else:
+                                        current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                                        translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                                        return {
+                                            "results": {
+                                                "lang": lang,     
+                                                "original_lang": current_lang.code,
+                                                "shouts":count_claps,
+                                                'translated_feed':marshal(translated_feed, schema.lang_post),
+                                                'res':"This post can't been translated"
+                                            }
+                                        }, 200
+                                else:
+                                    return {
+                                            "status":0,
+                                            "res":"Please pay for post"
+                                        }, 200
+                    else:
+                        if translated_feed :
+                            return {
+                                "results": {
+                                    "lang": lang,
+                                    "shouts":count_claps,
+                                    'translated_feed':marshal(translated_feed, schema.lang_post)
+                                }
+                            }, 200
+                        else:
+                            current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                            translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                            return {
+                                "results": {
+                                    "lang": lang,     
+                                    "original_lang": current_lang.code,
+                                    "shouts":count_claps,
+                                    'translated_feed':marshal(translated_feed, schema.lang_post),
+                                    'res':"This post can't been translated"
+                                }
+                            }, 200
+                                
+
+                
                 if translated_feed :
                     return {
                         "results": {
