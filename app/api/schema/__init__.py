@@ -140,6 +140,7 @@ postdata = apisec.model('postreturndata', {
     'created_on': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
+    'price': fields.Float(required=True),
     'clap': fields.List(fields.Nested(element)),
 })
 
