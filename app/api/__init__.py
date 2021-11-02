@@ -507,7 +507,7 @@ class Home(Resource):
                                 }
                             }, 200
                     if pay == 'paid':
-                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid ==True)
+                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random(Posts.id)).filter(Posts.paid ==True)
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
