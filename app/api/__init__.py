@@ -543,7 +543,6 @@ class Home(Resource):
                                 "previous": previous,
                                 "totalPages": total,
                                 "results": {
-                                    'work':posts_feed.items,
                                     'feed': marshal(posts_feed.items, schema.lang_post)
                                 }
                             }, 200
