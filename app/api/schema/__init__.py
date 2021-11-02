@@ -141,6 +141,7 @@ postdata = apisec.model('postreturndata', {
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
+    'paid': fields.Boolean(required=True),
     'clap': fields.List(fields.Nested(element)),
 })
 
