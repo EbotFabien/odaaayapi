@@ -767,7 +767,7 @@ class Article(Resource):
                                         }, 200
                                 else:
                                     return {
-                                            "status":0,
+                                            "status":1,
                                             "res":"Please pay for post"
                                         }, 200
                         else:
@@ -803,7 +803,7 @@ class Article(Resource):
                                         }, 200
                                 else:
                                     return {
-                                            "status":0,
+                                            "status":1,
                                             "res":"Please pay for post"
                                         }, 200
                     else:
@@ -838,7 +838,7 @@ class Article(Resource):
                                 
                 if posts_feed.paid == True:
                     return {
-                            "status":0,
+                            "status":1,
                             "res":"Please login and pay for post"
                         }, 200
                 
@@ -866,7 +866,7 @@ class Article(Resource):
                     }, 200
             else:
                 return {
-                    'status': 0,
+                    'status': 5,
                     'res': 'article not found'
                 }, 404
         else:
