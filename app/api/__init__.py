@@ -782,6 +782,7 @@ class Article(Resource):
                                     if translated_feed :
                                         return {
                                             "results": {
+                                                "status":0,
                                                 "lang": lang,
                                                 "shouts":count_claps,
                                                 'translated_feed':marshal(translated_feed, schema.lang_post)
@@ -792,6 +793,7 @@ class Article(Resource):
                                         translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                                         return {
                                             "results": {
+                                                "status":0,
                                                 "lang": lang,     
                                                 "original_lang": current_lang.code,
                                                 "shouts":count_claps,
@@ -808,6 +810,7 @@ class Article(Resource):
                         if translated_feed :
                             return {
                                 "results": {
+                                    "status":0,
                                     "lang": lang,
                                     "shouts":count_claps,
                                     'translated_feed':marshal(translated_feed, schema.lang_post)
@@ -818,6 +821,7 @@ class Article(Resource):
                             translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                             return {
                                 "results": {
+                                    "status":0,
                                     "lang": lang,     
                                     "original_lang": current_lang.code,
                                     "shouts":count_claps,
@@ -841,6 +845,7 @@ class Article(Resource):
                 if translated_feed :
                     return {
                         "results": {
+                            "status":0,
                             "lang": lang,
                             "shouts":count_claps,
                             'translated_feed':marshal(translated_feed, schema.lang_post)
@@ -851,6 +856,7 @@ class Article(Resource):
                     translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                     return {
                         "results": {
+                            "status":0,
                             "lang": lang,     
                             "original_lang": current_lang.code,
                             "shouts":count_claps,
