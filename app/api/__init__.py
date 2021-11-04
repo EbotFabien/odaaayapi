@@ -746,6 +746,7 @@ class Article(Resource):
                                     if translated_feed :
                                         return {
                                             "results": {
+                                                "status":0,
                                                 "lang": lang,
                                                 "shouts":count_claps,
                                                 'translated_feed':marshal(translated_feed, schema.lang_post)
@@ -756,6 +757,7 @@ class Article(Resource):
                                         translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                                         return {
                                             "results": {
+                                                "status":0,
                                                 "lang": lang,     
                                                 "original_lang": current_lang.code,
                                                 "shouts":count_claps,
@@ -767,12 +769,12 @@ class Article(Resource):
                                     return {
                                             "status":0,
                                             "res":"Please pay for post"
-                                        }, 404
+                                        }, 200
                         else:
                             return {
-                                        "status":1,
+                                        "status":2,
                                         "res":"Please subscribe to have access to this post"
-                                    }, 404
+                                    }, 200
                     
                     elif posts_feed.paid == True:
                                 access=Post_Access.query.filter(and_(Post_Access.user==user.id,Post_Access.post==posts_feed.id)).first()
@@ -801,7 +803,7 @@ class Article(Resource):
                                     return {
                                             "status":0,
                                             "res":"Please pay for post"
-                                        }, 404
+                                        }, 200
                     else:
                         if translated_feed :
                             return {
@@ -823,12 +825,18 @@ class Article(Resource):
                                     'res':"This post can't been translated"
                                 }
                             }, 200
+                
+                if posts_feed.subs_only == True:
+                    return {
+                            "status":1,
+                            "res":"Please login and Subscribe"
+                        }, 200
                                 
                 if posts_feed.paid == True:
                     return {
                             "status":0,
                             "res":"Please login and pay for post"
-                        }, 404
+                        }, 200
                 
                 if translated_feed :
                     return {
