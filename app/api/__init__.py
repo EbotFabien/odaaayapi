@@ -765,6 +765,7 @@ class Article(Resource):
                         else:
                             return {
                                         "status":2,
+                                        "uuid":user1.uuid,
                                         "res":"Please subscribe to have access to this post"
                                     }, 200
                     
@@ -825,6 +826,7 @@ class Article(Resource):
                 if posts_feed.subs_only == True:
                     return {
                             "status":2,
+                            "uuid":user1.uuid,
                             "res":"Please login and Subscribe"
                         }, 200
                                 
@@ -866,7 +868,7 @@ class Article(Resource):
             return {
                 'feed': marshal(posts_feed, schema.postdata)
             }, 200 
-
+# if posts is unpaid and not for subs,shld he pay for post
         
 @cache.cached(300, key_prefix='Report')
 @home.doc(
