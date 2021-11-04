@@ -328,6 +328,7 @@ class Post(Resource):
         post_done=Posts.query.filter_by(title=title).first()
         if post_done is None:
             if ptype == 1:
+                thumb_url_=req_data['thumb'] or None
                 sum_content = ''
                 newPost = Posts(user.id, title, ptype, content, language.id)
                 db.session.add(newPost)
@@ -338,8 +339,11 @@ class Post(Resource):
                 newPost.nsfw=nsf
                 newPost.user_name=user.username
                 db.session.commit()
-                
-
+                if payment == True and thumb_url_ == None :
+                    return {
+                        'status': 0,
+                        'res': 'Please put A thumbnail'
+                    }, 400
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -364,6 +368,8 @@ class Post(Resource):
                 
                 if payment == True:
                     acc=Account.query.filter_by(user=user.id).first()
+                    newPost.thumb_url_=thumb_url_
+                    db.session.commit()
                     if acc is not None:
                         price = req_data['price']
                         product = stripe.Product.create(
@@ -446,6 +452,47 @@ class Post(Resource):
                     new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
                     db.session.add(new_row)
                     db.session.commit()
+                if payment == True:
+                    acc=Account.query.filter_by(user=user.id).first()
+                    if acc is not None:
+                        price = req_data['price']
+                        product = stripe.Product.create(
+                            name=newPost.title+' post by '+newPost.user_name,
+                        )
+                        price = stripe.Price.create(
+                            product=product['id'],
+                            unit_amount=price*100,
+                            currency='usd',
+                        )
+                        newPost.product_id=product['id']
+                        newPost.price_id=price["id"]
+                        newPost.paid=True
+                        newPost.price=float(price)
+                        db.session.commit()
+
+                    else:
+                        return {
+                            'status': 0,
+                            'res': 'Please create a stripe account'
+                        }, 200
+                if donation == True:
+                    acc=Account.query.filter_by(user=user.id).first()
+                    if acc is not None:
+                        mini = req_data['min']
+                        maxi = req_data['max']
+                        product = stripe.Product.create(
+                            name=newPost.title+' post  donation by '+newPost.user_name,
+                        )
+                        newPost.donation_id=product['id']
+                        newPost.mini=float(mini)
+                        newPost.maxi=float(maxi)
+                        db.session.commit()
+
+                    else:
+                        return {
+                            'status': 0,
+                            'res': 'Please create a stripe account'
+                        }, 200
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)

@@ -75,6 +75,7 @@ payment = payment1.namespace('/api/payment', \
 paymenttype =payment.model('paymenttype',{
     'type':  fields.String(required=True),
     'price':fields.Integer(required=False),
+    'lang' : fields.String(required=True)
 })
 
 portal =payment.model('portal',{
@@ -144,8 +145,8 @@ class Payment(Resource):
                 db.session.add(acc)
                 account_links = stripe.AccountLink.create(
                 account=account_['id'],
-                refresh_url='http://127.0.0.1:5000/account/refresh/'+str(user.id),#refreshurl
-                return_url='http://127.0.0.1:5000/',#profilepage
+                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id),
+                return_url='https://odaaay.co/en/profile',#profilepage
                 type='account_onboarding',
                 )
                 db.session.commit()
@@ -165,8 +166,8 @@ class Payment(Resource):
                 db.session.add(acc)
                 account_links = stripe.AccountLink.create(
                 account=account_['id'],
-                refresh_url='http://127.0.0.1:5000/account/refresh/'+str(user.id),#refreshurl
-                return_url='http://127.0.0.1:5000/posts/create/',#where?profile
+                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id),#refreshurl
+                return_url='https://odaaay.co/en/profile',#where?profile
                 type='account_onboarding',
                 )
                 db.session.commit()

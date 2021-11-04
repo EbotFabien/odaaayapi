@@ -767,12 +767,12 @@ class Article(Resource):
                                     return {
                                             "status":0,
                                             "res":"Please pay for post"
-                                        }, 200
+                                        }, 404
                         else:
                             return {
                                         "status":1,
                                         "res":"Please subscribe to have access to this post"
-                                    }, 200
+                                    }, 404
                     
                     elif posts_feed.paid == True:
                                 access=Post_Access.query.filter(and_(Post_Access.user==user.id,Post_Access.post==posts_feed.id)).first()
@@ -801,7 +801,7 @@ class Article(Resource):
                                     return {
                                             "status":0,
                                             "res":"Please pay for post"
-                                        }, 200
+                                        }, 404
                     else:
                         if translated_feed :
                             return {
@@ -824,7 +824,11 @@ class Article(Resource):
                                 }
                             }, 200
                                 
-
+                if posts_feed.paid == True:
+                    return {
+                            "status":0,
+                            "res":"Please login and pay for post"
+                        }, 404
                 
                 if translated_feed :
                     return {
