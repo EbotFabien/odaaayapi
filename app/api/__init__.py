@@ -828,7 +828,7 @@ class Article(Resource):
                 
                 if posts_feed.subs_only == True:
                     return {
-                            "status":1,
+                            "status":2,
                             "res":"Please login and Subscribe"
                         }, 200
                                 
