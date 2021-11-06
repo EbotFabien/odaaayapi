@@ -119,6 +119,7 @@ class Payment(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type'] 
+        lan=req_data['lang']
         if Type == "all":
             acc_=Account.query.filter_by(user=user.id).first()
             if acc_ is None:
@@ -145,8 +146,8 @@ class Payment(Resource):
                 db.session.add(acc)
                 account_links = stripe.AccountLink.create(
                 account=account_['id'],
-                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id),
-                return_url='https://odaaay.co/en/profile',#profilepage
+                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id)+'/'+lan,
+                return_url='https://odaaay.co/'+lan+'/profile',#profilepage
                 type='account_onboarding',
                 )
                 db.session.commit()
@@ -154,6 +155,11 @@ class Payment(Resource):
                     'status': 1,
                     'res': 'success',
                     'link': account_links['url'],
+                }, 200
+            else:
+                return {
+                    'status': 1,
+                    'res': 'you already have an account',
                 }, 200
         
         if Type == "post":
@@ -166,8 +172,8 @@ class Payment(Resource):
                 db.session.add(acc)
                 account_links = stripe.AccountLink.create(
                 account=account_['id'],
-                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id),#refreshurl
-                return_url='https://odaaay.co/en/profile',#where?profile
+                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id)+'/'+lan,#refreshurl
+                return_url='https://odaaay.co/'+lan+'/profile',#where?profile
                 type='account_onboarding',
                 )
                 db.session.commit()
@@ -176,6 +182,11 @@ class Payment(Resource):
                     'status': 1,
                     'res': 'success',
                     'link': account_links['url'],
+                }, 200
+            else:
+                return {
+                    'status': 1,
+                    'res': 'you already have an account',
                 }, 200
         #option for when account is but not subs
 
@@ -300,6 +311,7 @@ class Portal(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type']
+        lan=req_data['lang']
         acc=Account.query.filter_by(user=user.id).first()
 
         if Type == True:
@@ -313,6 +325,11 @@ class Portal(Resource):
                     'res': 'success',
                     'link': link,
                 }, 200
+            if acc.valid == False:
+                return {
+                    'status': 1,
+                    'res': 'refresh',
+                }, 200
 
             #prime redirects the user to refresh if acc.valid==False
 
@@ -320,7 +337,7 @@ class Portal(Resource):
         if Type == False:
             session = stripe.billing_portal.Session.create(
             customer=user.customer_id,
-            return_url='http://127.0.0.1:5000/followed/'+str(user.id),#profile page
+            return_url='https://odaaay.co/'+lan+'/profile',#profile page
             )
             link=session.url
             return {
@@ -348,16 +365,16 @@ class Portal(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
-@payment.route('/refresh/<id>')
+@payment.route('/refresh/<id>/<lan>')
 
 class refresh(Resource):
-    def get(self,id):
+    def get(self,id,lan):
         user = Users.query.filter_by(uuid=id).first()
         account = Account.query.filter_by(user=user.id).first()
         account_links = stripe.AccountLink.create(
-                account=account.account_id,
-                refresh_url='http://127.0.0.1:5000/account/refresh/'+str(id),
-                return_url='http://127.0.0.1:5000/',
+                account=account.account_id,    
+                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id)+'/'+lan,
+                return_url='https://odaaay.co/'+lan+'/profile',
                 type='account_onboarding',
                 )
         return redirect(account_links['url'])
