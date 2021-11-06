@@ -156,9 +156,32 @@ class Payment(Resource):
                     'res': 'success',
                     'link': account_links['url'],
                 }, 200
+            if acc_ and user.paid == False:
+                user.paid=True
+                product = stripe.Product.create(
+                    name=user.username.lower()+"subscription",
+                )
+                usd= req_data['price'] 
+                user.product_id=product['id']
+                price = stripe.Price.create(
+                    product=product['id'],
+                    unit_amount=usd*100,
+                    currency='usd',
+                    recurring={
+                        'interval': 'month',
+                    },
+                )
+                user.price=float(usd)
+                user.price_id=price["id"]
+                db.session.commit()
+                return {
+                    'status': 2,
+                    'res': 'You have created a subscription account ',
+                }, 200
+
             else:
                 return {
-                    'status': 1,
+                    'status': 0,
                     'res': 'you already have an account',
                 }, 200
         
@@ -185,7 +208,7 @@ class Payment(Resource):
                 }, 200
             else:
                 return {
-                    'status': 1,
+                    'status': 0,
                     'res': 'you already have an account',
                 }, 200
         #option for when account is but not subs
@@ -327,8 +350,8 @@ class Portal(Resource):
                 }, 200
             if acc.valid == False:
                 return {
-                    'status': 1,
-                    'res': 'refresh',
+                    'status': 0,
+                    'res': 'pass refresh link,user has not finish on boarding',
                 }, 200
 
             #prime redirects the user to refresh if acc.valid==False

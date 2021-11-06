@@ -4,7 +4,7 @@ from flask_cors import CORS
 from functools import wraps
 import requests as rqs
 from flask import abort, request, session,Blueprint
-from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated,Subs
+from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated,Subs,Account
 from flask import current_app as app
 from app import db, cache, logging, createapp
 from sqlalchemy import or_, and_, distinct, func
@@ -502,7 +502,24 @@ class Userprefs(Resource):
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user = Users.query.filter_by(uuid=data['uuid']).first()
             user_settings = Setting.query.filter_by(users_id=user.id).first()
+            acc_=Account.query.filter_by(user=user.id).first()
+            if acc_ == None:
+                status_=0
+                status=0
+            if acc_ != None:
+                if acc_.valid == True:
+                    status=2
+                if acc_.valid == False:
+                    status=1
+                if acc_.valid == True and user.paid == True :
+                    status_=2
+                if acc_.valid == False and user.paid == True :
+                    status_=1
+                if acc_ and user.paid == False :
+                    status_=3
             return {
+                "post_payment":status,
+                "account_payment":status_,
                 "user": marshal(user, userdata)
                 }, 200
         else:
