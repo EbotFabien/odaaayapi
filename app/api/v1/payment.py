@@ -248,10 +248,10 @@ class buy(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type']
         lan=req_data['lang']
-
+        seller=Users.query.filter_by(uuid=req_data['uuid']).first()
+        acc=Account.query.filter_by(user=seller.id).first()
+        
         if Type == "subs":
-            seller=Users.query.filter_by(uuid=req_data['uuid']).first()
-            acc=Account.query.filter_by(user=seller.id).first()
             if seller.paid==True:
                 session = stripe.checkout.Session.create(
                         customer=user.customer_id,
