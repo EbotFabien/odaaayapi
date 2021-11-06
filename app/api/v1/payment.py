@@ -80,6 +80,7 @@ paymenttype =payment.model('paymenttype',{
 
 portal =payment.model('portal',{
     'type':fields.Boolean(required=True),
+    'lang':fields.String(required=True)
 
 })
 
