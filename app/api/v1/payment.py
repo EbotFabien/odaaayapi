@@ -401,7 +401,12 @@ class refresh(Resource):
                 return_url='https://odaaay.co/'+lan+'/profile',
                 type='account_onboarding',
                 )
-        return redirect(account_links['url'])
+                
+        return {
+                'status': 1,
+                'res': 'success',
+                'link': account_links['url'],
+            }, 200
 
 @payment.doc(
     security='KEY',
