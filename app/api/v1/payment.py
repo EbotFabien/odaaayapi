@@ -88,6 +88,7 @@ paymentbuy =payment.model('paymentbuy',{
     'type':  fields.String(required=True),
     'uuid': fields.String(required=True),
     'post_uuid':fields.String(required=False),
+    'lang':fields.String(required=True)
 })
 
 @payment.doc(
@@ -238,7 +239,7 @@ class Payment(Resource):
 @payment.route('/buy')
 
 class buy(Resource):
-    @payment.expect(paymenttype)
+    @payment.expect(paymentbuy)
     @token_required
     def post(self):
         req_data = request.get_json()
@@ -246,10 +247,11 @@ class buy(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type']
-        seller=Users.query.filter_by(uuid=req_data['uuid']).first()
-        acc=Account.query.filter_by(user=seller.id).first()
+        lan=req_data['lang']
 
         if Type == "subs":
+            seller=Users.query.filter_by(uuid=req_data['uuid']).first()
+            acc=Account.query.filter_by(user=seller.id).first()
             if seller.paid==True:
                 session = stripe.checkout.Session.create(
                         customer=user.customer_id,
@@ -265,8 +267,8 @@ class buy(Resource):
                             'destination': acc.account_id,
                             },
                         },
-                        success_url='http://127.0.0.1:5000/',#redirect to  seller page
-                        cancel_url='https://example.com/cancel',#3 home
+                        success_url='https://odaaay.co/'+lan,#redirect to  seller page
+                        cancel_url='https://odaaay.co/'+lan,#3 home
                     )
                     
                 
@@ -292,8 +294,8 @@ class buy(Resource):
                     'destination': acc.account_id,
                     },
                 },
-                success_url='http://127.0.0.1:5000/',# open posts
-                cancel_url='https://example.com/cancel',#home page
+                success_url='https://odaaay.co/'+lan+'/article/'+req_data['post_uuid'],# open posts
+                cancel_url='https://odaaay.co/'+lan,#home page
             )
         
             return {
@@ -401,7 +403,7 @@ class refresh(Resource):
                 return_url='https://odaaay.co/'+lan+'/profile',
                 type='account_onboarding',
                 )
-                
+
         return {
                 'status': 1,
                 'res': 'success',
