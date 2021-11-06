@@ -327,7 +327,7 @@ class buy(Resource):
 @payment.route('/portal')
 
 class Portal(Resource):
-    @payment.expect(paymenttype)
+    @payment.expect(portal)
     @token_required
     def post(self):
         req_data = request.get_json()
