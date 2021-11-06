@@ -797,6 +797,7 @@ class Article(Resource):
                                 else:
                                     return {
                                             "status":1,
+                                            "uuid":user1.uuid,
                                             "res":"Please pay for post"
                                         }, 200
                     else:
@@ -833,6 +834,7 @@ class Article(Resource):
                 if posts_feed.paid == True:
                     return {
                             "status":1,
+                            "uuid":user1.uuid,
                             "res":"Please login and pay for post"
                         }, 200
                 
