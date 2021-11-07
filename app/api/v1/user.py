@@ -382,7 +382,10 @@ class User_following(Resource):
             if  user_to_follow.paid == True:
                 sub=Subs.query.filter(and_(Subs.product_user==user_to_follow.id,Subs.user_sub==user.id,Subs.valid==True)).first()
                 if sub is None:
-                    return {'status': 0, 'res':'please pay subscription'},200
+                    return {'status': 0,
+                     'res':'please pay subscription',
+                     'uuid':req_data['uuid'],
+                     },200
                 else:
                     return{'status': 1, 'res':'You have sub already'},200
             else:
