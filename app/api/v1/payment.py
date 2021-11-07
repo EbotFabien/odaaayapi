@@ -148,7 +148,7 @@ class Payment(Resource):
                 db.session.add(acc)
                 account_links = stripe.AccountLink.create(
                 account=account_['id'],
-                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id)+'/'+lan,
+                refresh_url='https://odaaay.co/api/v1/refresh2/'+str(user.id)+'/'+lan,
                 return_url='https://odaaay.co/'+lan+'/profile',#profilepage
                 type='account_onboarding',
                 )
@@ -197,7 +197,7 @@ class Payment(Resource):
                 db.session.add(acc)
                 account_links = stripe.AccountLink.create(
                 account=account_['id'],
-                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id)+'/'+lan,#refreshurl
+                refresh_url='https://odaaay.co/api/v1/refresh2/'+str(user.id)+'/'+lan,#refreshurl
                 return_url='https://odaaay.co/'+lan+'/profile',#where?profile
                 type='account_onboarding',
                 )
@@ -250,7 +250,7 @@ class buy(Resource):
         lan=req_data['lang']
         seller=Users.query.filter_by(uuid=req_data['uuid']).first()
         acc=Account.query.filter_by(user=seller.id).first()
-        
+
         if Type == "subs":
             if seller.paid==True:
                 session = stripe.checkout.Session.create(
@@ -399,7 +399,7 @@ class refresh(Resource):
         account = Account.query.filter_by(user=user.id).first()
         account_links = stripe.AccountLink.create(
                 account=account.account_id,    
-                refresh_url='https://odaaay.co/api/v1/payment/refresh/'+str(user.id)+'/'+lan,
+                refresh_url='https://odaaay.co/api/v1/refresh2/'+str(user.id)+'/'+lan,
                 return_url='https://odaaay.co/'+lan+'/profile',
                 type='account_onboarding',
                 )
@@ -409,6 +409,40 @@ class refresh(Resource):
                 'res': 'success',
                 'link': account_links['url'],
             }, 200
+
+@payment.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'lang' : 'Language'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@payment.route('/refresh2/<id>/<lan>')
+
+class refresh1(Resource):
+    def get(self,id,lan):
+        user = Users.query.filter_by(uuid=id).first()
+        account = Account.query.filter_by(user=user.id).first()
+        account_links = stripe.AccountLink.create(
+                account=account.account_id,    
+                refresh_url='https://odaaay.co/api/v1/refresh2/'+str(user.id)+'/'+lan,
+                return_url='https://odaaay.co/'+lan+'/profile',
+                type='account_onboarding',
+                )
+
+        return redirect(account_links['url'])
 
 @payment.doc(
     security='KEY',
