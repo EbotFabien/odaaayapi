@@ -466,7 +466,7 @@ class refresh1(Resource):
 @payment.route('/webhook')
 
 class hook(Resource):
-    def webhook(self):
+    def post(self):
         event = None
         payload = request.data
         a=json.loads(payload)
