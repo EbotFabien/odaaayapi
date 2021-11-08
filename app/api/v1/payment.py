@@ -500,12 +500,12 @@ class hook(Resource):
             product_=subscription_schedule.lines['data'][0]['plan'].product
             client=Users.query.filter_by(customer_id=customer).first()
             product=Users.query.filter_by(product_id=product_).first()
-        if client and product:
-            client.follow(product)
-            db.session.commit()
-            sub=Subs(user_sub=client.id,product_user=product.id,sub_id=subscription)
-            db.session.add(sub)
-            db.session.commit()
+            if client and product:
+                client.follow(product)
+                db.session.commit()
+                sub=Subs(user_sub=client.id,product_user=product.id,sub_id=subscription)
+                db.session.add(sub)
+                db.session.commit()
 
         if event['type'] == "checkout.session.completed":#pay post
             subscription_schedule = event['data']['object']
