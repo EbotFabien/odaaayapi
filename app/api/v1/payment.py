@@ -31,7 +31,7 @@ from config import Config
 stripe.api_key = Config.stripe_secret_key
 
 
-endpoint_secret = 'whsec_oN3IGfm2oUjOzAJ9bgAySwpfNx4yR8gZ'
+endpoint_secret = 'whsec_MArfQkLP4pzOa0OYT4JJzqtTjTDEcYEu'#'whsec_oN3IGfm2oUjOzAJ9bgAySwpfNx4yR8gZ'
 
 authorizations = {
     'KEY': {
