@@ -464,7 +464,6 @@ class refresh1(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @payment.route('/webhook')
-
 class hook(Resource):
     def post(self):
         event = None
@@ -479,10 +478,19 @@ class hook(Resource):
             )
         except ValueError as e:
             # Invalid payload
-            raise e
+            #raise e
+            return  {
+                'status': 1,
+                'res': 'success',
+            }, 200
+
         except stripe.error.SignatureVerificationError as e:
             # Invalid signature
-            raise e
+            #raise e
+            return  {
+                'status': 3,
+                'res': 'success',
+            }, 200
 
         # Handle the event
         if event['type'] == "invoice.paid":#follow
