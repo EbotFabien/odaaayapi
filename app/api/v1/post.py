@@ -16,7 +16,7 @@ from app.models import Save , Users, Posts, Language,Translated,Report,Notificat
 from app import db, cache, logging
 import json
 from tqdm import tqdm
-from werkzeug.datastructures import FileStorage
+from werkzeug.datastructures import FileStorage,secure_filename
 from breadability.readable import Article
 
 from sumy.parsers.html import HtmlParser
@@ -206,7 +206,7 @@ class Upl(Resource):
         File=args['file']
         Name=args['name']
         if File.mimetype == "image/jpeg" :
-            fil=os.path.join(destination,File)
+            fil=os.path.join(destination,secure_filename(File.filename))
             old=os.path.join(destination,Name)
             os.rename(fil,old)
             return {
