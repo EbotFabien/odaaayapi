@@ -16,7 +16,7 @@ from app.models import Save , Users, Posts, Language,Translated,Report,Notificat
 from app import db, cache, logging
 import json
 from tqdm import tqdm
-from werkzeug.datastructures import FileStorage,secure_filename
+from werkzeug.datastructures import FileStorage
 from breadability.readable import Article
 
 from sumy.parsers.html import HtmlParser
