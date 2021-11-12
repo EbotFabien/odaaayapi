@@ -206,12 +206,14 @@ class Upl(Resource):
         File=args['file']
         Name=args['name']
         if File.mimetype == "image/jpeg" :
-            fil=os.path.join(destination,secure_filename(File.filename))
-            old=os.path.join(destination,Name)
-            os.rename(fil,old)
+            #fil=os.path.join(destination,secure_filename(File.filename))
+            File.save(destination,Name)
+            #old=os.path.join(destination,Name)
+            fil=os.path.join(destination,Name)
+            #os.rename(fil,old)
             return {
                     "status":1,
-                    "thumb_url":old,
+                    "thumb_url":fil,
                     }, 200
         else:
             return {
