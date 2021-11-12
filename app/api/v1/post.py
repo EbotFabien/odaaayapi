@@ -195,6 +195,50 @@ Report_post = post.model('Report_post',{
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report issue'
     })
+@post.route('/upload')
+
+class Upl(Resource):
+    @token_required
+    @post.expect(uploader)
+    def post(self):
+        args = uploader.parse_args()
+        destination = Config.UPLOAD_FOLDER_MEDIA
+        File=args['file']
+        Name=args['name']
+        if File.mimetype == "image/jpeg" :
+            fil=os.path.join(destination,File)
+            old=os.path.join(destination,Name)
+            os.rename(fil,old)
+            return {
+                    "status":1,
+                    "thumb_url":old,
+                    }, 200
+        else:
+            return {
+                    "status":0,
+                    "res":"Put a Jpeg file",
+                    }, 200
+
+
+@post.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'lang' : 'Language'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
 @post.route('/post')
 
 class Post(Resource):
