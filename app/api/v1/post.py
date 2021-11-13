@@ -474,7 +474,8 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs
-                newPost.user_name=user.username
+                newPost.subs_only=subs
+                newPost.paid=payment
                 db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
