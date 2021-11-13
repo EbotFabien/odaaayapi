@@ -462,6 +462,7 @@ class Post(Resource):
                     'res': 'Post was made'
                 }, 200
             if ptype == 2:
+                lang=language.id
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
                 sum_content = ''
@@ -491,7 +492,7 @@ class Post(Resource):
                     for sentence in summarizer(parser.document, 4):
                         sum_content += '\n'+str(sentence)
 
-                new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
+                new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
                 if new_check is None:
                     new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
                     db.session.add(new_row)
