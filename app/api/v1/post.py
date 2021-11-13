@@ -603,7 +603,7 @@ class Article_check(Resource):
                 summarizer = Summarizer(stemmer)
                 summarizer.stop_words = get_stop_words(LANGUAGE)
 
-                for sentence in summarizer(parser.document, 10):
+                for sentence in summarizer(parser.document,20):
                     sum_content += '\n'+str(sentence)
                 
                 title=soup.find('title').get_text()
@@ -618,7 +618,8 @@ class Article_check(Resource):
                     'res': url,
                     'title':title,
                     'thumb':thumbnail,
-                    'content':sum_content
+                    'content':sum_content,
+                    'document':document.readable,
 
             }, 200
             else:
