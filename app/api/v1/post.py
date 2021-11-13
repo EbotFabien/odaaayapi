@@ -84,8 +84,22 @@ post = post1.namespace('/api/post', \
     path='/v1/')
 
 postcreationdata = post.model('postcreationdata', {
-    
-    
+    'title': fields.String(required=True),
+    'type': fields.Integer(required=True),
+    'post_url': fields.String(required=False, default=None),
+    'thumb': fields.String(required=False, default=None),
+    'content': fields.String(required=True),
+    'lang':fields.String(required=True),
+    'translate':fields.Boolean(required=False, default=False),
+    'donation':fields.Boolean(required=False, default=False),
+    'min': fields.Integer(required=False),
+    'max': fields.Integer(required=False),
+    'payment':fields.Boolean(required=False, default=False),
+    'price': fields.Integer(required=False),
+    'Tags': fields.List(required=False),
+    'subscribers':fields.Boolean(required=False, default=False),
+    'nsfw':fields.Boolean(required=False, default=False),
+    'summarize':fields.Boolean(required=False, default=False),
 })
 
 Updatedata = post.model('Updatedata',{
@@ -208,8 +222,6 @@ class Upl(Resource):
         if File.mimetype == "image/jpeg" :
             fil=os.path.join(destination,Name)
             File.save(fil)
-            #old=os.path.join(destination,Name)
-            #os.rename(fil,old)
             return {
                     "status":1,
                     "thumb_url":fil,
