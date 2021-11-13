@@ -422,13 +422,13 @@ class Post(Resource):
                         )
                         price = stripe.Price.create(
                             product=product['id'],
-                            unit_amount=Price*100,
+                            unit_amount=req_data['price']*100,
                             currency='usd',
                         )
                         newPost.product_id=product['id']
                         newPost.price_id=price["id"]
                         newPost.paid=True
-                        newPost.price=float(Price)
+                        newPost.price=float(req_data['price'])
                         db.session.commit()
 
                     else:
@@ -506,13 +506,13 @@ class Post(Resource):
                         )
                         price = stripe.Price.create(
                             product=product['id'],
-                            unit_amount=Price*100,
+                            unit_amount=req_data['price']*100,
                             currency='usd',
                         )
                         newPost.product_id=product['id']
                         newPost.price_id=price["id"]
                         newPost.paid=True
-                        newPost.price=float(Price)
+                        newPost.price=float(req_data['price'])
                         db.session.commit()
 
                     else:
