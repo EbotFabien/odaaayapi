@@ -619,7 +619,6 @@ class Article_check(Resource):
                     'title':title,
                     'thumb':thumbnail,
                     'content':sum_content,
-                    'document':document.readable,
 
             }, 200
             else:
