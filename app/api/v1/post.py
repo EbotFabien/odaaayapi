@@ -96,7 +96,7 @@ postcreationdata = post.model('postcreationdata', {
     'max': fields.Integer(required=False),
     'payment':fields.Boolean(required=False, default=False),
     'price': fields.Integer(required=False),
-    'Tags': fields.List(required=False),
+    'Tags': fields.List(fields.String(required=True)),
     'subscribers':fields.Boolean(required=False, default=False),
     'nsfw':fields.Boolean(required=False, default=False),
     'summarize':fields.Boolean(required=False, default=False),
