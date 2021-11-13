@@ -416,19 +416,19 @@ class Post(Resource):
                     newPost.thumb_url_=thumb_url_
                     db.session.commit()
                     if acc is not None:
-                        price = req_data['price']
+                        Price = req_data['price']
                         product = stripe.Product.create(
                             name=newPost.title+' post by '+newPost.user_name,
                         )
                         price = stripe.Price.create(
                             product=product['id'],
-                            unit_amount=price*100,
+                            unit_amount=Price*100,
                             currency='usd',
                         )
                         newPost.product_id=product['id']
                         newPost.price_id=price["id"]
                         newPost.paid=True
-                        newPost.price=float(price)
+                        newPost.price=float(Price)
                         db.session.commit()
 
                     else:
@@ -500,19 +500,19 @@ class Post(Resource):
                 if payment == True:
                     acc=Account.query.filter_by(user=user.id).first()
                     if acc is not None:
-                        price = req_data['price']
+                        Price = req_data['price']
                         product = stripe.Product.create(
                             name=newPost.title+' post by '+newPost.user_name,
                         )
                         price = stripe.Price.create(
                             product=product['id'],
-                            unit_amount=price*100,
+                            unit_amount=Price*100,
                             currency='usd',
                         )
                         newPost.product_id=product['id']
                         newPost.price_id=price["id"]
                         newPost.paid=True
-                        newPost.price=float(price)
+                        newPost.price=float(Price)
                         db.session.commit()
 
                     else:
