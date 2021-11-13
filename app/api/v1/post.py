@@ -370,11 +370,12 @@ class Post(Resource):
         language= Language.query.filter_by(code=got_language).first()
         followers_=user.is_followers()
         post_done=Posts.query.filter_by(title=title).first()
+        lang=language.id
         if post_done is None:
             if ptype == 1:
                 thumb_url_=req_data['thumb'] or None
                 sum_content = ''
-                newPost = Posts(user.id, title, ptype, content, language.id)
+                newPost = Posts(user.id, title, ptype, content, lang)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.summarize=summarized
@@ -404,9 +405,9 @@ class Post(Resource):
                     for sentence in summarizer(parser.document, 4):
                         sum_content += '\n'+str(sentence)
 
-                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==language.id)).first()
+                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
                         db.session.add(new_row)
                         db.session.commit()
                 
@@ -462,11 +463,10 @@ class Post(Resource):
                     'res': 'Post was made'
                 }, 200
             if ptype == 2:
-                lang=language.id
                 thumb_url_=req_data['thumb'] or None
                 post_url_=req_data['post_url'] or None
                 sum_content = ''
-                newPost = Posts(user.id, title, ptype, content, language.id, thumb_url=thumb_url_, post_url=post_url_)
+                newPost = Posts(user.id, title, ptype, content, lang, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.post_url=post_url_
@@ -494,7 +494,7 @@ class Post(Resource):
 
                 new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
                 if new_check is None:
-                    new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=language.id,fullcontent=newPost.text_content, tags=str('dddd'))
+                    new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
                     db.session.add(new_row)
                     db.session.commit()
                 if payment == True:
