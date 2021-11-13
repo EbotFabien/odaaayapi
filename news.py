@@ -78,8 +78,8 @@ def test():
     return 1
 
 if __name__ == "__main__":
-    recreate_db()
-    #languages()
+    #recreate_db()
+    languages()
     manager.run()
     
     #run()
