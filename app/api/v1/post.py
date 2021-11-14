@@ -474,6 +474,10 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs 
+                newPost.product_id="11"
+                newPost.price_id="11"
+                newPost.paid=True
+                newPost.price=float(req_data['price'])
                 db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
@@ -500,6 +504,7 @@ class Post(Resource):
                     acc=Account.query.filter_by(user=user.id).first()
                     if acc:
                         Price = req_data['price']
+                        post=Posts.query.filter_by(id=newPost.id).first()
                         product = stripe.Product.create(
                             name=newPost.title+' post by '+user.username,
                         )
@@ -508,10 +513,12 @@ class Post(Resource):
                             unit_amount=req_data['price']*100,
                             currency='usd',
                         )
-                        newPost.product_id=product['id']
-                        newPost.price_id=price["id"]
-                        newPost.paid=True
-                        newPost.price=float(req_data['price'])
+                        post.product_id="12"
+                        post.price_id="12"
+                        post.paid=True
+                        post.price=float(5)
+                        db.session.commit()
+                        
                         
 
                     else:
@@ -541,6 +548,7 @@ class Post(Resource):
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
                     db.session.commit()
+                db.session.commit()
                 return {
                     'status': 1,
                     'res': 'Post was made',
