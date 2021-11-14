@@ -497,6 +497,24 @@ class Post(Resource):
                             'status': 0,
                             'res': 'Please create a stripe account'
                         }, 200
+                if donation == True:
+                    acc=Account.query.filter_by(user=user.id).first()
+                    if acc :
+                        mini = req_data['min']
+                        maxi = req_data['max']
+                        product = stripe.Product.create(
+                            name=newPost.title+' post  donation by '+user.username,
+                        )
+                        newPost.donation_id=product['id']
+                        newPost.mini=float(mini)
+                        newPost.maxi=float(maxi)
+                        db.session.commit()
+
+                    else:
+                        return {
+                            'status': 0,
+                            'res': 'Please create a stripe account'
+                        }, 200
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -519,25 +537,6 @@ class Post(Resource):
                         db.session.add(new_row)
                         db.session.commit()
                 
-                
-                if donation == True:
-                    acc=Account.query.filter_by(user=user.id).first()
-                    if acc :
-                        mini = req_data['min']
-                        maxi = req_data['max']
-                        product = stripe.Product.create(
-                            name=newPost.title+' post  donation by '+user.username,
-                        )
-                        newPost.donation_id=product['id']
-                        newPost.mini=float(mini)
-                        newPost.maxi=float(maxi)
-                        db.session.commit()
-
-                    else:
-                        return {
-                            'status': 0,
-                            'res': 'Please create a stripe account'
-                        }, 200
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
