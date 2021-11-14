@@ -468,7 +468,7 @@ class Post(Resource):
                 sum_content = ''
                 newPost = Posts(user.id, title, ptype, content, lang, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
-                #db.session.commit()
+                db.session.commit()
                 newPost.post_url=post_url_
                 newPost.thumb_url=thumb_url_
                 newPost.summarize=summarized
@@ -512,7 +512,7 @@ class Post(Resource):
                         newPost.price_id=price["id"]
                         newPost.paid=True
                         newPost.price=float(req_data['price'])
-                        db.session.commit() 
+                         
                         
 
                     else:
@@ -543,6 +543,7 @@ class Post(Resource):
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
                     db.session.commit()
+                db.session.commit()
                 return {
                     'status': 1,
                     'res': 'Post was made',
