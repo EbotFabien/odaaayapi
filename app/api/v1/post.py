@@ -418,7 +418,7 @@ class Post(Resource):
                     if acc is not None:
                         Price = req_data['price']
                         product = stripe.Product.create(
-                            name=newPost.title+' post by '+newPost.user_name,
+                            name=newPost.title+' post by '+user.username,
                         )
                         price = stripe.Price.create(
                             product=product['id'],
@@ -442,7 +442,7 @@ class Post(Resource):
                         mini = req_data['min']
                         maxi = req_data['max']
                         product = stripe.Product.create(
-                            name=newPost.title+' post  donation by '+newPost.user_name,
+                            name=newPost.title+' post  donation by '+user.username,
                         )
                         newPost.donation_id=product['id']
                         newPost.mini=float(mini)
@@ -503,7 +503,7 @@ class Post(Resource):
                     if acc is not None:
                         Price = req_data['price']
                         product = stripe.Product.create(
-                            name=newPost.title+' post by '+newPost.user_name,
+                            name=newPost.title+' post by '+user.username,
                         )
                         price = stripe.Price.create(
                             product=product['id'],
@@ -527,7 +527,7 @@ class Post(Resource):
                         mini = req_data['min']
                         maxi = req_data['max']
                         product = stripe.Product.create(
-                            name=newPost.title+' post  donation by '+newPost.user_name,
+                            name=newPost.title+' post  donation by '+user.username,
                         )
                         newPost.donation_id=product['id']
                         newPost.mini=float(mini)
