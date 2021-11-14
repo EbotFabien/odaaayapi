@@ -493,11 +493,11 @@ class Post(Resource):
                     for sentence in summarizer(parser.document, 4):
                         sum_content += '\n'+str(sentence)
 
-                new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
-                if new_check is None:
-                    new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
-                    db.session.add(new_row)
-                    db.session.commit()
+                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
+                        db.session.add(new_row)
+                        db.session.commit()
                 if payment == True:
                     acc=Account.query.filter_by(user=user.id).first()
                     if acc is not None:

@@ -92,9 +92,11 @@ def translate_posts(post_id, user_id):
                 if post is not None:
                     if sum_content == '':
                         sum_content = post.text_content
-                    new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
-                    db.session.add(new_row)
-                    db.session.commit()
+                    new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
+                        db.session.add(new_row)
+                        db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
@@ -106,11 +108,7 @@ def translate_posts(post_id, user_id):
                    current_lang = Language.query.filter_by(code=i).first()
                    # table = language_dict.get(i)
                    #keywords = rake.apply(content_translation[i])
-                   try:
-                        new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
-                   except:
-                       db.session.rollback()
-                       new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
+                   new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
                    if new_check is None:
                         new_row = Translated(post_id=post_id,fullcontent=full_content[i],title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=str('ddddddd'))#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
@@ -141,11 +139,6 @@ def summarize_posts(post_id, user_id):
                 sum_content += '\n'+str(sentence)
             
             new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
-            try:
-                new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
-            except:
-                db.session.rollback()
-                new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
             if new_check is None:
                 if sum_content == '':
                     sum_content = post.text_content
