@@ -475,6 +475,24 @@ class Post(Resource):
                 newPost.translate=translated
                 newPost.subs_only=subs 
                 #db.session.commit()
+                if payment == True:
+                    acc=Account.query.filter_by(user=user.id).first()
+                    if acc:
+                        Price = req_data['price']
+                        product = stripe.Product.create(
+                            name=newPost.title+' post by '+user.username,
+                        )
+                        price = stripe.Price.create(
+                            product=product['id'],
+                            unit_amount=req_data['price']*100,
+                            currency='usd',
+                        )
+                        newPost.product_id=product['id']
+                        newPost.price_id=price["id"]
+                        newPost.paid=True
+                        newPost.price=float(req_data['price'])
+                        db.session.commit()
+                        
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -496,22 +514,7 @@ class Post(Resource):
                         new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
                         db.session.add(new_row)
                         db.session.commit()
-                if payment == True:
-                    acc=Account.query.filter_by(user=user.id).first()
-                    if acc:
-                        Price = req_data['price']
-                        product = stripe.Product.create(
-                            name=newPost.title+' post by '+user.username,
-                        )
-                        price = stripe.Price.create(
-                            product=product['id'],
-                            unit_amount=req_data['price']*100,
-                            currency='usd',
-                        )
-                        newPost.product_id=product['id']
-                        newPost.price_id=price["id"]
-                        newPost.paid=True
-                        newPost.price=float(req_data['price'])
+                
                          
                         
 
