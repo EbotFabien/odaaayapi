@@ -474,8 +474,6 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs
-                newPost.subs_only=subs
-                newPost.paid=payment
                 db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
@@ -500,7 +498,7 @@ class Post(Resource):
                         db.session.commit()
                 if payment == True:
                     acc=Account.query.filter_by(user=user.id).first()
-                    if acc is not None:
+                    if acc:
                         Price = req_data['price']
                         product = stripe.Product.create(
                             name=newPost.title+' post by '+user.username,
@@ -523,7 +521,7 @@ class Post(Resource):
                         }, 200
                 if donation == True:
                     acc=Account.query.filter_by(user=user.id).first()
-                    if acc is not None:
+                    if acc :
                         mini = req_data['min']
                         maxi = req_data['max']
                         product = stripe.Product.create(
@@ -545,7 +543,9 @@ class Post(Resource):
                     db.session.commit()
                 return {
                     'status': 1,
-                    'res': 'Post was made'
+                    'res': 'Post was made',
+                    'pro':product['id'],
+                    
                 }, 200
             else:
                 return {
