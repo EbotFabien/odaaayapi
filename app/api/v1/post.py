@@ -492,7 +492,11 @@ class Post(Resource):
                         newPost.paid=True
                         newPost.price=float(req_data['price'])
                         db.session.commit()
-                        
+                    else:
+                        return {
+                            'status': 0,
+                            'res': 'Please create a stripe account'
+                        }, 200
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -515,14 +519,6 @@ class Post(Resource):
                         db.session.add(new_row)
                         db.session.commit()
                 
-                         
-                        
-
-                    else:
-                        return {
-                            'status': 0,
-                            'res': 'Please create a stripe account'
-                        }, 200
                 
                 if donation == True:
                     acc=Account.query.filter_by(user=user.id).first()
