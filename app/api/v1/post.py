@@ -358,6 +358,7 @@ class Post(Resource):
         subs= req_data['subscribers'] 
         donation= req_data['donation'] 
         payment= req_data['payment'] 
+        thumb_url_=req_data['thumb'] or None
         nsf= req_data['nsfw'] 
         got_language = req_data['lang']
         if lang == got_language:
@@ -371,9 +372,18 @@ class Post(Resource):
         followers_=user.is_followers()
         post_done=Posts.query.filter_by(title=title).first()
         lang=language.id
+        if payment == True and subs ==True:
+            return {
+                        'status': 0,
+                        'res': 'Subs and payment cant match'
+                    }, 400
+        if payment == True and thumb_url_ ==None:
+            return {
+                        'status': 0,
+                        'res': 'Please pt a thumb'
+                    }, 400
         if post_done is None:
             if ptype == 1:
-                thumb_url_=req_data['thumb'] or None
                 sum_content = ''
                 newPost = Posts(user.id, title, ptype, content, lang)
                 db.session.add(newPost)
@@ -384,37 +394,10 @@ class Post(Resource):
                 newPost.nsfw=nsf
                 newPost.user_name=user.username
                 db.session.commit()
-                if payment == True and thumb_url_ == None :
-                    return {
-                        'status': 0,
-                        'res': 'Please put A thumbnail'
-                    }, 400
-                if summarized and translated == True:
-                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-
-                if translated == True and summarized == False:
-                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                if summarized == True and translated == False :
-                    newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
-                if summarized and translated == False:
-                    parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
-                    stemmer = Stemmer(language.name)
-                    summarizer = Summarizer(stemmer)
-                    summarizer.stop_words = get_stop_words(language.name)
-
-                    for sentence in summarizer(parser.document, 4):
-                        sum_content += '\n'+str(sentence)
-
-                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
-                    if new_check is None:
-                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
-                        db.session.add(new_row)
-                        db.session.commit()
-                
                 if payment == True:
                     acc=Account.query.filter_by(user=user.id).first()
                     newPost.thumb_url_=thumb_url_
-                    db.session.commit()
+                    #db.session.commit()
                     if acc is not None:
                         Price = req_data['price']
                         product = stripe.Product.create(
@@ -449,11 +432,33 @@ class Post(Resource):
                         newPost.maxi=float(maxi)
                         db.session.commit()
 
-                    else:
-                        return {
-                            'status': 0,
-                            'res': 'Please create a stripe account'
-                        }, 200
+                else:
+                    return {
+                        'status': 0,
+                        'res': 'Please create a stripe account'
+                    }, 200
+                if summarized and translated == True:
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+
+                if translated == True and summarized == False:
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                if summarized == True and translated == False :
+                    newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
+                if summarized and translated == False:
+                    parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
+                    stemmer = Stemmer(language.name)
+                    summarizer = Summarizer(stemmer)
+                    summarizer.stop_words = get_stop_words(language.name)
+
+                    for sentence in summarizer(parser.document, 4):
+                        sum_content += '\n'+str(sentence)
+
+                    new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
+                        db.session.add(new_row)
+                        db.session.commit()
+            
                 for i in followers_:
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
                     db.session.add(notif_add)
@@ -470,11 +475,12 @@ class Post(Resource):
                 db.session.add(newPost)
                 db.session.commit()
                 newPost.post_url=post_url_
+                newPost.user_name=user.username
                 newPost.thumb_url=thumb_url_
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs 
-                #db.session.commit()
+                db.session.commit()
                 if payment == True:
                     acc=Account.query.filter_by(user=user.id).first()
                     if acc:
