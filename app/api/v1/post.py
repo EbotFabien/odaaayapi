@@ -468,13 +468,13 @@ class Post(Resource):
                 sum_content = ''
                 newPost = Posts(user.id, title, ptype, content, lang, thumb_url=thumb_url_, post_url=post_url_)
                 db.session.add(newPost)
-                db.session.commit()
+                #db.session.commit()
                 newPost.post_url=post_url_
                 newPost.thumb_url=thumb_url_
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs 
-                db.session.commit()
+                #db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -508,7 +508,11 @@ class Post(Resource):
                             unit_amount=req_data['price']*100,
                             currency='usd',
                         )
-                   
+                        newPost.product_id=product['id']
+                        newPost.price_id=price["id"]
+                        newPost.paid=True
+                        newPost.price=float(req_data['price'])
+                        db.session.commit() 
                         
 
                     else:
@@ -516,11 +520,7 @@ class Post(Resource):
                             'status': 0,
                             'res': 'Please create a stripe account'
                         }, 200
-                newPost.product_id=product['id']
-                newPost.price_id=price["id"]
-                newPost.paid=True
-                newPost.price=float(req_data['price'])
-                db.session.commit() 
+                
                 if donation == True:
                     acc=Account.query.filter_by(user=user.id).first()
                     if acc :
