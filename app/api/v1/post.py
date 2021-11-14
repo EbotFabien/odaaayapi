@@ -545,7 +545,7 @@ class Post(Resource):
                 return {
                     'status': 1,
                     'res': 'Post was made',
-                    'pro':newPost.product_id,
+                    'pro5':newPost.product_id,
                     
                 }, 200
             else:
