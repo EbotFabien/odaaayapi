@@ -512,8 +512,7 @@ class Post(Resource):
                         newPost.price_id=price["id"]
                         newPost.paid=True
                         newPost.price=float(req_data['price'])
-                        db.session.commit()
-                        db.session.commit()
+                        
 
                     else:
                         return {
