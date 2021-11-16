@@ -217,14 +217,17 @@ class Upl(Resource):
     def post(self):
         args = uploader.parse_args()
         destination = Config.UPLOAD_FOLDER_MEDIA
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
         File=args['file']
         Name=args['name']
         if File.mimetype == "image/jpeg" :
-            fil=os.path.join(destination,Name)
+            fil=os.path.join(destination,str(user.phone),Name)
             File.save(fil)
             return {
                     "status":1,
-                    "thumb_url":fil,
+                    "thumb_url":str(user.phone)+"/"+Name,
                     }, 200
         else:
             return {
