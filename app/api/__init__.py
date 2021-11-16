@@ -737,6 +737,29 @@ class Article(Resource):
                 translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                 count_claps=posts_feed.No__claps()
                 if user is not None:
+                    if user1.id == user.id:
+                        if translated_feed :
+                                return {
+                                    "results": {
+                                        "status":4,
+                                        "lang": lang,
+                                        "shouts":count_claps,
+                                        'translated_feed':marshal(translated_feed, schema.lang_post)
+                                    }
+                                }, 200
+                        else:
+                            current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                            translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                            return {
+                                "results": {
+                                    "status":4,
+                                    "lang": lang,     
+                                    "original_lang": current_lang.code,
+                                    "shouts":count_claps,
+                                    'translated_feed':marshal(translated_feed, schema.lang_post),
+                                    'res':"This post can't been translated"
+                                }
+                            }, 200
                     if posts_feed.subs_only == True:
                         follow=user.is_following(user1)
                         if follow:
