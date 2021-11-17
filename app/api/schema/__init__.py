@@ -182,7 +182,9 @@ send_verification = apisec.model('send_verification', {
 })
 
 
-
+Not_Interested = apisec.model('Not_Interested', {
+    'uuid': fields.String(required=True, description="code sent to user from server")
+})
 
 
 

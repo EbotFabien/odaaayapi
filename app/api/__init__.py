@@ -1200,3 +1200,44 @@ class Message(Resource):
     def get(self):
         return {}, 200    
 
+
+@cache.cached(300, key_prefix='Not_interested')
+@home.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@home.route('/post/notinterested')
+class notinterested(Resource): 
+    @home.expect(schema.Not_Interested)   
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        post= Posts.query.filter_by(uuid=req_data['uuid']).first()
+        if post.not_interested(user) is None:
+            post.is_not_interested(user)
+        
+            return{
+                "status":1,
+                "res":"Post has been added to noninterested"
+            },200 
+        else:
+            return{
+                "status":0,
+                "res":"Post was already set into notinterested"
+            },200 
