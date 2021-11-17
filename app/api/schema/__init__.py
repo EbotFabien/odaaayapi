@@ -126,6 +126,7 @@ users_dat = apisec.model('users_dat', {
     'username': fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=True),
+    'picture':fields.String(required=True),
 })
 
 postdata = apisec.model('postreturndata', {
