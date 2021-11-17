@@ -124,6 +124,8 @@ user_saved_datas = apisec.model('user_saved_datas', {
 users_dat = apisec.model('users_dat', {
     'id': fields.Integer(required=True),
     'username': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'bio': fields.String(required=True),
 })
 
 postdata = apisec.model('postreturndata', {
@@ -143,6 +145,7 @@ postdata = apisec.model('postreturndata', {
     'price': fields.Float(required=True),
     'paid': fields.Boolean(required=True),
     'clap': fields.List(fields.Nested(element)),
+    'uploader_data': fields.List(fields.Nested(users_dat)),
 })
 
 

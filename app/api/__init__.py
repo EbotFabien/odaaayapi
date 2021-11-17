@@ -734,6 +734,8 @@ class Article(Resource):
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid = id).first()
                 user1= Users.query.filter_by(id=posts_feed.author).first()
+                saves=Save.query.filter_by(post_id=posts_feed.id).count()
+                report=Report.query.filter_by(post_id=posts_feed.id).count()
                 translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                 count_claps=posts_feed.No__claps()
                 if user is not None:
@@ -744,6 +746,8 @@ class Article(Resource):
                                         "status":4,
                                         "lang": lang,
                                         "shouts":count_claps,
+                                        "saves":saves,
+                                        "report":report,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
                                 }, 200
@@ -756,6 +760,8 @@ class Article(Resource):
                                     "lang": lang,     
                                     "original_lang": current_lang.code,
                                     "shouts":count_claps,
+                                    "saves":saves,
+                                    "report":report,
                                     'translated_feed':marshal(translated_feed, schema.lang_post),
                                     'res':"This post can't been translated"
                                 }
@@ -769,6 +775,8 @@ class Article(Resource):
                                         "status":0,
                                         "lang": lang,
                                         "shouts":count_claps,
+                                        "saves":saves,
+                                        "report":report,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
                                 }, 200
@@ -781,6 +789,8 @@ class Article(Resource):
                                         "lang": lang,     
                                         "original_lang": current_lang.code,
                                         "shouts":count_claps,
+                                        "saves":saves,
+                                        "report":report,
                                         'translated_feed':marshal(translated_feed, schema.lang_post),
                                         'res':"This post can't been translated"
                                     }
@@ -799,6 +809,8 @@ class Article(Resource):
                                         return {
                                             "results": {
                                                 "status":0,
+                                                "saves":saves,
+                                                "report":report,
                                                 "lang": lang,
                                                 "shouts":count_claps,
                                                 'translated_feed':marshal(translated_feed, schema.lang_post)
@@ -813,6 +825,8 @@ class Article(Resource):
                                                 "lang": lang,     
                                                 "original_lang": current_lang.code,
                                                 "shouts":count_claps,
+                                                "saves":saves,
+                                                "report":report,
                                                 'translated_feed':marshal(translated_feed, schema.lang_post),
                                                 'res':"This post can't been translated"
                                             }
@@ -830,6 +844,8 @@ class Article(Resource):
                                     "status":0,
                                     "lang": lang,
                                     "shouts":count_claps,
+                                    "saves":saves,
+                                    "report":report,
                                     'translated_feed':marshal(translated_feed, schema.lang_post)
                                 }
                             }, 200
@@ -842,6 +858,8 @@ class Article(Resource):
                                     "lang": lang,     
                                     "original_lang": current_lang.code,
                                     "shouts":count_claps,
+                                    "saves":saves,
+                                    "report":report,
                                     'translated_feed':marshal(translated_feed, schema.lang_post),
                                     'res':"This post can't been translated"
                                 }
@@ -867,6 +885,8 @@ class Article(Resource):
                             "status":0,
                             "lang": lang,
                             "shouts":count_claps,
+                            "saves":saves,
+                            "report":report,
                             'translated_feed':marshal(translated_feed, schema.lang_post)
                         }
                     }, 200
@@ -879,6 +899,8 @@ class Article(Resource):
                             "lang": lang,     
                             "original_lang": current_lang.code,
                             "shouts":count_claps,
+                            "saves":saves,
+                            "report":report,
                             'translated_feed':marshal(translated_feed, schema.lang_post),
                             'res':"This post can't been translated"
                         }
