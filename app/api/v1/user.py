@@ -57,7 +57,7 @@ description='', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 uploader = user1.parser()
-uploader.add_argument('file', location='files', type=str, required=False, help="You must parse a file")
+uploader.add_argument('file', location='files', type=FileStorage, required=False, help="You must parse a file")
 uploader.add_argument('name', location='form', type=str, required=False, help="Name cannot be blank")
 
 user = user1.namespace('/api/user', \
@@ -205,7 +205,10 @@ user_name = user.model('user_clap',{
     'id':fields.Integer(required=True),
     'username':fields.String(required=True),
 })
-
+uploaderdata = user.model('uploaderdata',{
+    'file':fields.Integer(required=True),
+    'name':fields.String(required=True),
+})
 
 ip_data = user.model('address',{
     'address':fields.String(required=True)
@@ -245,17 +248,18 @@ lang_post = user.model('lang_post', {
     })
 @user.route('/user/upload')
 
-class Upl(Resource):
+class Uplu(Resource):
     @token_required
-    @user.expect(uploader)
+    @user.expect(uploaderdata)
     def post(self):
-        args = uploader.parse_args()
+        args = request.get_json()
         destination = Config.UPLOAD_FOLDER_MEDIA
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user= Users.query.filter_by(uuid=data['uuid']).first()
         File=args['file']
         Name=args['name']
+
         
         if File:
             if Name.lower() =="jpeg":
