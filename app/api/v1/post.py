@@ -223,11 +223,11 @@ class Upl(Resource):
         File=args['file']
         Name=args['name']
         if File.mimetype == "image/jpeg" :
-            fil=os.path.join(destination,str(user.phone),Name)
+            fil=os.path.join(destination,str(data['uuid']),Name)
             File.save(fil)
             return {
                     "status":1,
-                    "thumb_url":str(user.phone)+"/"+Name,
+                    "thumb_url":str(data['uuid'])+"/"+Name,
                     }, 200
         else:
             return {

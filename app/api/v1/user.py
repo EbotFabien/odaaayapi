@@ -20,6 +20,7 @@ import stripe
 from flask import current_app as app
 
 from config import Config
+import base64
 
 #with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
@@ -56,7 +57,7 @@ description='', authorizations=authorizations)
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 uploader = user1.parser()
-uploader.add_argument('file', location='files', type=FileStorage, required=False, help="You must parse a file")
+uploader.add_argument('file', location='files', type=str, required=False, help="You must parse a file")
 uploader.add_argument('name', location='form', type=str, required=False, help="Name cannot be blank")
 
 user = user1.namespace('/api/user', \
@@ -255,10 +256,18 @@ class Upl(Resource):
         user= Users.query.filter_by(uuid=data['uuid']).first()
         File=args['file']
         Name=args['name']
-        if File.mimetype == "image/jpeg" :
-            fil=os.path.join(destination,str(user.phone),Name)
-            File.save(fil)
-            user.picture=str(user.phone)+"/"+Name
+        
+        if File:
+            if Name.lower() =="jpeg":
+                ex=user.username+".jpeg"
+            if Name.lower() =="jpg":
+                ex=user.username+".jpg"
+            if Name.lower() =="png":
+                ex=user.username+".png"
+            fil=os.path.join(destination,str(data['uuid']),ex)
+            with open(fil, 'wb') as image_file:
+                image_file.write(base64.b64encodebytes(File))
+            user.picture=str(data['uuid'])+"/"+ex
             db.session.commit()
             return {
                     "status":1,
