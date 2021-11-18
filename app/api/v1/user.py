@@ -225,6 +225,54 @@ lang_post = user.model('lang_post', {
 
 @user.doc(
     security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'lang' : 'Language'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/upload')
+
+class Upl(Resource):
+    @token_required
+    @user.expect(uploader)
+    def post(self):
+        args = uploader.parse_args()
+        destination = Config.UPLOAD_FOLDER_MEDIA
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        File=args['file']
+        Name=args['name']
+        if File.mimetype == "image/jpeg" :
+            fil=os.path.join(destination,str(user.phone),Name)
+            File.save(fil)
+            user.picture=str(user.phone)+"/"+Name
+            db.session.commit()
+            return {
+                    "status":1,
+                    "res":"profile pic uploaded",
+                    }, 200
+        else:
+            return {
+                    "status":0,
+                    "res":"Put a Jpeg file",
+                    }, 200
+
+
+@user.doc(
+    security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',
              'fan_base':'Specify if you need followers,followed or post',
              'start': 'Value to start from ',
