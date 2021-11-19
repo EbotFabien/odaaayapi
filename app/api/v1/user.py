@@ -206,7 +206,7 @@ user_name = user.model('user_clap',{
     'username':fields.String(required=True),
 })
 uploaderdata = user.model('uploaderdata',{
-    'file':fields.Integer(required=True),
+    'file':fields.String(required=True),
     'name':fields.String(required=True),
 })
 
