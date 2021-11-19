@@ -223,7 +223,9 @@ class Upl(Resource):
         File=args['file']
         Name=args['name']
         if File.mimetype == "image/jpeg" :
-            fil=os.path.join(destination,str(data['uuid']),Name)
+            fila=os.path.join(destination,str(data['uuid']))#,Name)
+            os.mkdir(fila)
+            fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
             return {
                     "status":1,
