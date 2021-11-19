@@ -40,7 +40,7 @@ class Config(object):
     # mail accounts
     MAIL_DEFAULT_SENDER = 'touchone0001@gmail.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
-    UPLOAD_FOLDER_MEDIA = os.getcwd()+'app/static/files'
+    UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
     CACHE_TYPE= "simple" # Flask-Caching related configs
     CACHE_DEFAULT_TIMEOUT= 300
