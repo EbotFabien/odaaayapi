@@ -230,7 +230,7 @@ class Upl(Resource):
             File.save(fil)
             return {
                     "status":1,
-                    "thumb_url":str(data['uuid'])+"/"+Name,
+                    "thumb_url":str(data['uuid'])+"/post/"+Name,
                     }, 200
         else:
             return {
