@@ -269,6 +269,7 @@ class Uplu(Resource):
             if Name.lower() =="png":
                 ex=user.username+".png"
             fil=os.path.join(destination,str(data['uuid']),ex)
+            os.mkdir(fil)
             with open(fil, 'wb') as image_file:
                 image_file.write(base64.b64encodebytes(File))
             user.picture=str(data['uuid'])+"/"+ex
