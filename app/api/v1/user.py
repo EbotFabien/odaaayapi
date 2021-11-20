@@ -279,7 +279,7 @@ class Uplu(Resource):
             fil=os.path.join(fila,ex)
             with open(fil, 'wb') as image_file:
                 #sample_string_bytes = File.encode("ascii")
-                image_file.write(File.decode('base64'))
+                image_file.write(base64.decodebytes(File))
                 image_file.close()
             user.picture=str(data['uuid'])+"/profile/"+ex
             db.session.commit()
