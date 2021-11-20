@@ -275,7 +275,7 @@ class Uplu(Resource):
             pa=str(data['uuid'])+"/"+'profile'
             fila=os.path.join(destination,pa)#,Name)
             if path.exists(fila) == False:
-                os.mkdirs(fila)
+                os.makedirs(fila)
             fil=os.path.join(fila,ex)
             with open(fil, 'wb') as image_file:
                 #sample_string_bytes = File.encode("ascii")
