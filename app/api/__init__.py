@@ -799,7 +799,7 @@ class Article(Resource):
                             return {
                                         "status":2,
                                         "uuid":user1.uuid,
-                                        'user_feed':marshal(user1, schema.users_dat),
+                                        'uploader_data':marshal(user1, schema.users_dat1),
                                         "res":"Please subscribe to have access to this post"
                                     }, 200
                     
@@ -836,7 +836,7 @@ class Article(Resource):
                                     return {
                                             "status":1,
                                             "uuid":user1.uuid,
-                                            'user_feed':marshal(user1, schema.users_dat),
+                                            'uploader_data':marshal(user1, schema.users_dat1),
                                             "res":"Please pay for post"
                                         }, 200
                     else:
@@ -871,7 +871,7 @@ class Article(Resource):
                     return {
                             "status":2,
                             "uuid":user1.uuid,
-                            'user_feed':marshal(user1, schema.users_dat),
+                            'uploader_data':marshal(user1, schema.users_dat1),
                             "res":"Please login and Subscribe"
                         }, 200
                                 
@@ -879,7 +879,7 @@ class Article(Resource):
                     return {
                             "status":1,
                             "uuid":user1.uuid,
-                            'user_feed':marshal(user1, schema.users_dat),
+                            'uploader_data':marshal(user1, schema.users_dat1),
                             "res":"Please login and pay for post"
                         }, 200
                 
