@@ -266,7 +266,7 @@ class Uplu(Resource):
         
         if File:
             if Name.lower() =="jpeg":
-                ex=user.username+".jpeg"
+                ex=user.username+".jpg"
             if Name.lower() =="jpg":
                 ex=user.username+".jpg"
             if Name.lower() =="png":
@@ -279,7 +279,7 @@ class Uplu(Resource):
             fil=os.path.join(fila,ex)
             with open(fil, 'wb') as image_file:
                 #sample_string_bytes = File.encode("ascii")
-                image_file.write(base64.decodebytes(File))
+                image_file.write(base64.b64decode(File))
                 image_file.close()
             user.picture=str(data['uuid'])+"/profile/"+ex
             db.session.commit()
