@@ -271,20 +271,15 @@ class Uplu(Resource):
                 ex=user.username+".jpg"
             if Name.lower() =="png":
                 ex=user.username+".png"
-            #fil=os.path.join(destination,str(data['uuid']),ex)
             pa=str(data['uuid'])+"/"+'profile'
-            fila=os.path.join(destination,pa)#,Name)
+            fila=os.path.join(destination,pa)
             if path.exists(fila) == False:
                 os.makedirs(fila)
             fil=os.path.join(fila,ex)
             if path.exists(fil) == True:
-                fil=os.path.join(fila,ex+'i')
+                os.remove(fil)
             with open(fil, 'wb') as image_file:
-                #sample_string_bytes = File.encode("ascii")
-                #image_64_encode = base64.encodebytes(File.encode('utf-8'))
-                image_file.write(base64.decodebytes(File.encode()))#File.decode('base64'))
- #base64.b64decode(File))
-                image_file.close()
+                image_file.write(base64.decodebytes(File))
             user.picture=str(data['uuid'])+"/profile/"+ex
             db.session.commit()
             return {
