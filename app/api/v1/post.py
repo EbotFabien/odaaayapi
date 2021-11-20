@@ -366,6 +366,8 @@ class Post(Resource):
         payment= req_data['payment'] 
         thumb_url_=req_data['thumb'] or None
         nsf= req_data['nsfw'] 
+        tags=req_data['Tags']
+        s=str(tags)
         got_language = req_data['lang']
         if lang == got_language:
             print('language good')
@@ -398,6 +400,7 @@ class Post(Resource):
                 newPost.translate=translated
                 newPost.subs_only=subs
                 newPost.nsfw=nsf
+                newPost.tags=s[1:-1]
                 newPost.user_name=user.username
                 db.session.commit()
                 if payment == True:
