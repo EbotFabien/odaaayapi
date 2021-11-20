@@ -901,7 +901,7 @@ class Article(Resource):
                         "results": {
                             "status":0,
                             "lang": lang,     
-                            "original_lang": current_lang.code,
+                            "original_lang": current_lang.code, 
                             "shouts":count_claps,
                             "saves":saves,
                             "report":report,

@@ -21,6 +21,9 @@ from flask import current_app as app
 
 from config import Config
 import base64
+import os.path
+from os import path
+
 
 #with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
@@ -270,7 +273,7 @@ class Uplu(Resource):
                 ex=user.username+".png"
             #fil=os.path.join(destination,str(data['uuid']),ex)
             fila=os.path.join(destination,str(data['uuid']),'profile')#,Name)
-            if os.path.isdir(fila) == False:
+            if path.exists(fila) == False:
                 os.mkdir(fila)
             fil=os.path.join(fila,ex)
             with open(fil, 'wb') as image_file:
