@@ -135,7 +135,7 @@ users_dat1 = apisec.model('users_dat', {
     'uuid': fields.String(required=True),
     'bio': fields.String(required=True),
     'picture':fields.String(required=True),
-    'followed': fields.List(fields.Nested(users_dat)),
+    #'followed': fields.List(fields.Nested(users_dat)),
 })
 
 postdata = apisec.model('postreturndata', {
