@@ -225,7 +225,7 @@ class Upl(Resource):
         if File.mimetype == "image/jpeg" :
             fila=os.path.join(destination,str(data['uuid']),'post')#,Name)
             if os.path.isdir(fila) == False:
-                os.mkdir(fila)
+                os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
             return {
