@@ -272,7 +272,8 @@ class Uplu(Resource):
             if Name.lower() =="png":
                 ex=user.username+".png"
             #fil=os.path.join(destination,str(data['uuid']),ex)
-            fila=os.path.join(destination,str(data['uuid']),'profile')#,Name)
+            pa=str(data['uuid'])+"/"+'profile'
+            fila=os.path.join(destination,pa)#,Name)
             if path.exists(fila) == False:
                 os.mkdir(fila)
             fil=os.path.join(fila,ex)
