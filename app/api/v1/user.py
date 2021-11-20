@@ -278,7 +278,7 @@ class Uplu(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,ex)
             if path.exists(fil) == True:
-                os.remove(fil)
+                fil=os.path.join(fila,ex+'i')
             with open(fil, 'wb') as image_file:
                 #sample_string_bytes = File.encode("ascii")
                 #image_64_encode = base64.encodebytes(File.encode('utf-8'))
