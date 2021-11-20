@@ -303,6 +303,32 @@ class buy(Resource):
                     'res': 'success',
                     'link': session['url'],
                 }, 200
+        if Type == "dona":
+            post=Posts.query.filter_by(uuid=req_data['post_uuid']).first()
+            session = stripe.checkout.Session.create(
+                customer=user.customer_id,
+                client_reference_id=post.product_id,
+                mode="payment",
+                payment_method_types=['card','alipay'],
+                line_items=[{
+                    'price':post.mini,
+                    'quantity': 1,
+                }],
+                payment_intent_data={
+                    'application_fee_amount': 123,#fee
+                    'transfer_data': {
+                    'destination': acc.account_id,
+                    },
+                },
+                success_url='https://odaaay.co/'+lan+'/article/'+req_data['post_uuid'],# open posts
+                cancel_url='https://odaaay.co/'+lan,#home page
+            )
+        
+            return {
+                    'status': 1,
+                    'res': 'success',
+                    'link': session['url'],
+                }, 200
 
         #payment for donation
 
