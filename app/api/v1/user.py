@@ -279,7 +279,7 @@ class Uplu(Resource):
             if path.exists(fil) == True:
                 os.remove(fil)
             with open(fil, 'wb') as image_file:
-                image_file.write(base64.decodebytes(File))
+                image_file.write(base64.b64decode(File))
             user.picture=str(data['uuid'])+"/profile/"+ex
             db.session.commit()
             return {
