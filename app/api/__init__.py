@@ -766,6 +766,69 @@ class Article(Resource):
                                     'res':"This post can't been translated"
                                 }
                             }, 200
+                    if  posts_feed.donation_id != None and posts_feed.subs_only == True:
+                        follow=user.is_following(user1)
+                        if follow:
+                            if translated_feed :
+                                return {
+                                    "results": {
+                                        "status":5,
+                                        "lang": lang,
+                                        "shouts":count_claps,
+                                        "saves":saves,
+                                        "report":report,
+                                        'translated_feed':marshal(translated_feed, schema.lang_post)
+                                    }
+                                }, 200
+                            else:
+                                current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                                translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                                return {
+                                    "results": {
+                                        "status":5,
+                                        "lang": lang,     
+                                        "original_lang": current_lang.code,
+                                        "shouts":count_claps,
+                                        "saves":saves,
+                                        "report":report,
+                                        'translated_feed':marshal(translated_feed, schema.lang_post),
+                                        'res':"This post can't been translated"
+                                    }
+                                }, 200
+                        else:
+                            return {
+                                        "status":2,
+                                        "uuid":user1.uuid,
+                                        'uploader_data':[marshal(user1, schema.users_dat1)],
+                                        "res":"Please subscribe to have access to this post"
+                                    }, 200
+                    if  posts_feed.donation_id != None:
+                        if translated_feed :
+                                return {
+                                    "results": {
+                                        "status":5,
+                                        "lang": lang,
+                                        "shouts":count_claps,
+                                        "saves":saves,
+                                        "report":report,
+                                        'translated_feed':marshal(translated_feed, schema.lang_post)
+                                    }
+                                }, 200
+                        else:
+                            current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                            translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                            return {
+                                "results": {
+                                    "status":5,
+                                    "lang": lang,     
+                                    "original_lang": current_lang.code,
+                                    "shouts":count_claps,
+                                    "saves":saves,
+                                    "report":report,
+                                    'translated_feed':marshal(translated_feed, schema.lang_post),
+                                    'res':"This post can't been translated"
+                                }
+                            }, 200
                     if posts_feed.subs_only == True:
                         follow=user.is_following(user1)
                         if follow:
