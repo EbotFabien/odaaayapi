@@ -595,7 +595,7 @@ class app_history(db.Model):
     def __repr__(self):
         return '<app_history>%r' %self.id
 
-
+ 
 class billing_history(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String)

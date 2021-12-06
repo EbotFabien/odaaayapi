@@ -53,10 +53,10 @@ class Config(object):
     RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
     ADMINS = ['touchone0001@gmail.com']
-    TWILIO_ACCOUNT_SID = 'ACfa2f374c7f24b74c6849fe081fdd9e26'
-    TWILIO_SERVICE = 'VA31999ccb95ccf86a3dacbf3c4d36ce4a'
-    TWILIO_AUTH_TOKEN = 'c7fbb80be7f81d96e0b6882e2614a9be'
-    TWILIO_NUMBER = '+19798032477'#'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
+    TWILIO_ACCOUNT_SID = 'ACfd72332dca5e922a899defc1a6e1244b'
+    TWILIO_SERVICE = 'VAa1ffa4ba9c1a3bf671607af97a5e6f3d'
+    TWILIO_AUTH_TOKEN = '8224524414d8b67eb8ac3d9c51d6b664'
+    #TWILIO_NUMBER = '+19798032477'#'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
     RQ_DASHBOARD_USERNAME = 'rq'
     RQ_DASHBOARD_PASSWORD =  'password'
     RQ_DASHBOARD_REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
