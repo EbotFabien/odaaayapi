@@ -28,7 +28,7 @@ def logo():
 @manager.command
 def recreate_db():
     with app.app_context():
-        #db.drop_all()
+        db.drop_all()
         db.create_all()
         db.session.commit()
         print('ok')
@@ -78,8 +78,8 @@ def test():
     return 1
 
 if __name__ == "__main__":
-    #recreate_db()
-    #languages()
+    recreate_db()
+    languages()
     manager.run()
     
     #run()
