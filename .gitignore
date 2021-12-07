@@ -5,3 +5,4 @@ postgres-data/
 .coverage
 .vscode/
 zappa_settings.json
+credentials.js
