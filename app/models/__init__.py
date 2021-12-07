@@ -319,7 +319,7 @@ class Rating(db.Model):
         return '<Rating>%r' %self.id
 
 class Posts(db.Model):
-    __searchable__ = ['title', 'text_content']
+    __searchable__ = ['title', 'text_content','created_on','user_name','price','tags']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(10000))
     uuid = db.Column(db.String(1000000))#check
@@ -482,7 +482,7 @@ class Post_Access(db.Model):
 
 
 class Translated(db.Model):
-    __searchable__ = ['title', 'content']
+    __searchable__ = ['title', 'fullcontent','tags','timestamp']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False)
