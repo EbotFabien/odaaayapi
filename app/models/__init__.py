@@ -60,7 +60,7 @@ class Language(db.Model):
 
         
 class Users(db.Model):
-    __searchable__ = ['username']
+    __searchable__ = ['username','handle','country']
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(120), nullable=False)#unique True
     email = db.Column(db.String(120), nullable=True)

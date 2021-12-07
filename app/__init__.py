@@ -21,9 +21,10 @@ import rq_dashboard
 from flask_googletrans import translator
 from flask_msearch import Search
 
+
 bycrypt = Bcrypt()
 db = SQLAlchemy()
-search = Search()
+search = Search(db=db)
 mail = Mail()
 basedir= os.path.abspath(os.path.dirname(__file__))
 cache = Cache(config={'CACHE_TYPE': 'simple'})

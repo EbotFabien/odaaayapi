@@ -1180,7 +1180,7 @@ class save_post(Resource):
             return{
                 "status":1,
                 "res":"Post has been saved"
-            }  
+            } ,200 
                 
         else:
             return{

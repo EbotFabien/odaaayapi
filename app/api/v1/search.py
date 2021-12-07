@@ -19,13 +19,7 @@ search = Namespace('/api/search', \
     path='/v1/')
 
 postdata = search.model('postreturndata', {
-    'id': fields.Integer(required=True),
-    'title': fields.String(required=True),
-    'channel_id': fields.Integer(required=True),
-    'post_url': fields.String(required=True),
-    'uploader': fields.String(required=True),
-    'content': fields.String(required=True),
-    'uploader_date': fields.DateTime(required=True)
+    'keyword': fields.String(required=True),
 })
 
 @search.doc(
@@ -47,7 +41,7 @@ postdata = search.model('postreturndata', {
 class Searchlist(Resource):
     @search.marshal_with(postdata)
     def get(self):
-        keyword = request.args.get('keyword')
+        keyword = request.get_json()
         # results = Posts.query.msearch(keyword,fields=['title'],limit=20).filter(...)
         # or
         # results = Posts.query.filter(...).msearch(keyword,fields=['title'],limit=20).filter(...)
@@ -55,4 +49,10 @@ class Searchlist(Resource):
         # keyword = "title:book AND content:read"
         # more syntax please visit https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
         results = Posts.query.msearch(keyword,limit=20).all()
-        return results, 200
+        #results1 = Users.query.msearch(keyword,limit=20).all()
+        return{
+                "status":1,
+                "posts":results
+                #"users":results1
+            }, 200
+        

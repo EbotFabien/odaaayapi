@@ -63,7 +63,7 @@ class Config(object):
     MSEARCH_INDEX_NAME = 'msearch'
     MSEARCH_BACKEND = 'elasticsearch'
     MSEARCH_PRIMARY_KEY = 'id'
-    MSEARCH_ENABLE = False
+    MSEARCH_ENABLE = True
     ELASTICSEARCH = {"hosts": ["127.0.0.1:9200"]}
 
 class Development(Config):
