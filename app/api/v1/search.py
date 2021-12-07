@@ -21,7 +21,6 @@ search = Namespace('/api/search', \
 post_= search.model('post_', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
-    'uuid': fields.String(required=True),
     'user_name': fields.String(required=True),
     'post_type': fields.Integer(required=True),
     'post_url': fields.String(required=True),
@@ -31,16 +30,11 @@ post_= search.model('post_', {
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
-    'paid': fields.Boolean(required=True),
 })
 
 postdata = search.model('postreturndata', {
-    'id': fields.Integer(required=True),
     'title': fields.String(required=True),
-    'uuid': fields.String(required=True),
-    'author': fields.Integer(required=True),
     'user_name': fields.String(required=True),
-    'post_type': fields.Integer(required=True),
     'text_content': fields.String(required=True),
     'post_url': fields.String(required=True),
     'audio_url': fields.String(required=True),
@@ -49,7 +43,6 @@ postdata = search.model('postreturndata', {
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
-    'paid': fields.Boolean(required=True),
     'content': fields.String(required=True),
     'fullcontent':fields.String(required=True),
     'posts': fields.List(fields.Nested(post_)),
