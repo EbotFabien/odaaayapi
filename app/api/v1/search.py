@@ -83,7 +83,7 @@ class Searchlist(Resource):
         # keyword = "title:book AND content:read"
         # more syntax please visit https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
         results = Posts.query.msearch(keyword,limit=20).all()
-        results1 = Posts.query.msearch(keyword,limit=20).all()
+        results1 = Translated.query.msearch(keyword,limit=20).all()
         return  {
                         "results": marshal([results,results1],postdata)
                 }, 200
