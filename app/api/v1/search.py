@@ -21,6 +21,7 @@ search = Namespace('/api/search', \
 post_= search.model('post_', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
+    'uuid': fields.String(required=True),
     'user_name': fields.String(required=True),
     'post_type': fields.Integer(required=True),
     'post_url': fields.String(required=True),
@@ -33,16 +34,8 @@ post_= search.model('post_', {
 })
 
 postdata = search.model('postreturndata', {
+    'id': fields.Integer(required=True),
     'title': fields.String(required=True),
-    'user_name': fields.String(required=True),
-    'text_content': fields.String(required=True),
-    'post_url': fields.String(required=True),
-    'audio_url': fields.String(required=True),
-    'video_url': fields.String(required=True),
-    'created_on': fields.DateTime(required=True),
-    'thumb_url': fields.String(required=False),
-    'tags': fields.String(required=True),
-    'price': fields.Float(required=True),
     'content': fields.String(required=True),
     'fullcontent':fields.String(required=True),
     'posts': fields.List(fields.Nested(post_)),
@@ -75,9 +68,9 @@ class Searchlist(Resource):
         # elasticsearch
         # keyword = "title:book AND content:read"
         # more syntax please visit https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
-        results = Posts.query.msearch(keyword,limit=20).all()
+        #results = Posts.query.msearch(keyword,limit=20).all()
         results1 = Translated.query.msearch(keyword,limit=20).all()
         return  {
-                        "results": marshal([results,results1],postdata)
+                        "results": marshal(results1,postdata)
                 }, 200
     
