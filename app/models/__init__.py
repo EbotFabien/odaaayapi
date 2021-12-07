@@ -319,7 +319,7 @@ class Rating(db.Model):
         return '<Rating>%r' %self.id
 
 class Posts(db.Model):
-    __searchable__ = ['title', 'content']
+    __searchable__ = ['title', 'text_content']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(10000))
     uuid = db.Column(db.String(1000000))#check
