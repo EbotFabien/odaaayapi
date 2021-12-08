@@ -14,6 +14,11 @@ import unittest
 import os
 from app.services import mail
 from flask import current_app
+from OpenSSL import SSL
+
+context = SSL.Context(SSL.PROTOCOL_TLSv1_2)
+context.use_privatekey_file('odaaay.key')
+context.use_certificate_file('odaaay.crt') 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 manager = Manager(app)
@@ -65,7 +70,7 @@ def run():
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        # ssl_context='adhoc'
+        ssl_context=context
     )
 
 @manager.command
