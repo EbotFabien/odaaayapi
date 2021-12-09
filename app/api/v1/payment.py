@@ -88,7 +88,8 @@ paymentbuy =payment.model('paymentbuy',{
     'type':  fields.String(required=True),
     'uuid': fields.String(required=True),
     'post_uuid':fields.String(required=False),
-    'lang':fields.String(required=True)
+    'lang':fields.String(required=True),
+    'price':fields.Integer(required=False)
 })
 
 @payment.doc(
@@ -311,7 +312,7 @@ class buy(Resource):
                 mode="payment",
                 payment_method_types=['card','alipay'],
                 line_items=[{
-                    'price':post.mini,
+                    'price':req_data['price'],
                     'quantity': 1,
                 }],
                 payment_intent_data={
