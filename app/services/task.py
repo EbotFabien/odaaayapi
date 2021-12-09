@@ -94,7 +94,7 @@ def translate_posts(post_id, user_id):
                         sum_content = post.text_content
                     new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=str('dddd'))#[x[0] for x in keywords[:5]]))
+                        new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
@@ -110,7 +110,7 @@ def translate_posts(post_id, user_id):
                    #keywords = rake.apply(content_translation[i])
                    new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
                    if new_check is None:
-                        new_row = Translated(post_id=post_id,fullcontent=full_content[i],title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=str('ddddddd'))#[x[0] for x in keywords[:5]]))
+                        new_row = Translated(post_id=post_id,fullcontent=full_content[i],title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
                         p += 1         
