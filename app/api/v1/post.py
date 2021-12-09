@@ -400,7 +400,7 @@ class Post(Resource):
                 newPost.translate=translated
                 newPost.subs_only=subs
                 newPost.nsfw=nsf
-                newPost.tags=s
+                newPost.tags='ok'
                 newPost.user_name=user.username
                 db.session.commit()
                 if payment == True:
