@@ -400,7 +400,7 @@ class Post(Resource):
                 newPost.translate=translated
                 newPost.subs_only=subs
                 newPost.nsfw=nsf
-                newPost.tags='ok'
+                newPost.tags=s[1:-1]
                 newPost.user_name=user.username
                 db.session.commit()
                 if payment == True:
@@ -464,7 +464,7 @@ class Post(Resource):
 
                     new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=newPost.tags)
                         db.session.add(new_row)
                         db.session.commit()
             
@@ -488,6 +488,7 @@ class Post(Resource):
                 newPost.thumb_url=thumb_url_
                 newPost.summarize=summarized
                 newPost.translate=translated
+                newPost.tags=s[1:-1]
                 newPost.subs_only=subs 
                 db.session.commit()
                 if payment == True:

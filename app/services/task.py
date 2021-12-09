@@ -142,7 +142,7 @@ def summarize_posts(post_id, user_id):
             if new_check is None:
                 if sum_content == '':
                     sum_content = post.text_content
-                new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id,fullcontent=post.text_content, tags=str('dddd'))
+                new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id,fullcontent=post.text_content, tags=post.tags)
                 db.session.add(new_row)
                 db.session.commit()
         except:
