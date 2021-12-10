@@ -312,7 +312,7 @@ class buy(Resource):
                 mode="payment",
                 payment_method_types=['card','alipay'],
                 line_items=[{
-                    'price':req_data['price'],
+                    'unit_amount':req_data['price'],
                     'quantity': 1,
                 }],
                 payment_intent_data={
