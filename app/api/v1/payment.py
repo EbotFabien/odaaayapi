@@ -303,16 +303,31 @@ class buy(Resource):
                     'status': 1,
                     'res': 'success',
                     'link': session['url'],
-                }, 200
+                }, 200  
         if Type == "dona":
             post=Posts.query.filter_by(uuid=req_data['post_uuid']).first()
+            if post.price_id == None:
+                price = stripe.Price.create(
+                        product=post.product_id,
+                        unit_amount=req_data['price']*100,
+                        currency='usd',
+                        type='one_time',
+                    )
+            else:
+                price=stripe.Price.modify(
+                        post.price_id,
+                        product=post.product_id,
+                        unit_amount=req_data['price']*100,
+                        currency='usd',
+                        type='one_time',
+                        )
             session = stripe.checkout.Session.create(
                 customer=user.customer_id,
                 client_reference_id=post.product_id,
                 mode="payment",
                 payment_method_types=['card','alipay'],
                 line_items=[{
-                    'unit_amount':req_data['price'],
+                    'unit_amount':price['id'],
                     'quantity': 1,
                 }],
                 payment_intent_data={
