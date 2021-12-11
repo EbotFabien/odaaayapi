@@ -228,6 +228,18 @@ class Upl(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
+            
+            return {
+                    "status":1,
+                    "thumb_url":str(data['uuid'])+"/post/"+Name,
+                    }, 200
+                    
+        if File.mimetype == "image/jpg" :
+            fila=os.path.join(destination,str(data['uuid']),'post')#,Name)
+            if os.path.isdir(fila) == False:
+                os.makedirs(fila)
+            fil=os.path.join(fila,Name)#,Name)
+            File.save(fil)
             return {
                     "status":1,
                     "thumb_url":str(data['uuid'])+"/post/"+Name,

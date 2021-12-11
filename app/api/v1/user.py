@@ -230,6 +230,71 @@ lang_post = user.model('lang_post', {
     'posts': fields.List(fields.Nested(postsdata)),
 })
 
+
+@user.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'lang' : 'Language'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/backdrop')
+
+class backdrop(Resource):
+    @token_required
+    @user.expect(uploader)
+    def post(self):
+        args = uploader.parse_args()
+        destination = Config.UPLOAD_FOLDER_MEDIA
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user= Users.query.filter_by(uuid=data['uuid']).first()
+        File=args['file']
+        Name=args['name']
+        if File.mimetype == "image/jpeg" :
+            fila=os.path.join(destination,str(data['uuid']),'backdrop')#,Name)
+            if os.path.isdir(fila) == False:
+                os.makedirs(fila)
+            fil=os.path.join(fila,Name)#,Name)
+            File.save(fil)
+            user.background=str(data['uuid'])+"/backdrop/"+Name
+            db.session.commit()
+            return {
+                    "status":1,
+                    "res":"back drop was uploaded",
+                    }, 200
+                    
+        if File.mimetype == "image/jpg" :
+            fila=os.path.join(destination,str(data['uuid']),'post')#,Name)
+            if os.path.isdir(fila) == False:
+                os.makedirs(fila)
+            fil=os.path.join(fila,Name)#,Name)
+            File.save(fil)
+            user.background=str(data['uuid'])+"/backdrop/"+Name
+            db.session.commit()
+            return {
+                    "status":1,
+                    "res":"back drop was uploaded",
+                    }, 200
+        else:
+            return {
+                    "status":0,
+                    "res":"Put a Jpeg file",
+                    }, 200
+
+
 @user.doc(
     security='KEY',
     params={ 'start': 'Value to start from ',
