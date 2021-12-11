@@ -312,6 +312,8 @@ class buy(Resource):
                         currency='usd',
                         product=post.donation_id,
                     )
+                post.price_id =price['id']
+                db.session.commit()
             else:
                 price=stripe.Price.modify(
                         post.price_id,
@@ -325,7 +327,7 @@ class buy(Resource):
                 mode="payment",
                 payment_method_types=['card','alipay'],
                 line_items=[{
-                    'unit_amount':price['id'],
+                    'price':price['id'],
                     'quantity': 1,
                 }],
                 payment_intent_data={
