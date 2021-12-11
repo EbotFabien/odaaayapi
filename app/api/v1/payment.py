@@ -310,16 +310,14 @@ class buy(Resource):
                 price = stripe.Price.create(
                         product=post.product_id,
                         unit_amount=req_data['price']*100,
-                        currency='usd',
-                        type='one_time',
+                        currency='usd'
                     )
             else:
                 price=stripe.Price.modify(
                         post.price_id,
                         product=post.product_id,
                         unit_amount=req_data['price']*100,
-                        currency='usd',
-                        type='one_time',
+                        currency='usd'
                         )
             session = stripe.checkout.Session.create(
                 customer=user.customer_id,
