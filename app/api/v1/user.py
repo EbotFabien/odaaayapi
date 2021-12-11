@@ -175,7 +175,7 @@ User_R_data = user.model('User_R_data',{
     'number':fields.String(required=False),
     'bio':fields.String(required=False),
     'uuid':fields.String(required=False),
-    'profile_picture':fields.String(required=False),
+    'picture': fields.String(required=True),
     'user_visibility':fields.String(required=False),
 })
 deleteuser = user.model('deleteuser',{
