@@ -306,14 +306,14 @@ class buy(Resource):
                 }, 200  
         if Type == "dona":
             post=Posts.query.filter_by(uuid=req_data['post_uuid']).first()
+            post.price_id == None
+            db.session.commit()
             if post.price_id == None:
                 price = stripe.Price.create(
                         unit_amount=req_data['price']*100,
                         currency='usd',
                         product=post.donation_id,
                     )
-                post.price_id =price['id']
-                db.session.commit()
             else:
                 price=stripe.Price.modify(
                         post.price_id,
