@@ -166,7 +166,7 @@ updateuser = user.model('Update',{
     'username': fields.String(required=True),
     'email':fields.String(required=False),
     'number':fields.String(required=False),
-    'profile_picture':fields.String(required=False),
+    'picture': fields.String(required=True),
     'user_visibility':fields.String(required=False),
 })
 User_R_data = user.model('User_R_data',{
@@ -189,7 +189,7 @@ Postfollowed = user.model('Postfollowed',{
 })
 following_followers = user.model('following',{
     'username': fields.String(required=True),
-    'profile_picture': fields.String(required=True),
+    'picture': fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=False),
 })
