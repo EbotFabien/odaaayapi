@@ -777,6 +777,7 @@ class Article(Resource):
                                         "shouts":count_claps,
                                         "saves":saves,
                                         "report":report,
+                                        'uuid':user.uuid,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
                                 }, 200
@@ -791,6 +792,7 @@ class Article(Resource):
                                         "shouts":count_claps,
                                         "saves":saves,
                                         "report":report,
+                                        'uuid':user.uuid,
                                         'translated_feed':marshal(translated_feed, schema.lang_post),
                                         'res':"This post can't been translated"
                                     }
@@ -811,6 +813,7 @@ class Article(Resource):
                                         "shouts":count_claps,
                                         "saves":saves,
                                         "report":report,
+                                        'uuid':user.uuid,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
                                 }, 200
@@ -825,6 +828,7 @@ class Article(Resource):
                                     "shouts":count_claps,
                                     "saves":saves,
                                     "report":report,
+                                    'uuid':user.uuid,
                                     'translated_feed':marshal(translated_feed, schema.lang_post),
                                     'res':"This post can't been translated"
                                 }
