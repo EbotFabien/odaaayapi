@@ -308,9 +308,9 @@ class buy(Resource):
             post=Posts.query.filter_by(uuid=req_data['post_uuid']).first()
             if post.price_id == None:
                 price = stripe.Price.create(
-                        product=post.product_id,
                         unit_amount=req_data['price']*100,
-                        currency='usd'
+                        product=post.product_id,
+                        currency='usd',
                     )
             else:
                 price=stripe.Price.modify(
