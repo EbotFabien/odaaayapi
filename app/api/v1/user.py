@@ -1321,7 +1321,7 @@ class Data(Resource):
                         posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         if user != user2:
-                            if user.is_following(user2) is not None:
+                            if user.is_following(user2) > 0:
                                 follow=True
                             else:
                                 follow=False
