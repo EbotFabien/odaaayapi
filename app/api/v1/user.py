@@ -1328,7 +1328,7 @@ class Data(Resource):
                                     "next":next,
                                     "total":total,
                                     "previous":previous,
-                                    "user_data":marshal(user,userdata),
+                                    "user_data":marshal(user2,userdata),
                                     "results":marshal(posts_feed.items,lang_post)
                                             
                                 },200
