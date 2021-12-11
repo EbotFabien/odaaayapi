@@ -309,8 +309,11 @@ class buy(Resource):
             if post.price_id == None:
                 price = stripe.Price.create(
                         unit_amount=req_data['price']*100,
-                        product=post.product_id,
                         currency='usd',
+                        product=post.product_id,
+                        recurring={
+                        'interval': 'month',
+                        },
                     )
             else:
                 price=stripe.Price.modify(

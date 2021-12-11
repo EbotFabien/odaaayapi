@@ -1320,6 +1320,13 @@ class Data(Resource):
                                             Posts.author==user2.id)
                         posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
+                        if user != user2:
+                            if user.is_following(user2) is not None:
+                                follow=True
+                            else:
+                                follow=False
+                        else:
+                            follow=False
                         if posts_feed:
                                 return{
                                     "start":start,
@@ -1328,9 +1335,9 @@ class Data(Resource):
                                     "next":next,
                                     "total":total,
                                     "previous":previous,
+                                    "follow":follow,
                                     "user_data":marshal(user2,userdata),
                                     "results":marshal(posts_feed.items,lang_post)
-                                            
                                 },200
 
                         else:
