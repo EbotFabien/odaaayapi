@@ -228,7 +228,7 @@ class Upl(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
-            
+
             return {
                     "status":1,
                     "thumb_url":str(data['uuid'])+"/post/"+Name,
@@ -440,24 +440,30 @@ class Post(Resource):
                             'status': 0,
                             'res': 'Please create a stripe account'
                         }, 200
-                if donation == True:
-                    acc=Account.query.filter_by(user=user.id).first()
-                    if acc is not None:
-                        mini = req_data['min']
-                        maxi = req_data['max']
-                        product = stripe.Product.create(
-                            name=newPost.title+' post  donation by '+user.username,
-                        )
-                        newPost.donation_id=product['id']
-                        newPost.mini=float(mini)
-                        newPost.maxi=float(maxi)
-                        db.session.commit()
+                if donation == True  :
+                    if  req_data['max'] < 100 :
+                        acc=Account.query.filter_by(user=user.id).first()
+                        if acc is not None:
+                            mini = req_data['min']
+                            maxi = req_data['max']
+                            product = stripe.Product.create(
+                                name=newPost.title+' post  donation by '+user.username,
+                            )
+                            newPost.donation_id=product['id']
+                            newPost.mini=float(mini)
+                            newPost.maxi=float(maxi)
+                            db.session.commit()
 
-                else:
-                    return {
-                        'status': 0,
-                        'res': 'Please create a stripe account'
-                    }, 200
+                        else:
+                            return {
+                                'status': 0,
+                                'res': 'Please create a stripe account'
+                            }, 200
+                    else:
+                        return {
+                            'status': 0,
+                            'res': 'Please Max amount cant be more than 100'
+                        }, 200
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -481,7 +487,7 @@ class Post(Resource):
                         db.session.commit()
             
                 for i in followers_:
-                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
+                    notif_add = Notification("user" + user.username + "has made a post Titled "+title,i.id,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
                 return {
@@ -525,23 +531,29 @@ class Post(Resource):
                             'status': 0,
                             'res': 'Please create a stripe account'
                         }, 200
-                if donation == True:
-                    acc=Account.query.filter_by(user=user.id).first()
-                    if acc :
-                        mini = req_data['min']
-                        maxi = req_data['max']
-                        product = stripe.Product.create(
-                            name=newPost.title+' post  donation by '+user.username,
-                        )
-                        newPost.donation_id=product['id']
-                        newPost.mini=float(mini)
-                        newPost.maxi=float(maxi)
-                        db.session.commit()
+                if donation == True  :
+                    if  req_data['max'] < 100 :
+                        acc=Account.query.filter_by(user=user.id).first()
+                        if acc is not None:
+                            mini = req_data['min']
+                            maxi = req_data['max']
+                            product = stripe.Product.create(
+                                name=newPost.title+' post  donation by '+user.username,
+                            )
+                            newPost.donation_id=product['id']
+                            newPost.mini=float(mini)
+                            newPost.maxi=float(maxi)
+                            db.session.commit()
 
+                        else:
+                            return {
+                                'status': 0,
+                                'res': 'Please create a stripe account'
+                            }, 200
                     else:
                         return {
                             'status': 0,
-                            'res': 'Please create a stripe account'
+                            'res': 'Please Max amount cant be more than 100'
                         }, 200
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
@@ -561,12 +573,12 @@ class Post(Resource):
 
                     new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=newPost.tags)
                         db.session.add(new_row)
                         db.session.commit()
                 
                 for i in followers_:
-                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
+                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
                 db.session.commit()

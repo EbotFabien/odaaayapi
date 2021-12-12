@@ -154,43 +154,44 @@ class Login_email(Resource):
                             }, 200
                     
                     if len(code) > 10:
-                        if code == user1.rescue:
-                            user1.verified_phone=True
-                            user1.tries =0
-                            if user1.customer_id == None:
-                                customer = stripe.Customer.create(
-                                    email=user1.phone+"@gmail.com",#see if phone number can be used
-                                    payment_method='pm_card_visa',
-                                    invoice_settings={
-                                        'default_payment_method': 'pm_card_visa',
-                                    },
-                                )
-                                user1.customer_id=customer['id']
-                            db.session.commit()
-                            token = jwt.encode({
-                                'user': user1.username,
-                                'uuid': user1.uuid,
-                                'exp': datetime.utcnow() + timedelta(days=30),
-                                'iat': datetime.utcnow()
-                            },
-                            app.config.get('SECRET_KEY'),
-                            algorithm='HS256')
-                            return {
-                                'status': 1,
-                                'res':'success',
-                                'uuid': user1.uuid,
-                                'token': str(token)
-                                }, 200
-                        else:
-                                if user1.tries < count:
-                                    user1.tries +=1
-                                    db.session.commit()
-                                    return {'res': 'verification failed please re enter yoour rescue code '}, 401
+                        if user1.verified_phone==True:
+                            if code == user1.rescue:
+                                #user1.verified_phone=True
+                                user1.tries =0
+                                if user1.customer_id == None:
+                                    customer = stripe.Customer.create(
+                                        email=user1.phone+"@gmail.com",#see if phone number can be used
+                                        payment_method='pm_card_visa',
+                                        invoice_settings={
+                                            'default_payment_method': 'pm_card_visa',
+                                        },
+                                    )
+                                    user1.customer_id=customer['id']
+                                db.session.commit()
+                                token = jwt.encode({
+                                    'user': user1.username,
+                                    'uuid': user1.uuid,
+                                    'exp': datetime.utcnow() + timedelta(days=30),
+                                    'iat': datetime.utcnow()
+                                },
+                                app.config.get('SECRET_KEY'),
+                                algorithm='HS256')
+                                return {
+                                    'status': 1,
+                                    'res':'success',
+                                    'uuid': user1.uuid,
+                                    'token': str(token)
+                                    }, 200
+                            else:
+                                    if user1.tries < count:
+                                        user1.tries +=1
+                                        db.session.commit()
+                                        return {'res': 'verification failed please re enter yoour rescue code '}, 401
 
-                                if user1.tries >= count:
-                                    user1.verified_phone=False
-                                    db.session.commit()
-                                    return {'res': 'Reset your code  or contact our service center for new rescue code'}, 401
+                                    if user1.tries >= count:
+                                        user1.verified_phone=False
+                                        db.session.commit()
+                                        return {'res': 'Reset your code  or contact our service center for new rescue code'}, 401
                         
                     if len(code) < 10:
                         check=phone.checkverification(user1.phone,code)
@@ -739,6 +740,11 @@ class Article(Resource):
                 translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                 count_claps=posts_feed.No__claps()
                 if user is not None:
+                    dona=Post_Access.query.filter(and_(Post_Access.user==user.id,Post_Access.post==posts_feed.id)).first()
+                    if dona :
+                        d=True
+                    else:
+                        d=False
                     if user1.id == user.id:
                         if translated_feed :
                                 return {
@@ -778,6 +784,7 @@ class Article(Resource):
                                         "saves":saves,
                                         "report":report,
                                         'uuid':user.uuid,
+                                        'donated':d,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
                                 }, 200
@@ -793,6 +800,7 @@ class Article(Resource):
                                         "saves":saves,
                                         "report":report,
                                         'uuid':user.uuid,
+                                        'donated':d,
                                         'translated_feed':marshal(translated_feed, schema.lang_post),
                                         'res':"This post can't been translated"
                                     }
@@ -814,6 +822,7 @@ class Article(Resource):
                                         "saves":saves,
                                         "report":report,
                                         'uuid':user.uuid,
+                                        'donated':d,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
                                 }, 200
@@ -829,6 +838,7 @@ class Article(Resource):
                                     "saves":saves,
                                     "report":report,
                                     'uuid':user.uuid,
+                                    'donated':d,
                                     'translated_feed':marshal(translated_feed, schema.lang_post),
                                     'res':"This post can't been translated"
                                 }
