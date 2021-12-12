@@ -923,7 +923,7 @@ class User_Random(Resource):
             req_data = request.get_json()
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            channel = Users.query.order_by(func.random()).paginate(int(start),int(count), False).items
+            channel = Users.query.filter_by(verified_phone=True).order_by(func.random()).paginate(int(start),int(count), False).items
             followed =[]
             followers=user.is_followers()
             for i in channel:
