@@ -535,7 +535,6 @@ class Post(Resource):
                         newPost.mini=float(mini)
                         newPost.maxi=float(maxi)
                         db.session.commit()
-
                     else:
                         return {
                             'status': 0,
