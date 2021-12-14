@@ -401,6 +401,11 @@ class Post(Resource):
                         'status': 0,
                         'res': 'Please pt a thumb'
                     }, 400
+        if donation == True and req_data['max'] >=100:
+            return {
+                        'status': 0,
+                        'res': 'Please fix donaton price'
+                    }, 400
         if post_done is None:
             if ptype == 1:
                 sum_content = ''
