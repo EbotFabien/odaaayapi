@@ -479,8 +479,7 @@ class Post(Resource):
                         db.session.commit()
             
                 for i in followers_:
-                    user2 = Users.query.filter_by(id=i.id).first()
-                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,user2.id,newPost.id)
+                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
                 return {
@@ -564,8 +563,7 @@ class Post(Resource):
                         db.session.commit()
                 
                 for i in followers_:
-                    user2 = Users.query.filter_by(id=i.id).first()
-                    notif_add = Notification("user " + user.username + " has made a post Titled "+title,user2.id,newPost.id)
+                    notif_add = Notification("user " + user.username + " has made a post Titled "+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
                 db.session.commit()

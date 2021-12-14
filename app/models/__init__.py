@@ -181,11 +181,13 @@ class Users(db.Model):
                 followers.c.follower_id == self.id).all() 
  
     def is_followers(self):
-        return Users.query.join(
+        use=Users.query.join(
             followers,(followers.c.follower_id == Users.id)).filter(
                 followers.c.followed_id == self.id).all()
-
-         
+        follow=list()
+        for i in use:
+            follow.append(i.id)
+        return follow
 
 
     
