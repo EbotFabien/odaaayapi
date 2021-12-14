@@ -489,7 +489,8 @@ class Post(Resource):
                     db.session.commit()
                 return {
                     'status': 1,
-                    'res': 'Post was made'
+                    'res': 'Post was made',
+                    'post_id': newPost.id
                 }, 200
             if ptype == 2:
                 thumb_url_=req_data['thumb'] or None
@@ -575,7 +576,7 @@ class Post(Resource):
                 return {
                     'status': 1,
                     'res': 'Post was made',
-                    
+                    'post_id': newPost.id
                 }, 200
             else:
                 return {
