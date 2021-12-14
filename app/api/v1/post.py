@@ -463,7 +463,7 @@ class Post(Resource):
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 if summarized == True and translated == False :
                     newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
-                if summarized and translated == False:
+                if summarized == False and translated == False:
                     parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
                     stemmer = Stemmer(language.name)
                     summarizer = Summarizer(stemmer)
@@ -479,7 +479,7 @@ class Post(Resource):
                         db.session.commit()
             
                 for i in followers_:
-                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
+                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
                 return {
@@ -547,7 +547,7 @@ class Post(Resource):
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 if summarized == True and translated == False :
                     newPost.launch_summary_task('summarize_posts', user.id, 'summarizing  post ...')
-                if summarized and translated == False:
+                if summarized == False  and translated == False:
                     parser = HtmlParser.from_string(newPost.text_content, '', Tokenizer(language.name))
                     stemmer = Stemmer(language.name)
                     summarizer = Summarizer(stemmer)
@@ -558,19 +558,18 @@ class Post(Resource):
 
                     new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=str('dddd'))
+                        new_row = Translated(post_id=newPost.id,title=newPost.title,content=sum_content,language_id=lang,fullcontent=newPost.text_content, tags=newPost.tags)
                         db.session.add(new_row)
                         db.session.commit()
                 
                 for i in followers_:
-                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id)
+                    notif_add = Notification("user" + user.username + "has made a post Titled"+title,i.id,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
                 db.session.commit()
                 return {
                     'status': 1,
                     'res': 'Post was made',
-                    'pro5':newPost.product_id,
                     
                 }, 200
             else:
