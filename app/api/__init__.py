@@ -969,7 +969,7 @@ class Article(Resource):
                                     "saves":saves,
                                     "report":report,
                                     'uuid':user.uuid,
-                                    'donated':False,
+                                    'donated':True,
                                     'translated_feed':marshal(translated_feed, schema.lang_post)
                                 }
                             }, 200
@@ -985,7 +985,34 @@ class Article(Resource):
                                 "saves":saves,
                                 "report":report,
                                 'uuid':user.uuid,
-                                'donated':False,
+                                'donated':True,
+                                'translated_feed':marshal(translated_feed, schema.lang_post),
+                                'res':"This post can't been translated"
+                            }
+                        }, 200
+                else:
+                    if translated_feed :
+                        return {
+                            "results": {
+                                "status":0,
+                                "lang": lang,
+                                "shouts":count_claps,
+                                "saves":saves,
+                                "report":report,
+                                'translated_feed':marshal(translated_feed, schema.lang_post)
+                            }
+                        }, 200
+                    else:
+                        current_lang = Language.query.filter_by(id=posts_feed.orig_lang).first()
+                        translated_feed = Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
+                        return {
+                            "results": {
+                                "status":0,
+                                "lang": lang,     
+                                "original_lang": current_lang.code,
+                                "shouts":count_claps,
+                                "saves":saves,
+                                "report":report,
                                 'translated_feed':marshal(translated_feed, schema.lang_post),
                                 'res':"This post can't been translated"
                             }
