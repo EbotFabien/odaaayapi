@@ -719,6 +719,57 @@ class Related(Resource):
         404: 'Resource Not found',
         500: 'internal server error, please contact admin and report '
     })
+@home.route('/homearticle/<id>')
+class homeArticle(Resource):
+    def get(self, id):
+        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+        try:
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user= Users.query.filter_by(uuid=data['uuid']).first()
+            saved=[]
+        except:
+            user=None
+        if request.args:
+            if id:
+                lang  = request.args.get('lang', None)
+                current_lang = Language.query.filter_by(code=lang).first()
+                posts_feed = Posts.query.filter_by(uuid = id).first()
+                user1= Users.query.filter_by(id=posts_feed.author).first()
+                saves=Save.query.filter_by(post_id=posts_feed.id).count()
+                report=Report.query.filter_by(post_id=posts_feed.id).count()
+                count_claps=posts_feed.No__claps()
+                if posts_feed.paid == True:
+                    p=1
+                else:
+                    p=0
+                if user:
+                     return {
+                            "results": {
+                                "status":p,
+                                "lang": lang,
+                                "shouts":count_claps,
+                                "saves":saves,
+                                "report":report,
+                                'translated_feed':marshal(posts_feed, schema.postdata)
+                            }
+                                }, 200
+@cache.cached(300, key_prefix='article')
+@home.doc(
+    security='KEY',
+    params={'lang':'Language'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report '
+    })
 @home.route('/article/<id>')
 class Article(Resource):
     def get(self, id):
