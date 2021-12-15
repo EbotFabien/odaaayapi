@@ -490,7 +490,8 @@ class Post(Resource):
                 return {
                     'status': 1,
                     'res': 'Post was made',
-                    'post_id': newPost.id
+                    'post_id': newPost.id,
+                    'post_uuid': newPost.uuid,
                 }, 200
             if ptype == 2:
                 thumb_url_=req_data['thumb'] or None
@@ -576,7 +577,8 @@ class Post(Resource):
                 return {
                     'status': 1,
                     'res': 'Post was made',
-                    'post_id': newPost.id
+                    'post_id': newPost.id,
+                    'post_uuid': newPost.uuid,
                 }, 200
             else:
                 return {
