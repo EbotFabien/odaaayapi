@@ -541,7 +541,7 @@ class Home(Resource):
                                 "totalPages": total,
                                 "results": {
                                     'post_saved':saved,
-                                    "feed": marshal(feed.items, schema.lang_post)
+                                    "feed": marshal(feed, schema.lang_post)
                                 }
                             }, 200
                         else:
