@@ -396,7 +396,7 @@ class Post(Resource):
                         'status': 0,
                         'res': 'Subs and payment cant match'
                     }, 400
-        if payment == True and thumb_url_ ==None:
+        if payment == True and thumb_url_ == None:
             return {
                         'status': 0,
                         'res': 'Please pt a thumb'
@@ -415,6 +415,7 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs
+                newPost.thumb_url=thumb_url_
                 newPost.nsfw=nsf
                 newPost.tags=s[1:-1]
                 newPost.user_name=user.username
