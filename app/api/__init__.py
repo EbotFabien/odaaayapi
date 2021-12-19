@@ -844,7 +844,7 @@ class Article(Resource):
                                         "shouts":count_claps,
                                         "saves":saves,
                                         "report":report,
-                                        'uuid':user.uuid,
+                                        'uuid':user1.uuid,
                                         'donated':d,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
@@ -860,7 +860,7 @@ class Article(Resource):
                                         "shouts":count_claps,
                                         "saves":saves,
                                         "report":report,
-                                        'uuid':user.uuid,
+                                        'uuid':user1.uuid,
                                         'donated':d,
                                         'translated_feed':marshal(translated_feed, schema.lang_post),
                                         'res':"This post can't been translated"
@@ -882,7 +882,7 @@ class Article(Resource):
                                         "shouts":count_claps,
                                         "saves":saves,
                                         "report":report,
-                                        'uuid':user.uuid,
+                                        'uuid':user1.uuid,
                                         'donated':d,
                                         'translated_feed':marshal(translated_feed, schema.lang_post)
                                     }
@@ -898,7 +898,7 @@ class Article(Resource):
                                     "shouts":count_claps,
                                     "saves":saves,
                                     "report":report,
-                                    'uuid':user.uuid,
+                                    'uuid':user1.uuid,
                                     'donated':d,
                                     'translated_feed':marshal(translated_feed, schema.lang_post),
                                     'res':"This post can't been translated"
@@ -1029,7 +1029,7 @@ class Article(Resource):
                                     "shouts":count_claps,
                                     "saves":saves,
                                     "report":report,
-                                    'uuid':user.uuid,
+                                    'uuid':user1.uuid,
                                     'donated':True,
                                     'translated_feed':marshal(translated_feed, schema.lang_post)
                                 }
@@ -1045,7 +1045,7 @@ class Article(Resource):
                                 "shouts":count_claps,
                                 "saves":saves,
                                 "report":report,
-                                'uuid':user.uuid,
+                                'uuid':user1.uuid,
                                 'donated':True,
                                 'translated_feed':marshal(translated_feed, schema.lang_post),
                                 'res':"This post can't been translated"
