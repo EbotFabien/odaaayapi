@@ -925,11 +925,13 @@ class User_Random(Resource):
             user = Users.query.filter_by(uuid=data['uuid']).first()
             channel = Users.query.filter_by(verified_phone=True).order_by(func.random()).paginate(int(start),int(count), False).items
             followed =[]
+            latest=[]
             followers=user.is_followers()
             for i in channel:
                 for j in followers:
                     if i.id == j :
                         followed.append(i.id)
+                        channel.remove(i)
 
             for i in channel:
                 if i.id == user.id:
