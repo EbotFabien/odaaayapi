@@ -931,7 +931,7 @@ class User_Random(Resource):
                 for j in followers:
                     if i.id == j :
                         followed.append(i.id)
-                        channel.remove(i)
+            
 
             for i in channel:
                 if i.id == user.id:
