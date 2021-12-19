@@ -188,6 +188,12 @@ class Users(db.Model):
         for i in use:
             follow.append(i.id)
         return follow
+    
+    def is_followersd(self):
+        return Users.query.join(
+            followers,(followers.c.follower_id == Users.id)).filter(
+                followers.c.followed_id == self.id).all()
+        
 
 
     

@@ -498,7 +498,7 @@ class User_following(Resource):
                 "results":marshal(following,following_followers)
             }, 200
         if fan_base == 'followers':
-            followers=user.is_followers()
+            followers=user.is_followersd()
             return {
                 "results":marshal(followers,following_followers)
             }, 200
@@ -928,7 +928,7 @@ class User_Random(Resource):
             followers=user.is_followers()
             for i in channel:
                 for j in followers:
-                    if i.id == j.id :
+                    if i.id == j :
                         followed.append(i.id)
 
             for i in channel:
