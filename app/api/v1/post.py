@@ -126,7 +126,7 @@ postdata = post.model('postreturndata', {
     'uploader_data': fields.List(fields.Nested(userdata)),
     'text_content': fields.String(required=True),
     'thumb_url': fields.String(required=False),
-    'created_on': fields.DateTime(required=True)
+    'created_on': fields.DateTime(required=True),
 })
 user_post_sav = post.model('postreturnuserdata', {
     'id': fields.Integer(required=True),
@@ -136,7 +136,7 @@ user_post_sav = post.model('postreturnuserdata', {
     'thumb_url': fields.String(required=True),
     'author': fields.String(required=True),
     'text_content': fields.String(required=True),
-    'created_on': fields.DateTime(required=True)
+    'created_on': fields.DateTime(required=True),
 })
 
 langpostdata = post.model('langpostreturndata', {
