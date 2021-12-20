@@ -120,7 +120,7 @@ postsdata = user.model('postsdata', {
     'post_url': fields.String(required=True),
     'audio_url': fields.String(required=True),
     'video_url': fields.String(required=True),
-    'created_on ': fields.DateTime(required=True),
+    'created_on': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
 })
