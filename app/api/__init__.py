@@ -147,7 +147,7 @@ class Login_email(Resource):
                 user1 = Users.query.filter_by(phone=number).first()
                 if user1:
                     if code is None:
-                        phone.sendverification(number)
+                        #phone.sendverification(number)
                         return {
                             'status': 1,
                             'res': 'verification sms sent'
@@ -340,7 +340,7 @@ class Signup_email(Resource):
                     newuser = Users(username,str(uuid.uuid4()),True, None,phone_number)
                     db.session.add(newuser)
                     db.session.commit()
-                    phone.sendverification(phone_number)
+                   # phone.sendverification(phone_number)
                     return {
                         'status': 1,
                         'Phone':phone_number,
