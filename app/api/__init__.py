@@ -319,7 +319,7 @@ class Signup_email(Resource):
                     return {'res': 'User does not exist'}, 401
                     
             if phone_number and username is not None:
-                user = Users.query.filter_by(phone=phone_number).first()
+                user = Users.query.filter(or_(Users.phone==phone_number,Users.username==username)).first()
                 if user:
                     if user.verified_phone==False:
                         verification_code=phone.generate_code()
@@ -333,7 +333,12 @@ class Signup_email(Resource):
                     else:
                         return { 
                             'res':'user already exist',
-                            'status': 0
+                            'status': 2
+                        }, 200
+                if user.username == username:
+                        return { 
+                            'res':'user already exist',
+                            'status': 2
                         }, 200
                 else:
                     verification_code=phone.generate_code()
