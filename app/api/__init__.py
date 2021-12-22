@@ -145,7 +145,7 @@ class Login_email(Resource):
                 number = "".join(number_.split())
                 code=req_data['code'] or None
                 user1 = Users.query.filter_by(phone=number).first()
-                if user1:
+                if user1.user_visibility == True:
                     if code is None:
                         #phone.sendverification(number)
                         return {
@@ -235,7 +235,7 @@ class Login_email(Resource):
                     else:
                         return {'res': 'Your account has been blocked'}, 401
                 else:
-                    return {'res': 'User does not exist'}, 401
+                    return {'res': 'User does not exist'}, 200
 
     
 
