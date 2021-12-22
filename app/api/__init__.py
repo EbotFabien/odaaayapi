@@ -147,11 +147,18 @@ class Login_email(Resource):
                 user1 = Users.query.filter_by(phone=number).first()
                 if user1.user_visibility == True:
                     if code is None:
-                        phone.sendverification(number)
-                        return {
-                            'status': 1,
-                            'res': 'verification sms sent'
-                            }, 200
+                        try:
+                            phone.sendverification(number)
+                            return {
+                                'status': 1,
+                                'res': 'verification sms sent'
+                                }, 200
+                        except:
+                            return {
+                                'status': 4,
+                                'res': 'wrong  Phone number or twillio might be down,try again'
+                                }, 200
+                        
                     
                     if len(code) > 10:
                         if user1.verified_phone==True:
@@ -235,7 +242,10 @@ class Login_email(Resource):
                     else:
                         return {'res': 'Your account has been blocked'}, 401
                 else:
-                    return {'res': 'User does not exist'}, 200
+                    return {
+                        'status': 6,
+                        'res': 'User does not exist'
+                        }, 200
 
     
 
@@ -338,19 +348,26 @@ class Signup_email(Resource):
                 if user.username == username:
                         return { 
                             'res':'user already exist',
-                            'status': 2
+                            'status': 3
                         }, 200
                 else:
                     verification_code=phone.generate_code()
                     newuser = Users(username,str(uuid.uuid4()),True, None,phone_number)
                     db.session.add(newuser)
                     db.session.commit()
-                    phone.sendverification(phone_number)
-                    return {
-                        'status': 1,
-                        'Phone':phone_number,
-                        'res': 'verification sms sent'
-                        }, 200
+                    try:
+                        phone.sendverification(phone_number)
+                        return {
+                            'status': 1,
+                            'Phone':phone_number,
+                            'res': 'verification sms sent'
+                            }, 200
+                    except:
+                        return {
+                            'status': 4,
+                            'Phone':phone_number,
+                            'res': 'wrong  Phone number or twillio might be down,try again'
+                            }, 200
 
             
         else:
