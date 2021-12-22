@@ -145,25 +145,66 @@ class Login_email(Resource):
                 number = "".join(number_.split())
                 code=req_data['code'] or None
                 user1 = Users.query.filter_by(phone=number).first()
-                if user1.user_visibility == True:
-                    if code is None:
-                        try:
-                            phone.sendverification(number)
-                            return {
-                                'status': 1,
-                                'res': 'verification sms sent'
-                                }, 200
-                        except:
-                            return {
-                                'status': 4,
-                                'res': 'wrong  Phone number or twillio might be down,try again'
-                                }, 200
+                if user1:
+                    if user1.user_visibility == True:
+                        if code is None:
+                            try:
+                                phone.sendverification(number)
+                                return {
+                                    'status': 1,
+                                    'res': 'verification sms sent'
+                                    }, 200
+                            except:
+                                return {
+                                    'status': 4,
+                                    'res': 'wrong  Phone number or twillio might be down,try again'
+                                    }, 200
+                            
                         
-                    
-                    if len(code) > 10:
-                        if user1.verified_phone==True:
-                            if code == user1.rescue:
-                                #user1.verified_phone=True
+                        if len(code) > 10:
+                            if user1.verified_phone==True:
+                                if code == user1.rescue:
+                                    #user1.verified_phone=True
+                                    user1.tries =0
+                                    if user1.customer_id == None:
+                                        customer = stripe.Customer.create(
+                                            email=user1.phone+"@gmail.com",#see if phone number can be used
+                                            payment_method='pm_card_visa',
+                                            invoice_settings={
+                                                'default_payment_method': 'pm_card_visa',
+                                            },
+                                        )
+                                        user1.customer_id=customer['id']
+                                    db.session.commit()
+                                    token = jwt.encode({
+                                        'user': user1.username,
+                                        'uuid': user1.uuid,
+                                        'exp': datetime.utcnow() + timedelta(days=30),
+                                        'iat': datetime.utcnow()
+                                    },
+                                    app.config.get('SECRET_KEY'),
+                                    algorithm='HS256')
+                                    return {
+                                        'status': 1,
+                                        'res':'success',
+                                        'uuid': user1.uuid,
+                                        'token': str(token)
+                                        }, 200
+                                else:
+                                        if user1.tries < count:
+                                            user1.tries +=1
+                                            db.session.commit()
+                                            return {'res': 'verification failed please re enter yoour rescue code '}, 401
+
+                                        if user1.tries >= count:
+                                            user1.verified_phone=False
+                                            db.session.commit()
+                                            return {'res': 'Reset your code  or contact our service center for new rescue code'}, 401
+                            
+                        if len(code) < 10:
+                            check=phone.checkverification(user1.phone,code)
+                            if check.status == "approved":
+                                user1.verified_phone=True
                                 user1.tries =0
                                 if user1.customer_id == None:
                                     customer = stripe.Customer.create(
@@ -185,68 +226,32 @@ class Login_email(Resource):
                                 algorithm='HS256')
                                 return {
                                     'status': 1,
-                                    'res':'success',
+                                    'res': 'success',
                                     'uuid': user1.uuid,
                                     'token': str(token)
-                                    }, 200
+                                }, 200
                             else:
-                                    if user1.tries < count:
-                                        user1.tries +=1
-                                        db.session.commit()
-                                        return {'res': 'verification failed please re enter yoour rescue code '}, 401
+                                if user1.tries < count:
+                                    user1.tries +=1
+                                    db.session.commit()
+                                    return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
 
-                                    if user1.tries >= count:
-                                        user1.verified_phone=False
-                                        db.session.commit()
-                                        return {'res': 'Reset your code  or contact our service center for new rescue code'}, 401
-                        
-                    if len(code) < 10:
-                        check=phone.checkverification(user1.phone,code)
-                        if check.status == "approved":
-                            user1.verified_phone=True
-                            user1.tries =0
-                            if user1.customer_id == None:
-                                customer = stripe.Customer.create(
-                                    email=user1.phone+"@gmail.com",#see if phone number can be used
-                                    payment_method='pm_card_visa',
-                                    invoice_settings={
-                                        'default_payment_method': 'pm_card_visa',
-                                    },
-                                )
-                                user1.customer_id=customer['id']
-                            db.session.commit()
-                            token = jwt.encode({
-                                'user': user1.username,
-                                'uuid': user1.uuid,
-                                'exp': datetime.utcnow() + timedelta(days=30),
-                                'iat': datetime.utcnow()
-                            },
-                            app.config.get('SECRET_KEY'),
-                            algorithm='HS256')
-                            return {
-                                'status': 1,
-                                'res': 'success',
-                                'uuid': user1.uuid,
-                                'token': str(token)
-                            }, 200
+                                if user1.tries >= count:
+                                    user1.verified_phone=False
+                                    db.session.commit()
+                                    return {'res': 'Reset your code '}, 401
                         else:
-                            if user1.tries < count:
-                                user1.tries +=1
-                                db.session.commit()
-                                return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
-
-                            if user1.tries >= count:
-                                user1.verified_phone=False
-                                db.session.commit()
-                                return {'res': 'Reset your code '}, 401
+                            return {'res': 'Your account has been blocked'}, 401
                     else:
-                        return {'res': 'Your account has been blocked'}, 401
+                        return {
+                            'status': 6,
+                            'res': 'User account deactivated'
+                            }, 200
                 else:
-                    return {
-                        'status': 6,
-                        'res': 'User does not exist'
-                        }, 200
-
+                        return {
+                            'status': 7,
+                            'res': 'User does not exist'
+                            }, 200
     
 
 
