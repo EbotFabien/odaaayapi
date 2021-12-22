@@ -715,6 +715,7 @@ class Userprefs(Resource):
         if req_data['type'] =='deactivate':
             visi=req_data['user_visibility'] or None
             user.user_visibility=False
+            user.verified_phone=False
             db.session.commit()
             return {
                     'status': 1,
