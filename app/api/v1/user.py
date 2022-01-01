@@ -26,6 +26,7 @@ from os import path
 from werkzeug.utils import redirect
 import cloudinary
 import cloudinary.uploader
+from sqlalchemy import or_, and_, desc, asc
 
 
 
@@ -1350,7 +1351,7 @@ class  Posts_(Resource):
                     posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                         Posts,(Posts.id == Translated.post_id)).filter(
                                             Posts.author==user.id)
-                    posts_feed =posts_feeds.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
+                    posts_feed =posts_feeds.order_by(asc(Posts.created_on)).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
