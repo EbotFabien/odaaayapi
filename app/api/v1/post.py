@@ -153,6 +153,7 @@ postdata = post.model('postdata', {
     'video_url': fields.String(required=True),
     'created_on': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
+    'category': fields.Integer(required=True),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
     'mini': fields.Float(required=True),
