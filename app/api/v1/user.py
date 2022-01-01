@@ -865,14 +865,19 @@ class User_confirm_delete(Resource):
             mail.account_deleted(user.email)
             return redirect (link)
 
+
+
 @user.doc(
     security='KEY',
-    params={ 
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
               },
     responses={
         200: 'ok',
         201: 'created',
-        204: 'No Content',
+        204: 'No Content',    
         301: 'Resource was moved',
         304: 'Resource was not Modified',
         400: 'Bad Request to server',
@@ -882,17 +887,14 @@ class User_confirm_delete(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @user.route('/user/confirm_user/<use>')
-class User_identify(Resource):
+class  User_ident(Resource):
 
     def get(self,use):
         user = Users.query.filter_by(username=use).first()
-        
         if user:
-
             return {
                     'user':user.uuid
-                }
-
+                },200
 
 #test
 @user.doc(
