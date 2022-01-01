@@ -469,7 +469,7 @@ class botPost(Resource):
             user = Users.query.filter_by(username=j["feed"]["title"]).first()
             if user:
                 print(j)
-                for i in range(0,8):#len(j["new_entries"])+1
+                for i in range(2):#len(j["new_entries"])+1
                     title=j["new_entries"][i]["title"]
                     url=j["new_entries"][i]["link"]
                     image=j["new_entries"][i]["image"]["url"]
