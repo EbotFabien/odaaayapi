@@ -1804,16 +1804,17 @@ class homeArticle(Resource):
             posts_feed = Posts.query.filter_by(uuid=id).first()
             user1 = Users.query.filter_by(id=posts_feed.author).first()
             translation=Translated.query.filter(and_(
-                    Translated.post_id == posts_feed.id)).count()
+                    Translated.post_id == posts_feed.id))
             
             if user1 == user:
-                if translation > 1:
+                if translation.count() > 1:
                     return {
                         'status':1,
                         'res':"All translations available"
                     }, 200
                 else:
-                    current_lang = Language.query.filter_by(id=translation.language_id).first()
+                    trans=translation.first()
+                    current_lang = Language.query.filter_by(id=trans.language_id).first()
                     return {
                         'status':0,
                         'res':current_lang.code
