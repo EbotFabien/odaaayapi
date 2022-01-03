@@ -653,7 +653,7 @@ class Article_check(Resource):
                     'res': url,
                     'title':title,
                     'thumb':thumbnail,
-                    'content':sum_content,
+                    'content':document.readable,
 
             }, 200
             else:
