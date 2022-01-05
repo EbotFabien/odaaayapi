@@ -633,18 +633,18 @@ class Article_check(Resource):
                 for i in metas:
                     if i.get('property') == "og:image":
                         thumbnail=i.get('content')
-                parser = HtmlParser.from_string(document.readable, '', Tokenizer(LANGUAGE))
-                stemmer = Stemmer(LANGUAGE)
-                summarizer = Summarizer(stemmer)
-                summarizer.stop_words = get_stop_words(LANGUAGE)
+                #parser = HtmlParser.from_string(document.readable, '', Tokenizer(LANGUAGE))
+                #stemmer = Stemmer(LANGUAGE)
+                #summarizer = Summarizer(stemmer)
+                #summarizer.stop_words = get_stop_words(LANGUAGE)
 
-                for sentence in summarizer(parser.document,20):
-                    sum_content += '\n'+str(sentence)
+                #for sentence in summarizer(parser.document,20):
+                #    sum_content += '\n'+str(sentence)
                 
                 title=soup.find('title').get_text()
 
-                if sum_content == '':
-                    sum_content = document.readable
+                #if sum_content == '':
+                #    sum_content = document.readable
 
                 final = BeautifulSoup(document.readable, "lxml").text
 
