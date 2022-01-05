@@ -646,14 +646,14 @@ class Article_check(Resource):
                 if sum_content == '':
                     sum_content = document.readable
 
-            
+                final = BeautifulSoup(document.readable, "lxml").text
 
                 return {
                     'status': 1,
                     'res': url,
                     'title':title,
                     'thumb':thumbnail,
-                    'content':str(document.readable),
+                    'content':document.readable,
 
             }, 200
             else:
