@@ -646,7 +646,7 @@ class Article_check(Resource):
                 #if sum_content == '':
                 #    sum_content = document.readable
 
-                final = BeautifulSoup(document.readable, "lxml").text
+                final = BeautifulSoup(x.content, "lxml").text
 
                 return {
                     'status': 1,
