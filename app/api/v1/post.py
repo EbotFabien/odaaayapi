@@ -3,7 +3,8 @@ from __future__ import division, print_function, unicode_literals
 from operator import pos
 
 from flask_restplus import Namespace, Resource, fields, marshal,Api
-import jwt, uuid, os
+import jwt, uuid, os 
+import pusher
 from flask_cors import CORS
 from functools import wraps
 
@@ -39,6 +40,14 @@ stripe.api_key = Config.stripe_secret_key
 
 
 translator = Translator()
+
+pusher_client= pusher.Pusher(
+    app_id = "1221871",
+    key = "4cc3ddc1b022abe535ce",
+    secret = "2d22aad22ff2ebfa6b3e",
+    cluster = "eu",
+    ssl=True
+)
 
 
 
@@ -475,7 +484,7 @@ class Post(Resource):
                     summarizer = Summarizer(stemmer)
                     summarizer.stop_words = get_stop_words(language.name)
 
-                    for sentence in summarizer(parser.document, 4):
+                    for sentence in summarizer(parser.document, 2):
                         sum_content += '\n'+str(sentence)
 
                     new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
@@ -561,7 +570,7 @@ class Post(Resource):
                     summarizer = Summarizer(stemmer)
                     summarizer.stop_words = get_stop_words(language.name)
 
-                    for sentence in summarizer(parser.document, 4):
+                    for sentence in summarizer(parser.document, 2):
                         sum_content += '\n'+str(sentence)
 
                     new_check =Translated.query.filter(and_(Translated.title==newPost.title,Translated.language_id==lang)).first()
@@ -574,6 +583,9 @@ class Post(Resource):
                     notif_add = Notification("user " + user.username + " has made a post Titled "+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
+                    pusher_client.trigger(user.username, 'my-notification', {
+                    'message': "user " + user.username + " has made a post Titled "+title
+                    })
                 db.session.commit()
                 return {
                     'status': 1,
@@ -633,27 +645,27 @@ class Article_check(Resource):
                 for i in metas:
                     if i.get('property') == "og:image":
                         thumbnail=i.get('content')
-                #parser = HtmlParser.from_string(document.readable, '', Tokenizer(LANGUAGE))
-                #stemmer = Stemmer(LANGUAGE)
-                #summarizer = Summarizer(stemmer)
-                #summarizer.stop_words = get_stop_words(LANGUAGE)
+                parser = HtmlParser.from_string(document.readable, '', Tokenizer(LANGUAGE))
+                stemmer = Stemmer(LANGUAGE)
+                summarizer = Summarizer(stemmer)
+                summarizer.stop_words = get_stop_words(LANGUAGE)
 
-                #for sentence in summarizer(parser.document,20):
-                #    sum_content += '\n'+str(sentence)
+                for sentence in summarizer(parser.document,20):
+                    sum_content += '\n'+str(sentence)
                 
                 title=soup.find('title').get_text()
 
-                #if sum_content == '':
-                #    sum_content = document.readable
+                if sum_content == '':
+                    sum_content = document.readable
 
-                final = BeautifulSoup(x.content, "lxml").text
+                
 
                 return {
                     'status': 1,
                     'res': url,
                     'title':title,
                     'thumb':thumbnail,
-                    'content':final,
+                    'content':sum_content,
 
             }, 200
             else:
