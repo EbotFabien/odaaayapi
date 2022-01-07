@@ -498,7 +498,12 @@ class Post(Resource):
                     db.session.add(notif_add)
                     db.session.commit()
                     pusher_client.trigger(user.username, 'usernotification', {
-                    'message': "user " + user.username + " has made a post Titled "+title
+                    'message':{ 
+                        'user':user.username,
+                        'title':title,
+                        'profilepic':user.picture,
+                        'time':notif_add.created_on,
+                    }
                     })
                 return {
                     'status': 1,
@@ -587,7 +592,12 @@ class Post(Resource):
                     db.session.add(notif_add)
                     db.session.commit()
                     pusher_client.trigger(user.username, 'usernotification', {
-                    'message': "user " + user.username + " has made a post Titled "+title
+                    'message':{ 
+                        'user':user.username,
+                        'title':title,
+                        'profilepic':user.username,
+                        'time':notif_add.created_on,
+                    }
                     })
                 db.session.commit()
                 return {
