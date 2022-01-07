@@ -497,9 +497,9 @@ class Post(Resource):
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
-                pusher_client.trigger(user.username, 'my-notification', {
-                'message': "user " + user.username + " has made a post Titled "+title
-                })
+                    pusher_client.trigger(user.username, 'usernotification', {
+                    'message': "user " + user.username + " has made a post Titled "+title
+                    })
                 return {
                     'status': 1,
                     'res': 'Post was made',
@@ -586,9 +586,9 @@ class Post(Resource):
                     notif_add = Notification("user " + user.username + " has made a post Titled "+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
-                pusher_client.trigger(user.username, 'my-notification', {
-                'message': "user " + user.username + " has made a post Titled "+title
-                })
+                    pusher_client.trigger(user.username, 'usernotification', {
+                    'message': "user " + user.username + " has made a post Titled "+title
+                    })
                 db.session.commit()
                 return {
                     'status': 1,
