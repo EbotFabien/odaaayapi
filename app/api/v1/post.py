@@ -185,6 +185,10 @@ postreq = post.model('postreq', {
 Article_verify = post.model('postreq',{
     "Link":fields.String(required=True)
 })
+verify_notification = post.model('verify_notification',{
+    "id":fields.Integer(required=True),
+    "user":fields.String(required=True),
+})
 saved = post.model('saved',{
     "content":fields.String(required=True),
     "user_id":fields.String(required=True),
@@ -499,10 +503,12 @@ class Post(Resource):
                     db.session.commit()
                     pusher_client.trigger(user.username, 'usernotification', {
                     'message':{ 
+                        'id':notif_add.id,
                         'user':user.username,
                         'title':title,
                         'profilepic':user.picture,
                         'time':notif_add.created_on,
+                        'seen':notif_add.seen,
                     }
                     })
                 return {
@@ -593,10 +599,12 @@ class Post(Resource):
                     db.session.commit()
                     pusher_client.trigger(user.username, 'usernotification', {
                     'message':{ 
+                        'id':notif_add.id,
                         'user':user.username,
                         'title':title,
-                        'profilepic':user.username,
+                        'profilepic':user.picture,
                         'time':notif_add.created_on,
+                        'seen':notif_add.seen,
                     }
                     })
                 db.session.commit()
@@ -616,6 +624,44 @@ class Post(Resource):
                 'status': 0,
                 'res': 'Post exists already'
             }, 200     
+
+@post.doc(
+    security='KEY',
+    params={ 
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/post/receive/notification')
+class receive_check(Resource):
+    @post.expect(verify_notification)
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        ID= req_data["id"]
+        notif= Notification.query.filter_by(id=ID).first()
+        if notif:
+            notif.seen=True
+            db.session.commit()
+            pusher_client.trigger(user, 'usernotification', {
+            'message':{ 
+                'id':notif.id,
+                'user':user,
+                'time':notif.created_on,
+                'seen':notif.seen,
+            }
+            })
 
 
 @post.doc(
