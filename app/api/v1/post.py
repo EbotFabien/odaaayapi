@@ -650,6 +650,7 @@ class receive_check(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         ID= req_data["id"]
+        user= req_data["user"]
         notif= Notification.query.filter_by(id=ID).first()
         if notif:
             notif.seen=True
