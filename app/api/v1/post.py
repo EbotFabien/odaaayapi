@@ -507,7 +507,7 @@ class Post(Resource):
                         'user':user.username,
                         'title':title,
                         'profilepic':user.picture,
-                        'time':notif_add.created_on,
+                        'time':str(notif_add.created_on),
                         'seen':notif_add.seen,
                     }
                     })
@@ -603,7 +603,7 @@ class Post(Resource):
                         'user':user.username,
                         'title':title,
                         'profilepic':user.picture,
-                        'time':notif_add.created_on,
+                        'time':str(notif_add.created_on),
                         'seen':notif_add.seen,
                     }
                     })
