@@ -282,7 +282,7 @@ class Notification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     seen = db.Column(db.Boolean,nullable=False,default=False)
-    timestamp = db.Column(db.Float, index=True, default=time)
+    created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     payload_json = db.Column(db.Text)
 
     def __init__(self, name, user,post):

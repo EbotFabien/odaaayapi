@@ -99,7 +99,7 @@ def translate_posts(post_id, user_id):
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
         p = 1
-        for i in tqdm(languages):
+        for i in tqdm(languages):zwz
             # _set_task_progress(p/len(languages) * 100)
             for j in languages:
                 if i == j and i != user_default_lang:
