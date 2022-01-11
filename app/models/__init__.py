@@ -276,25 +276,7 @@ class Task(db.Model):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
 
-class Notification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
-    seen = db.Column(db.Boolean,nullable=False,default=False)
-    created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    payload_json = db.Column(db.Text)
 
-    def __init__(self, name, user,post):
-        self.name = name
-        self.user_id = user
-        self.post_id = post
-
-    def get_data(self):
-        return json.loads(str(self.payload_json))
-
-    def __repr__(self):
-        return '<Notification %r>' % self.id
 
 
 class Setting(db.Model):
@@ -510,7 +492,31 @@ class Translated(db.Model):
         return '<Translated %r>' % self.id
 
 
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    seen = db.Column(db.Boolean,nullable=False,default=False)
+    created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    payload_json = db.Column(db.Text)
+    user_data=db.relationship("Users", 
+        primaryjoin=(user_id == Users.id),
+        backref=db.backref('uploader__dat_a_',  uselist=False),  uselist=False)
+    post_data=db.relationship("Posts", 
+        primaryjoin=(post_id== Posts.id),
+        backref=db.backref('_uploader__dat_a',  uselist=False),  uselist=False)
 
+    def __init__(self, name, user,post):
+        self.name = name
+        self.user_id = user
+        self.post_id = post
+
+    def get_data(self):
+        return json.loads(str(self.payload_json))
+
+    def __repr__(self):
+        return '<Notification %r>' % self.id
 
 
 
