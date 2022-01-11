@@ -124,6 +124,7 @@ deletedata =post.model('deletedata',{
 userdata =post.model('userdata',{
     'id':fields.String(required=True),
     'username':fields.String(required=True),
+    'picture':fields.String(required=True),
 })
 
 
@@ -146,6 +147,12 @@ user_post_sav = post.model('postreturnuserdata', {
     'author': fields.String(required=True),
     'text_content': fields.String(required=True),
     'created_on': fields.DateTime(required=True),
+})
+usernotif = post.model('usernotif', {
+    'id': fields.Integer(required=True),
+    'post_data': fields.List(fields.Nested(postdata)),
+    'created_on': fields.String(required=True),
+    'seen': fields.DateTime(required=True),
 })
 
 langpostdata = post.model('langpostreturndata', {
@@ -602,6 +609,7 @@ class Post(Resource):
                         'id':notif_add.id,
                         'user':user.username,
                         'title':title,
+                        'post_id':newPost.id,
                         'profilepic':user.picture,
                         'time':str(notif_add.created_on),
                         'seen':notif_add.seen,
@@ -643,6 +651,18 @@ class Post(Resource):
     })
 @post.route('/post/receive/notification')
 class receive_check(Resource):
+    @token_required
+    #@user.marshal_with(userinfo)
+    def get(self):
+        user_id = request.args.get('user_id', None)
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.seen==False)).all()
+        if user.id: 
+            return{
+                "results":marshal(user,usernotif)
+                }, 200
     @post.expect(verify_notification)
     @token_required
     def post(self):
