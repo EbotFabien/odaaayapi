@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 lang="english"
-url='https://edition.cnn.com/2022/01/06/politics/january-6-anniversary/index.html'
+url='https://edition.cnn.com/2022/01/11/politics/biden-atlanta-voting-rights-speech/index.html'
 
 x = requests.get(url)
 if x is not None:
@@ -36,4 +36,4 @@ def sup(cont,n):
 subtext=sup(text,20)
 print(subtext)
 print('='*30)
-print(sup(subtext,4))
+print(sup(subtext,2))
