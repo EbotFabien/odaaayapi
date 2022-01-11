@@ -75,14 +75,14 @@ def translate_posts(post_id, user_id):
     # tag collector
    # rake = Rake()
 
-    if post.post_url is None:
-        parser = HtmlParser.from_string(post.text_content, '', Tokenizer(post_language.name))
-        stemmer = Stemmer(post_language.name)
-        summarizer = Summarizer(stemmer)
-        summarizer.stop_words = get_stop_words(post_language.name)
+    
+    parser = HtmlParser.from_string(post.text_content, '', Tokenizer(post_language.name))
+    stemmer = Stemmer(post_language.name)
+    summarizer = Summarizer(stemmer)
+    summarizer.stop_words = get_stop_words(post_language.name)
 
-        for sentence in summarizer(parser.document, 4):
-            sum_content += '\n'+str(sentence)
+    for sentence in summarizer(parser.document, 2):
+        sum_content += '\n'+str(sentence)
     try:
         for j in languages:
             if j == user_default_lang:
@@ -90,8 +90,6 @@ def translate_posts(post_id, user_id):
                 #table = language_dict.get(user_default_lang)
                 #keywords = rake.apply(sum_content)
                 if post is not None:
-                    if sum_content == '':
-                        sum_content = post.text_content
                     new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
                     if new_check is None:
                         new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
@@ -128,20 +126,18 @@ def summarize_posts(post_id, user_id):
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
 
-    if post.post_url is None:
+    if post:
         try:
             parser = HtmlParser.from_string(post.text_content, '', Tokenizer(post_language.name))
             stemmer = Stemmer(post_language.name)
             summarizer = Summarizer(stemmer)
             summarizer.stop_words = get_stop_words(post_language.name)
 
-            for sentence in summarizer(parser.document, 4):
+            for sentence in summarizer(parser.document, 2):
                 sum_content += '\n'+str(sentence)
             
             new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
             if new_check is None:
-                if sum_content == '':
-                    sum_content = post.text_content
                 new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id,fullcontent=post.text_content, tags=post.tags)
                 db.session.add(new_row)
                 db.session.commit()
