@@ -680,10 +680,13 @@ class receive_check(Resource):
             'message':{ 
                 'id':notif.id,
                 'user':user,
-                'time':notif.created_on,
+                'time':str(notif.created_on),
                 'seen':notif.seen,
             }
             })
+            return{
+                "res":'SENT'
+                }, 200
 
 
 @post.doc(
