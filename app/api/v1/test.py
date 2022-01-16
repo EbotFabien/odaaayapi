@@ -37,3 +37,11 @@ subtext=sup(text,20)
 print(subtext)
 print('='*30)
 print(sup(subtext,2))
+
+
+
+
+
+
+
+
