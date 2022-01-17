@@ -665,7 +665,7 @@ class receive_check(Resource):
         notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on>=start - timedelta(days=7))).all()
         if user.id: 
             return{
-                "results":marshal(user,usernotif)
+                "results":marshal(notif,usernotif)
                 }, 200
     @post.expect(verify_notification)
     @token_required
