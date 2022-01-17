@@ -638,6 +638,9 @@ class Post(Resource):
 @post.doc(
     security='KEY',
     params={ 
+            'start': 'Value to start from',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
             },
     responses={
         200: 'ok',
@@ -656,17 +659,29 @@ class receive_check(Resource):
     @token_required
     #@user.marshal_with(userinfo)
     def get(self):
-        user_id = request.args.get('user_id', None)
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
-        now_utc=datetime.now(timezone.utc)
-        start=datetime.combine(now_utc,datetime.min.time())
-        notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on >= start - timedelta(days=7))).all()
-        if user.id: 
-            return{
-                "results":marshal(notif,usernotif)
-                }, 200
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            user_id = request.args.get('user_id', None)
+            token = request.headers['API-KEY']
+            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            now_utc=datetime.now(timezone.utc)
+            start_=datetime.combine(now_utc,datetime.min.time())
+            notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on >= start_ - timedelta(days=7))).paginate(int(start), int(count), False).items
+            next = "/api/v1/post/receive/notification?start="+str(int(start)+1)+"&limit="+limit+"&count="+count+"&lang="+lang
+            previous = "/api/v1/post/receive/notification?start="+str(int(start)-1)+"&limit="+limit+"&count="+count+"&lang="+lang
+           
+            if user.id: 
+                return{
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results":marshal(notif,usernotif)
+                    }, 200
     @post.expect(verify_notification)
     @token_required
     def post(self):
