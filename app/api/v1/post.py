@@ -34,6 +34,7 @@ from googletrans import Translator
 import stripe
 from flask import current_app as app
 from config import Config
+from datetime import timedelta,datetime,timezone
 
 #with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
@@ -659,7 +660,9 @@ class receive_check(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.seen==False)).all()
+        now_utc=datetime.now(timezone.utc)
+        start=datetime.combine(now_utc,datetime.min.time())
+        notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on>=start - timedelta(days=7))).all()
         if user.id: 
             return{
                 "results":marshal(user,usernotif)
