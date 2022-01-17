@@ -153,7 +153,7 @@ usernotif = post.model('usernotif', {
     'id': fields.Integer(required=True),
     'post_data': fields.List(fields.Nested(postdata)),
     'created_on': fields.String(required=True),
-    'seen': fields.DateTime(required=True),
+    'seen': fields.Boolean(required=True),
 })
 
 langpostdata = post.model('langpostreturndata', {
@@ -662,7 +662,7 @@ class receive_check(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         now_utc=datetime.now(timezone.utc)
         start=datetime.combine(now_utc,datetime.min.time())
-        notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on>=start - timedelta(days=7))).all()
+        notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on >= start - timedelta(days=7))).all()
         if user.id: 
             return{
                 "results":marshal(notif,usernotif)
