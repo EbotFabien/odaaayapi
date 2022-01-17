@@ -670,8 +670,8 @@ class receive_check(Resource):
             now_utc=datetime.now(timezone.utc)
             start_=datetime.combine(now_utc,datetime.min.time())
             notif= Notification.query.filter(and_(Notification.user_id==user.id,Notification.created_on >= start_ - timedelta(days=7))).paginate(int(start), int(count), False).items
-            next = "/api/v1/post/receive/notification?start="+str(int(start)+1)+"&limit="+limit+"&count="+count+"&lang="+lang
-            previous = "/api/v1/post/receive/notification?start="+str(int(start)-1)+"&limit="+limit+"&count="+count+"&lang="+lang
+            next = "/api/v1/post/receive/notification?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post/receive/notification?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
            
             if user.id: 
                 return{
