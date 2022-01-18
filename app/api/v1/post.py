@@ -694,16 +694,16 @@ class receive_check(Resource):
         if notif:
             notif.seen=True
             db.session.commit()
-            pusher_client.trigger(user, 'usernotification', {
-            'message':{ 
-                'id':notif.id,
-                'user':user,
-                'time':str(notif.created_on),
-                'seen':notif.seen,
-            }
-            })
+            #pusher_client.trigger(user, 'usernotification', {
+            #'message':{ 
+            #    'id':notif.id,
+            #    'user':user,
+            #    'time':str(notif.created_on),
+            #    'seen':notif.seen,
+            #}
+            #})
             return{
-                "res":'SENT'
+                "status":1
                 }, 200
 
 
