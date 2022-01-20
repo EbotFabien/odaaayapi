@@ -51,6 +51,7 @@ def createapp(configname):
     db.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
+    oauth = OAuth(app)
     #dashboard.bind(app)
     limiter.init_app(app)
     app.ts = translator(app)
