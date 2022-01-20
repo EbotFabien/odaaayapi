@@ -18,6 +18,8 @@ class Config(object):
     # 'postgresql+psycopg2://test:test@db/test'
     SQLALCHEMY_TRACK_MODIFICATIONS = True 
     LANGUAGES = ['en', 'fr', 'arb', 'por']
+    GOOGLE_ID = "945224984879-lpaj6i3p37432uavn683bbf4m9i0kj0j.apps.googleusercontent.com"
+    GOOGLE_SECRET= "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"
     RESTPLUS_VALIDATE = True
     SWAGGER_UI_OPERATION_ID = True
     SWAGGER_UI_REQUEST_DURATION = True

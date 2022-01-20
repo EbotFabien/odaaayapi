@@ -22,6 +22,7 @@ from flask_googletrans import translator
 from flask_msearch import Search
 
 
+
 bycrypt = Bcrypt()
 db = SQLAlchemy()
 search = Search(db=db)
@@ -61,13 +62,15 @@ def createapp(configname):
 
     from .api import api as api_blueprint
     from app import models
-    #from app.errors.handlers import errors
+    from app.google import authenticate
 
     
     app.register_blueprint(api_blueprint, url_prefix='/api')
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
-    #app.register_blueprint(errors)
+    app.register_blueprint(authenticate)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+    
 
     @app.route('/')
     def index():
@@ -77,57 +80,7 @@ def createapp(configname):
     def filename(name):
         return send_file('./static/files/'+str(name), attachment_filename=str(name))
 
-    @app.route('/create-checkout-session', methods=['POST'])
-    def create_checkout_session():
-        data = json.loads(request.data)
-        try:
-            # See https://stripe.com/docs/api/checkout/sessions/create
-            # for additional parameters to pass.
-            # {CHECKOUT_SESSION_ID} is a string literal; do not change it!
-            # the actual Session ID is returned in the query parameter when your customer
-            # is redirected to the success page.
-            checkout_session = stripe.checkout.Session.create(
-                success_url="https://example.com/success.html?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url="https://example.com/canceled.html",
-                payment_method_types=["card"],
-                mode="subscription",
-                line_items=[
-                    {
-                        "price": data['priceId'],
-                        # For metered billing, do not pass quantity
-                        "quantity": 1
-                    }
-                ],
-            )
-            return jsonify({'sessionId': checkout_session['id']})
-        except Exception as e:
-            return jsonify({'error': {'message': str(e)}}), 400
-
-    @app.route('/create-stripe-account-login', methods=['POST','GET'])
-    def createLogin():
-        login = stripe.Account.create_login_link(
-            "acct_1HtsAu2SfJ6AP0v7",
-        )
-        return { 
-            'login': login,
-        }
-    @app.route('/create-stripe-account', methods=['POST','GET'])
-    def create_account():
-        account = stripe.Account.create(
-            type='express',
-            country= 'US',
-            email= 'chupimpim@odaaay.com'
-        )
-        account_links = stripe.AccountLink.create(
-            account= account.id,
-            refresh_url= 'https://example.com/reauth',
-            return_url= 'https://example.com/return',
-            type='account_onboarding',
-        )
-        return { 
-            'onboarding': account_links,
-        }
-
+    
     @app.route('/debug-sentry')
     def trigger_error():
         division_by_zero = 1 / 0
