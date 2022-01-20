@@ -8,6 +8,7 @@ import ssl
 from app.google import authenticate
 from app.models import Users
 
+
 oauth = OAuth(app)
 
 google = oauth.remote_app(
