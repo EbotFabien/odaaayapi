@@ -59,6 +59,7 @@ def createapp(configname):
     stripe.api_key = app.config['STRIPE_KEY_SEC']
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
     
+    
 
     from .api import api as api_blueprint
     from app import models
@@ -69,6 +70,7 @@ def createapp(configname):
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     app.register_blueprint(authenticate)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
 
     
 
