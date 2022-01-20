@@ -20,10 +20,6 @@ import requests as rqs
 import rq_dashboard
 from flask_googletrans import translator
 from flask_msearch import Search
-from flask_oauthlib.client import OAuth
-import ssl
-from app.google import authenticate
-from app.models import Users
 
 
 
@@ -66,6 +62,7 @@ def createapp(configname):
 
     from .api import api as api_blueprint
     from app import models
+    from app.models import Users
     #from app.errors.handlers import errors
 
     
