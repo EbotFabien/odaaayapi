@@ -101,45 +101,45 @@ def createapp(configname):
         return google.authorize(callback=url_for('app.authorized', _external=True))
     
     @app.route('/google/authorized')
-        def authorized():
-            ssl._create_default_https_context = ssl._create_unverified_context
-            resp = google.authorized_response()
-            if resp is None:
-                return 'Access denied: reason=%s error=%s' % (
-                    request.args['error_reason'],
-                    request.args['error_description']
-                )
-            session['google_token'] = (resp['access_token'], '')
-            me = google.get('userinfo')
-            user=Users.query.filter_by(email=me.data['email']).first()
-            link='https://odaaay.co/'+me.data['locale']
-            if user:
-                token = jwt.encode({
-                    'user': user.username,
-                    'uuid': user.uuid,
-                    'exp': datetime.utcnow() + timedelta(days=30),
-                    'iat': datetime.utcnow()
-                },
-                app.config.get('SECRET_KEY'),
-                algorithm='HS256')
-                session['google'] = token
-                #return jsonify({"data": me.data,"token":session['google_token']})
-                return redirect(link)
-            else:
-                user=Users(me.data['given_name'],str(uuid.uuid4()),True,email=me.data['email'])
-                db.session.add(user)
-                user.picture=me.data['picture']
-                db.session.commit()
-                token = jwt.encode({
-                    'user': user.username,
-                    'uuid': user.uuid,
-                    'exp': datetime.utcnow() + timedelta(days=30),
-                    'iat': datetime.utcnow()
-                },
-                app.config.get('SECRET_KEY'),
-                algorithm='HS256')
-                session['google'] = token
-                return redirect(link)
+    def authorized():
+        ssl._create_default_https_context = ssl._create_unverified_context
+        resp = google.authorized_response()
+        if resp is None:
+            return 'Access denied: reason=%s error=%s' % (
+                request.args['error_reason'],
+                request.args['error_description']
+            )
+        session['google_token'] = (resp['access_token'], '')
+        me = google.get('userinfo')
+        user=Users.query.filter_by(email=me.data['email']).first()
+        link='https://odaaay.co/'+me.data['locale']
+        if user:
+            token = jwt.encode({
+                'user': user.username,
+                'uuid': user.uuid,
+                'exp': datetime.utcnow() + timedelta(days=30),
+                'iat': datetime.utcnow()
+            },
+            app.config.get('SECRET_KEY'),
+            algorithm='HS256')
+            session['google'] = token
+            #return jsonify({"data": me.data,"token":session['google_token']})
+            return redirect(link)
+        else:
+            user=Users(me.data['given_name'],str(uuid.uuid4()),True,email=me.data['email'])
+            db.session.add(user)
+            user.picture=me.data['picture']
+            db.session.commit()
+            token = jwt.encode({
+                'user': user.username,
+                'uuid': user.uuid,
+                'exp': datetime.utcnow() + timedelta(days=30),
+                'iat': datetime.utcnow()
+            },
+            app.config.get('SECRET_KEY'),
+            algorithm='HS256')
+            session['google'] = token
+            return redirect(link)
 
     @google.tokengetter
         def get_google_oauth_token():
