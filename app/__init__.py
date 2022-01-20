@@ -93,7 +93,7 @@ def createapp(configname):
         return "Hello from Odaaay-app"
     @app.route('/google')
     def login():
-        return google.authorize(callback=url_for('app.authorized', _external=True))
+        return google.authorize(callback=url_for('authorized', _external=True))
         
     @app.route('/google/authorized')
     def authorized():
