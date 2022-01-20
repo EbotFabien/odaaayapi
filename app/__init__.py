@@ -136,7 +136,7 @@ def createapp(configname):
             app.config.get('SECRET_KEY'),
             algorithm='HS256')
             session['google'] = token
-            return redirect(link)
+            return redirect(link+str('?token=')+str(token))
 
     @google.tokengetter
     def get_google_oauth_token():
