@@ -61,6 +61,20 @@ def createapp(configname):
     app.redis = Redis.from_url(app.config['REDIS_URL'])
     stripe.api_key = app.config['STRIPE_KEY_SEC']
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
+
+    google = oauth.remote_app(
+        'google',
+        consumer_key=app.config['GOOGLE_ID'],
+        consumer_secret=app.config['GOOGLE_SECRET'],
+        request_token_params={
+            'scope': ['email','profile']
+        },
+        base_url='https://www.googleapis.com/oauth2/v1/',
+        request_token_url=None,
+        access_token_method='POST',
+        access_token_url='https://accounts.google.com/o/oauth2/token',
+        authorize_url='https://accounts.google.com/o/oauth2/auth',
+    )
     
 
     from .api import api as api_blueprint
