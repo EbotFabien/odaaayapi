@@ -121,7 +121,7 @@ def createapp(configname):
             algorithm='HS256')
             session['google'] = token
             #return jsonify({"data": me.data,"token":session['google_token']})
-            return redirect(link)
+            return redirect(link+str('?token=')+str(token))
         else:
             user=Users(me.data['given_name'],str(uuid.uuid4()),True,email=me.data['email'])
             db.session.add(user)
