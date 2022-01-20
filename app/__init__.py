@@ -61,12 +61,12 @@ def createapp(configname):
 
     from .api import api as api_blueprint
     from app import models
-    #from app.errors.handlers import errors
+    from app.google import authenticate
 
     
     app.register_blueprint(api_blueprint, url_prefix='/api')
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
-    #app.register_blueprint(errors)
+    app.register_blueprint(authenticate)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     @app.route('/')
