@@ -66,7 +66,7 @@ def createapp(configname):
     
     app.register_blueprint(api_blueprint, url_prefix='/api')
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
-    app.register_blueprint(authenticate)
+    app.register_blueprint(authenticate,url_prefix='/google')
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     @app.route('/')
