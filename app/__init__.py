@@ -22,6 +22,7 @@ from flask_googletrans import translator
 from flask_msearch import Search
 from flask_oauthlib.client import OAuth
 import ssl
+import jwt, uuid
 
 
 
