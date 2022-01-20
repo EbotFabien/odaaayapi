@@ -142,8 +142,8 @@ def createapp(configname):
             return redirect(link)
 
     @google.tokengetter
-        def get_google_oauth_token():
-            return session.get('google_token')
+    def get_google_oauth_token():
+        return session.get('google_token')
 
     @app.route('/create-checkout-session', methods=['POST'])
     def create_checkout_session():
