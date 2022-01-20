@@ -20,6 +20,11 @@ import requests as rqs
 import rq_dashboard
 from flask_googletrans import translator
 from flask_msearch import Search
+from flask_oauthlib.client import OAuth
+import ssl
+from app.google import authenticate
+from app.models import Users
+
 
 
 bycrypt = Bcrypt()
@@ -45,6 +50,7 @@ def createapp(configname):
     app.config.from_object(config[configname])
     CORS(app, resources=r'/api/*')
     bycrypt.init_app(app)
+    oauth = OAuth(app)
     db.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
