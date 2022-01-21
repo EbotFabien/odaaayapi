@@ -257,7 +257,7 @@ class buy(Resource):
         lan=req_data['lang']
         seller=Users.query.filter_by(uuid=req_data['uuid']).first()
         acc=Account.query.filter_by(user=seller.id).first()
-        if int(hour) >= 24:
+        if int(hour) >= 25:
             return {
                     'status': 0,
                     'res': 'logout',
