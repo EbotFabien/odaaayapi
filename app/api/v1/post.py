@@ -510,7 +510,8 @@ class Post(Resource):
                     notif_add = Notification("user" + user.username + "has made a post Titled"+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
-                    pusher_client.trigger(user.username, 'usernotification', {
+                    push=Users.query.filter_by(id=i).first()
+                    pusher_client.trigger(push.username, 'usernotification', {
                     'message':{ 
                         'id':notif_add.id,
                         'user':user.username,
@@ -607,7 +608,8 @@ class Post(Resource):
                     notif_add = Notification("user " + user.username + " has made a post Titled "+title,i,newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
-                    pusher_client.trigger(user.username, 'usernotification', {
+                    push=Users.query.filter_by(id=i).first()
+                    pusher_client.trigger(push.username, 'usernotification', {
                     'message':{ 
                         'id':notif_add.id,
                         'user':user.username,
