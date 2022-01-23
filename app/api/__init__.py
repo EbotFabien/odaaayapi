@@ -138,120 +138,59 @@ class Login_email(Resource):
         app.logger.info('User login with user_name')
         count=5
         req_data = request.get_json()
-        phone_login=req_data['phone_login']
-        
-        if phone_login == True:
-                number_=req_data['phone'] or None
-                number = "".join(number_.split())
-                code=req_data['code'] or None
-                user1 = Users.query.filter_by(phone=number).first()
-                if user1:
-                    if user1.user_visibility == True:
-                        if code is None:
-                            try:
-                                phone.sendverification(number)
-                                return {
-                                    'status': 1,
-                                    'res': 'verification sms sent'
-                                    }, 200
-                            except:
-                                return {
-                                    'status': 4,
-                                    'res': 'wrong  Phone number or twillio might be down,try again'
-                                    }, 200
-                            
-                        
-                        if len(code) > 10:
-                            if user1.verified_phone==True:
-                                if code == user1.rescue:
-                                    #user1.verified_phone=True
-                                    user1.tries =0
-                                    if user1.customer_id == None:
-                                        customer = stripe.Customer.create(
-                                            email=user1.phone+"@gmail.com",#see if phone number can be used
-                                            payment_method='pm_card_visa',
-                                            invoice_settings={
-                                                'default_payment_method': 'pm_card_visa',
-                                            },
-                                        )
-                                        user1.customer_id=customer['id']
-                                    db.session.commit()
-                                    token = jwt.encode({
-                                        'user': user1.username,
-                                        'uuid': user1.uuid,
-                                        'exp': datetime.utcnow() + timedelta(days=30),
-                                        'iat': datetime.utcnow()
-                                    },
-                                    app.config.get('SECRET_KEY'),
-                                    algorithm='HS256')
-                                    return {
-                                        'status': 1,
-                                        'res':'success',
-                                        'uuid': user1.uuid,
-                                        'token': str(token)
-                                        }, 200
-                                else:
-                                        if user1.tries < count:
-                                            user1.tries +=1
-                                            db.session.commit()
-                                            return {'res': 'verification failed please re enter yoour rescue code '}, 401
+        email=req_data['email']
+        password= req_data['password']  
+        user1 = Users.query.filter_by(email=email).first()
+        if user1:  
+            if user1.user_visibility == True:
+                if user1.verify_password(password):
+                    user1.tries =0
+                    if user1.customer_id == None:
+                        customer = stripe.Customer.create(
+                            email=email,#see if phone number can be used
+                            payment_method='pm_card_visa',
+                            invoice_settings={
+                                'default_payment_method': 'pm_card_visa',
+                            },
+                        )
+                        user1.customer_id=customer['id']
+                    db.session.commit()
+                    token = jwt.encode({
+                        'user': user1.username,
+                        'uuid': user1.uuid,
+                        'exp': datetime.utcnow() + timedelta(days=30),
+                        'iat': datetime.utcnow()
+                    },
+                    app.config.get('SECRET_KEY'),
+                    algorithm='HS256')
+                    return {
+                        'status': 1,
+                        'res':'success',
+                        'uuid': user1.uuid,
+                        'token': str(token)
+                        }, 200
 
-                                        if user1.tries >= count:
-                                            user1.verified_phone=False
-                                            db.session.commit()
-                                            return {'res': 'Reset your code  or contact our service center for new rescue code'}, 401
-                            
-                        if len(code) < 10:
-                            check=phone.checkverification(user1.phone,code)
-                            if check.status == "approved":
-                                user1.verified_phone=True
-                                user1.tries =0
-                                if user1.customer_id == None:
-                                    customer = stripe.Customer.create(
-                                        email=user1.phone+"@gmail.com",#see if phone number can be used
-                                        payment_method='pm_card_visa',
-                                        invoice_settings={
-                                            'default_payment_method': 'pm_card_visa',
-                                        },
-                                    )
-                                    user1.customer_id=customer['id']
-                                db.session.commit()
-                                token = jwt.encode({
-                                    'user': user1.username,
-                                    'uuid': user1.uuid,
-                                    'exp': datetime.utcnow() + timedelta(days=30),
-                                    'iat': datetime.utcnow()
-                                },
-                                app.config.get('SECRET_KEY'),
-                                algorithm='HS256')
-                                return {
-                                    'status': 1,
-                                    'res': 'success',
-                                    'uuid': user1.uuid,
-                                    'token': str(token)
-                                }, 200
-                            else:
-                                if user1.tries < count:
-                                    user1.tries +=1
-                                    db.session.commit()
-                                    return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
-
-                                if user1.tries >= count:
-                                    user1.verified_phone=False
-                                    db.session.commit()
-                                    return {'res': 'Reset your code '}, 401
-                        else:
-                            return {'res': 'Your account has been blocked'}, 401
-                    else:
-                        return {
-                            'status': 6,
-                            'res': 'User account deactivated'
-                            }, 200
                 else:
-                        return {
-                            'status': 7,
-                            'res': 'User does not exist'
-                            }, 200
+                    if user1.tries < count:
+                        user1.tries +=1
+                        db.session.commit()
+                        return {'res': 'Wrong password'}, 401
+
+                    if user1.tries >= count:
+                        user1.user_visibility=False
+                        db.session.commit()
+                        return {'res': 'Your account is blocked,contact service'}, 401
+            else:
+                return {
+                    'status': 6,
+                    'res': 'User account deactivated'
+                    }, 200    
+        else:
+            return {
+                'status': 7,
+                'res': 'User does not exist'
+                }, 200
+        
     
 
 
@@ -279,107 +218,40 @@ class Signup_email(Resource):
     @signup.expect(schema.signupdataemail)
     def post(self):
         signup_data = request.get_json()
-        count=5
         if signup_data:
-            username = signup_data['user_name'] or None 
-            code = signup_data['code'] or None
-            phone_ = signup_data['phone_number'] or None
-            phone_number = "".join(phone_.split())
-
-            if code is not None:
-                user1 = Users.query.filter_by(phone=phone_number).first()
-                if user1:
-                    check=phone.checkverification(user1.phone,code)
-
-                    if check.status == "approved":
-                        user1.verified_phone=True
-                        user1.tries =0
-                        user1.rescue=str(uuid.uuid4())
-                        if user1.customer_id == None:
-                            customer = stripe.Customer.create(
-                                email=user1.phone+"@gmail.com",#see if phone number can be used
-                                payment_method='pm_card_visa',
-                                invoice_settings={
-                                    'default_payment_method': 'pm_card_visa',
-                                },
-                            )
-                            user1.customer_id=customer['id']
-                        db.session.commit()
-                        token = jwt.encode({
-                            'user': user1.username,
-                            'uuid': user1.uuid,
-                            'exp': datetime.utcnow() + timedelta(days=30),
-                            'iat': datetime.utcnow()
-                        },
-                        app.config.get('SECRET_KEY'),
-                        algorithm='HS256')
-                        return {
-                            'status': 1,
-                            'res': 'success',
-                            'uuid': user1.uuid,
-                            'token': str(token)
-                        }, 200
-                    else:
-                        if user1.tries < count:
-                            user1.tries +=1
-                            db.session.commit()
-                            return {'res': 'verification fail make sure code is not more than 5 mins old '}, 401
-
-                        if user1.tries >= count:
-                            user1.verified_phone=False
-                            db.session.commit()
-                            return {'res': 'Reset your code '}, 401
-                   
-                else:
-                    return {'res': 'User does not exist'}, 401
-                    
-            if phone_number and username is not None:
-                user = Users.query.filter(or_(Users.phone==phone_number,Users.username==username)).first()
-                if user:
-                    if user.verified_phone==False:
-                        verification_code=phone.generate_code()
-                        db.session.commit()
-                        phone.sendverification(phone_number)
-                        return {
-                            'status': 1,
-                            'Phone':phone_number,
-                            'res': 'verification sms sent'
-                            }, 200
-                    else:
-                        return { 
-                            'res':'user already exist',
-                            'status': 2
-                        }, 200
-                if user.username == username:
-                        return { 
-                            'res':'user already exist',
-                            'status': 3
-                        }, 200
-                else:
-                    verification_code=phone.generate_code()
-                    newuser = Users(username,str(uuid.uuid4()),True, None,phone_number)
-                    db.session.add(newuser)
-                    db.session.commit()
-                    try:
-                        phone.sendverification(phone_number)
-                        return {
-                            'status': 1,
-                            'Phone':phone_number,
-                            'res': 'verification sms sent'
-                            }, 200
-                    except:
-                        return {
-                            'status': 4,
-                            'Phone':phone_number,
-                            'res': 'wrong  Phone number or twillio might be down,try again'
-                            }, 200
-
+            #lang
+            username = signup_data['user_name']  
+            email = signup_data['email'] 
+            password = signup_data['password'] 
+            email = Users.query.filter_by(email=email).first()
+            user = Users.query.filter_by(username=username).first()
+            if email is not None :
+                return {
+                    'status': 1,
+                    'res': 'email is taken'
+                },200
+            if user is not None:
+                return {
+                    'status': 2,
+                    'res': 'user_name is taken'
+                },200
             
+            new=Users(username,str(uuid.uuid4()),False,email)
+            db.session.add(new)
+            new.passwordhash(password)
+            db.session.commit()
+            link='https://odaaay.co/api/v1/auth/email_verification/'+str(new.uuid)
+            mail.verify_email(email,link)
+            return {
+                    'status': 3,
+                    'res': 'please verify your account'
+                },200
+                        
         else:
             return {
                 'status': 0,
                 'res': 'No data'
-            },201
+            },201    
 
 @signup.doc(
     responses={
@@ -421,33 +293,26 @@ class Resetpassword(Resource):
                 'status': 0,
                 'res': 'user not found'
                 },201
-@signup.route('/auth/email_verification')
+                
+@signup.route('/auth/email_verification/<uuid>')
 class email_verification(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
-    @signup.expect(schema.verifyemail)
-    def post(self):
-        signup_data = request.get_json()
-        email = signup_data['email']
-        exuser = Users.query.filter_by(email=email).first()
-        if exuser:
-            if exuser.code == int(signup_data['code']) and not (datetime.utcnow() > exuser.code_expires_in):
+    #@signup.expect(schema.verifyemail)
+    def post(self,uuid):
+        if uuid:
+            exuser = Users.query.filter_by(uuid=uuid).first()
+            if exuser:
+                link='https://odaaay.co/en/login'
                 exuser.verified_email = True
                 db.session.commit()
-                return {
-                        'res': "user is verified",
-                        'status': 1
-                    }, 200
+                return redirect(link)
+                
             else:
                 return {
-                    'res': "user code wrong or expired",
-                    'status': 0
-                }, 200
-        else:
-            return {
-                    'res': 'User doesnt exist',
-                    'status': 1
-                }, 200
+                        'res': 'User doesnt exist',
+                        'status': 1
+                    }, 200
 # Home still requires paginated queries for user's phone not to load forever
 @cache.cached(300, key_prefix='all_home_posts')
 @home.doc(
