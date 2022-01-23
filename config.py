@@ -40,7 +40,7 @@ class Config(object):
     MAIL_USERNAME = 'info@resilion.eu'#'touchone0001@gmail.com'
     MAIL_PASSWORD = 'Vincent123$'#'onetouch000100'
     # mail accounts
-    MAIL_DEFAULT_SENDER = 'touchone0001@gmail.com'
+    MAIL_DEFAULT_SENDER = 'info@resilion.eu'#'touchone0001@gmail.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
     UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
@@ -54,7 +54,7 @@ class Config(object):
     RQ_DASHBOARD_USERNAME='rqadmin'
     RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
-    ADMINS = ['touchone0001@gmail.com']
+    ADMINS = ['info@resilion.eu']
     TWILIO_ACCOUNT_SID = 'AC34d11121e84d9beaf449f2d85e0aa9e0'
     TWILIO_SERVICE = 'VA9feeac8c10bfb8462fdb156da6b51e76'
     TWILIO_AUTH_TOKEN = 'dc514fbcff751ce60f83237bd902e352'
