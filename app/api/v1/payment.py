@@ -257,7 +257,7 @@ class buy(Resource):
         lan=req_data['lang']
         seller=Users.query.filter_by(uuid=req_data['uuid']).first()
         acc=Account.query.filter_by(user=seller.id).first()
-        if int(hour) >= 25:
+        if int(hour) >= 24:
             return {
                     'status': 0,
                     'res': 'logout',
@@ -386,6 +386,11 @@ class Portal(Resource):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        now=datetime.now()
+        ts = int(data['iat'])
+        old= datetime.utcfromtimestamp(ts)
+        new=str(now-old)
+        hour=new[0:new.index(':')]
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type']
         lan=req_data['lang']
@@ -393,6 +398,11 @@ class Portal(Resource):
 
         if Type == True:
             if acc.valid == True:
+                if int(hour) >= 24:
+                    return {
+                            'status': 0,
+                            'res': 'logout',
+                    }, 200
                 link=stripe.Account.create_login_link(
                     acc.account_id,
                     )
