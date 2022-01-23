@@ -221,9 +221,9 @@ class Signup_email(Resource):
         if signup_data:
             #lang
             username = signup_data['user_name']  
-            email = signup_data['email'] 
+            email1 = signup_data['email'] 
             password = signup_data['password'] 
-            email = Users.query.filter_by(email=email).first()
+            email = Users.query.filter_by(email=email1).first()
             user = Users.query.filter_by(username=username).first()
             if email is not None :
                 return {
@@ -236,12 +236,12 @@ class Signup_email(Resource):
                     'res': 'user_name is taken'
                 },200
             
-            new=Users(username,str(uuid.uuid4()),False,email)
+            new=Users(username,str(uuid.uuid4()),False,email1)
             db.session.add(new)
             new.passwordhash(password)
             db.session.commit()
             link='https://odaaay.co/api/v1/auth/email_verification/'+str(new.uuid)
-            mail.verify_email(email,link)
+            mail.verify_email([email],link)
             return {
                     'status': 3,
                     'res': 'please verify your account'
@@ -293,7 +293,7 @@ class Resetpassword(Resource):
                 'status': 0,
                 'res': 'user not found'
                 },201
-                
+
 @signup.route('/auth/email_verification/<uuid>')
 class email_verification(Resource):
     # Limiting the user request to localy prevent DDoSing
