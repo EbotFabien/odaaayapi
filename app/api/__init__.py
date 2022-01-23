@@ -300,20 +300,19 @@ class email_verification(Resource):
     #@limiter.limit("10/hour")
     #@signup.expect(schema.verifyemail)
     def get(self,uuid):
-        if request.args:
-            if uuid:
-                exuser = Users.query.filter_by(uuid=uuid).first()
-                if exuser:
-                    link='https://odaaay.co/en/login'
-                    exuser.verified_email = True
-                    db.session.commit()
-                    return redirect(link)
-                    
-                else:
-                    return {
-                            'res': 'User doesnt exist',
-                            'status': 1
-                        }, 200
+        if uuid:
+            exuser = Users.query.filter_by(uuid=uuid).first()
+            if exuser:
+                link='https://odaaay.co/en/login'
+                exuser.verified_email = True
+                db.session.commit()
+                return redirect(link)
+                
+            else:
+                return {
+                        'res': 'User doesnt exist',
+                        'status': 1
+                    }, 200
 # Home still requires paginated queries for user's phone not to load forever
 @cache.cached(300, key_prefix='all_home_posts')
 @home.doc(
