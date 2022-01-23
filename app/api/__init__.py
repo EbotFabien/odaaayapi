@@ -299,7 +299,7 @@ class email_verification(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
     #@signup.expect(schema.verifyemail)
-    def post(self,uuid):
+    def get(self,uuid):
         if uuid:
             exuser = Users.query.filter_by(uuid=uuid).first()
             if exuser:
