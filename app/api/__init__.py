@@ -241,7 +241,7 @@ class Signup_email(Resource):
             new.passwordhash(password)
             db.session.commit()
             link='https://odaaay.co/api/v1/auth/email_verification/'+str(new.uuid)
-            mail.verify_email([email],link)
+            mail.verify_email([email1],link)
             return {
                     'status': 3,
                     'res': 'please verify your account'
