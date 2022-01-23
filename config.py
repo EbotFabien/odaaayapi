@@ -32,13 +32,13 @@ class Config(object):
     stripe_publishable_key= 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 465
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = True
+    MAIL_SERVER = 'smtp.infomaniak.com'#'smtp.gmail.com'
+    MAIL_PORT = 587#465
+    MAIL_USE_TLS = True#False
+    #MAIL_USE_SSL = True
     # gmail authentication
-    MAIL_USERNAME = 'touchone0001@gmail.com'
-    MAIL_PASSWORD = 'onetouch000100'
+    MAIL_USERNAME = 'info@resilion.eu'#'touchone0001@gmail.com'
+    MAIL_PASSWORD = 'Vincent123$'#'onetouch000100'
     # mail accounts
     MAIL_DEFAULT_SENDER = 'touchone0001@gmail.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
