@@ -143,7 +143,7 @@ class Login_email(Resource):
         password= req_data['password']  
         user1 = Users.query.filter_by(email=email).first()
         if user1:  
-            if user1.user_visibility == True:
+            if user1.verified_email == True:
                 if user1.verify_password(password):
                     user1.tries =0
                     if user1.customer_id == None:
@@ -306,6 +306,7 @@ class email_verification(Resource):
             if exuser:
                 link='https://odaaay.co/en/login'
                 exuser.verified_email = True
+                exuser.user_visibility = True
                 db.session.commit()
                 return redirect(link)
                 
