@@ -58,6 +58,13 @@ class Language(db.Model):
     def __repr__(self):
         return '<Language>%r' %self.name
 
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(40), nullable=False)
+
+    
+    def __repr__(self):
+        return '<Category>%r' %self.name
         
 class Users(db.Model):
     __searchable__ = ['username','handle','country']
@@ -321,6 +328,7 @@ class Posts(db.Model):
     audio_url = db.Column(db.String(10000))
     video_url = db.Column(db.String(10000))
     Country = db.Column(db.Integer, db.ForeignKey('country.id'), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     translate = db.Column(db.Boolean, nullable=False, default=False)
     summarize = db.Column(db.Boolean, nullable=False, default=False)
     created_on = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -478,6 +486,7 @@ class Translated(db.Model):
     content = db.Column(db.String, nullable = False)
     fullcontent = db.Column(db.String, nullable = False)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     post_id = db.Column(db.Integer,db.ForeignKey('posts.id'), nullable=False)
     tags = db.Column(db.Text)
     status = db.Column(db.String)

@@ -1,6 +1,6 @@
 from faker import Faker
 from app.models import Users, Language, Save, Setting, \
-    Posts, Translated, Posttype, Rating, Ratingtype
+    Posts, Translated, Posttype, Rating, Ratingtype,Category
 from app import db, createapp
 import random
 import sentry_sdk
@@ -51,6 +51,17 @@ def languages():
         db.session.add(lan1)
         db.session.add(lan2)
         db.session.commit()
+
+@manager.command
+def category():
+    with app.app_context():
+        language_dict = ['Sport', 'Technology', 'Science', 'Gaming', 'Entertainment', 'Politics and News', 'Education', 'Animals & Pets', 'Autos & Vehicules', 'Films & Animations']
+        for i in language_dict:
+            lan=Category(name=i)
+            db.session.add(lan)
+            db.session.commit()
+        
+
 @manager.command
 def run():
     logo()
@@ -85,6 +96,7 @@ def test():
 if __name__ == "__main__":
     #recreate_db()
    # languages()
+    #category()
     manager.run()
     
     #run()
