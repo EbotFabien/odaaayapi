@@ -323,6 +323,7 @@ class email_verification(Resource):
             'limit': 'Total limit of the query',
             'lang': 'i18n',
             'paid':'if is for paid posts or not',
+            'category':'category of posts',
             'count': 'Number results per page',
             'id': 'Article id'},
     responses={
@@ -354,6 +355,7 @@ class Home(Resource):
             count = request.args.get('count', None)
             lang = request.args.get('lang', None)
             pay = request.args.get('paid', None)
+            cat = request.args.get('category', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
@@ -362,7 +364,10 @@ class Home(Resource):
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
                     if pay == None:
-                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid ==False)
+                        if cat == None:
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid ==False)
+                        else:
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).order_by(func.random()).filter(Posts.paid ==False)
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
@@ -407,7 +412,10 @@ class Home(Resource):
                                 }
                             }, 200
                     if pay == 'paid':
-                        posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid==True)
+                        if cat == None:
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid==True)
+                        else:
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).order_by(func.random()).filter(Posts.paid ==True)
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 

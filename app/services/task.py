@@ -12,7 +12,7 @@ import sys
 import time
 from flask import render_template
 from rq import get_current_job
-from app.models import Users, Posts, Task,Translated, Language#,Postsummary
+from app.models import Users, Posts, Task,Translated, Language,Category#,Postsummary
 from app.services.mail import send_email
 import os
 from tqdm import tqdm
@@ -66,6 +66,7 @@ def export_posts(user_id):
 def translate_posts(post_id, user_id):
     languages = ['en', 'es', 'pt', 'sw', 'ha', 'ar', 'fr']
     post = Posts.query.get(post_id)
+    category=Category.query.get(post.category_id)
     if post:
         user = Users.query.get(user_id)
         post_auto_lang = translator.detect(post.title)
@@ -92,7 +93,7 @@ def translate_posts(post_id, user_id):
                 if post is not None:
                     new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
@@ -108,7 +109,7 @@ def translate_posts(post_id, user_id):
                    #keywords = rake.apply(content_translation[i])
                    new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
                    if new_check is None:
-                        new_row = Translated(post_id=post_id,fullcontent=full_content[i],title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,fullcontent=full_content[i],user=post.user_name,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
                         p += 1         
@@ -120,6 +121,7 @@ def translate_posts(post_id, user_id):
 def summarize_posts(post_id, user_id):
     #languages = ['en', 'es', 'pt', 'sw', 'ha', 'ar', 'fr']
     post = Posts.query.get(post_id)
+    category=Category.query.get(post.category_id)
     user = Users.query.get(user_id)
     post_auto_lang = translator.detect(post.title)
     user_default_lang = str(post_auto_lang.lang)
@@ -138,7 +140,7 @@ def summarize_posts(post_id, user_id):
             
             new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==post_language.id)).first()
             if new_check is None:
-                new_row = Translated(post_id=post_id,title=post.title,content=sum_content,language_id=post_language.id,fullcontent=post.text_content, tags=post.tags)
+                new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,user=post.user_name,title=post.title,content=sum_content,language_id=post_language.id,fullcontent=post.text_content, tags=post.tags)
                 db.session.add(new_row)
                 db.session.commit()
         except:

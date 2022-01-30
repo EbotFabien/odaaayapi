@@ -480,11 +480,13 @@ class Post_Access(db.Model):
 
 
 class Translated(db.Model):
-    __searchable__ = ['title', 'fullcontent','tags','timestamp']
+    __searchable__ = ['title', 'fullcontent','tags','timestamp','user','category']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False)
     fullcontent = db.Column(db.String, nullable = False)
+    user = db.Column(db.String, nullable = False)
+    category = db.Column(db.String)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     post_id = db.Column(db.Integer,db.ForeignKey('posts.id'), nullable=False)

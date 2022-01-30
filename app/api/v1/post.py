@@ -13,7 +13,7 @@ from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
-from app.models import Save , Users, Posts, Language,Translated,Report,Notification,Posttype,Account
+from app.models import Save , Users, Posts, Language,Translated,Report,Notification,Posttype,Account,Category
 from app import db, cache, logging
 import json
 from tqdm import tqdm
@@ -104,6 +104,7 @@ postcreationdata = post.model('postcreationdata', {
     'translate':fields.Boolean(required=False, default=False),
     'donation':fields.Boolean(required=False, default=False),
     'min': fields.Integer(required=False),
+    'category': fields.Integer(required=True),
     'max': fields.Integer(required=False),
     'payment':fields.Boolean(required=False, default=False),
     'price': fields.Integer(required=False),
@@ -198,6 +199,11 @@ verify_notification = post.model('verify_notification',{
     "id":fields.Integer(required=True),
     "user":fields.String(required=True),
 })
+cato = post.model('cato',{
+    "id":fields.Integer(required=True),
+    "name":fields.String(required=True),
+})
+
 saved = post.model('saved',{
     "content":fields.String(required=True),
     "user_id":fields.String(required=True),
@@ -211,6 +217,46 @@ Report_post = post.model('Report_post',{
     'reason':fields.String(required=True),
     'Type': fields.String(required=True),
 })
+
+@post.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/category')
+
+class cat(Resource):
+    @token_required
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v1/category?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/category?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            results = Category.query.paginate(int(start), int(count), False).items
+            return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(results, cato)
+                }, 200
 
 @post.doc(
     security='KEY',
@@ -394,6 +440,7 @@ class Post(Resource):
         ptype= req_data['type']
         translated= req_data['translate'] 
         summarized= req_data['summarize'] 
+        category= req_data['category']
         subs= req_data['subscribers'] 
         donation= req_data['donation'] 
         payment= req_data['payment'] 
@@ -437,6 +484,7 @@ class Post(Resource):
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.subs_only=subs
+                newPost.category_id=category
                 newPost.thumb_url=thumb_url_
                 newPost.nsfw=nsf
                 newPost.tags=s[1:-1]
@@ -538,6 +586,7 @@ class Post(Resource):
                 newPost.post_url=post_url_
                 newPost.user_name=user.username
                 newPost.thumb_url=thumb_url_
+                newPost.category_id=category
                 newPost.summarize=summarized
                 newPost.translate=translated
                 newPost.tags=s[1:-1]

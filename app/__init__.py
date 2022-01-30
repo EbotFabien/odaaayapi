@@ -27,6 +27,7 @@ from datetime import timedelta,datetime,timezone
 
 
 
+
 bycrypt = Bcrypt()
 db = SQLAlchemy()
 search = Search(db=db)
@@ -61,7 +62,7 @@ def createapp(configname):
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     app.redis = Redis.from_url(app.config['REDIS_URL'])
-    stripe.api_key = app.config['STRIPE_KEY_SEC']
+    stripe.api_key = app.config['stripe_secret_key']
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
 
     google = oauth.remote_app(
@@ -120,6 +121,16 @@ def createapp(configname):
             app.config.get('SECRET_KEY'),
             algorithm='HS256')
             session['google'] = token
+            if user.customer_id == None:
+                customer = stripe.Customer.create(
+                    email=user.email,#see if phone number can be used
+                    payment_method='pm_card_visa',
+                    invoice_settings={
+                        'default_payment_method': 'pm_card_visa',
+                    },
+                )
+                user.customer_id=customer['id']
+                db.session.commit()
             #return jsonify({"data": me.data,"token":session['google_token']})
             return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
         else:
@@ -127,6 +138,16 @@ def createapp(configname):
             db.session.add(user)
             user.picture=me.data['picture']
             db.session.commit()
+            if user.customer_id == None:
+                customer = stripe.Customer.create(
+                    email=user.email,#see if phone number can be used
+                    payment_method='pm_card_visa',
+                    invoice_settings={
+                        'default_payment_method': 'pm_card_visa',
+                    },
+                )
+                user.customer_id=customer['id']
+                db.session.commit()
             token = jwt.encode({
                 'user': user.username,
                 'uuid': user.uuid,
