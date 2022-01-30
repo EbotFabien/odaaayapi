@@ -54,6 +54,7 @@ def languages():
 
 @manager.command
 def category():
+    print("cat")
     with app.app_context():
         language_dict = ['Sport', 'Technology', 'Science', 'Gaming', 'Entertainment', 'Politics and News', 'Education', 'Animals & Pets', 'Autos & Vehicules', 'Films & Animations']
         for i in language_dict:
@@ -96,7 +97,7 @@ def test():
 if __name__ == "__main__":
     #recreate_db()
    # languages()
-    #category()
+    category()
     manager.run()
     
     #run()
