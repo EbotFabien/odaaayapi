@@ -239,7 +239,6 @@ Report_post = post.model('Report_post',{
 @post.route('/category')
 
 class cat(Resource):
-    @token_required
     def get(self):
         if request.args:
             start  = request.args.get('start', None)
