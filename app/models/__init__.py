@@ -485,7 +485,7 @@ class Translated(db.Model):
     title = db.Column(db.String(250), nullable = False, unique=True)
     content = db.Column(db.String, nullable = False)
     fullcontent = db.Column(db.String, nullable = False)
-    #user = db.Column(db.String)
+    user = db.Column(db.String)
     category = db.Column(db.String)
     language_id = db.Column(db.Integer,db.ForeignKey('language.id'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
