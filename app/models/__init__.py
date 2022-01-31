@@ -478,6 +478,16 @@ class Post_Access(db.Model):
     def __repr__(self):
         return '<Post_Access %r>' %self.id
 
+class Tags(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.Integer,db.ForeignKey('category.id'))
+    post = db.Column(db.Integer,db.ForeignKey('posts.id'))
+    tags = db.Column(db.String)
+    
+
+    def __repr__(self):
+        return '<Tags %r>' %self.id
+
 
 class Translated(db.Model):
     __searchable__ = ['title', 'fullcontent','tags','timestamp','user','category']
