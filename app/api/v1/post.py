@@ -13,7 +13,7 @@ from app.services import mail
 from flask import abort, request, session,Blueprint
 from flask import current_app as app
 import numpy as np
-from app.models import Save , Users, Posts, Language,Translated,Report,Notification,Posttype,Account,Category
+from app.models import Save , Users, Posts, Language,Translated,Report,Notification,Posttype,Account,Category,Tags
 from app import db, cache, logging
 import json
 from tqdm import tqdm
@@ -203,6 +203,10 @@ cato = post.model('cato',{
     "id":fields.Integer(required=True),
     "name":fields.String(required=True),
 })
+tegs = post.model('tegs',{
+    "id":fields.Integer(required=True),
+    "tags":fields.String(required=True),
+})
 
 saved = post.model('saved',{
     "content":fields.String(required=True),
@@ -256,6 +260,51 @@ class cat(Resource):
                     "previous": previous,
                     "results": marshal(results, cato)
                 }, 200
+
+@post.doc(
+    security='KEY',
+    params={ 'start': 'Value to start from ',
+            'limit': 'Total limit of the query',
+            'count': 'Number results per page',
+            'category':'category'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/post/tags')
+
+class ptag(Resource):
+    def get(self):
+        if request.args:
+            start  = request.args.get('start', None)
+            limit  = request.args.get('limit', None)
+            count = request.args.get('count', None)
+            category = request.args.get('category', None)
+            # Still to fix the next and previous WRT Sqlalchemy
+            next = "/api/v1/post/tags?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
+            previous = "/api/v1/post/tags?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
+            if category == None:
+                results = Tags.query.order_by(func.random()).paginate(int(start), int(count), False).items
+            else:
+                results = Tags.query.join(Posts,(Posts.id == Tags.post)).order_by(func.random()).filter(Posts.category_id == category).paginate(int(start), int(count), False).items
+            return {
+                    "start": start,
+                    "limit": limit,
+                    "count": count,
+                    "next": next,
+                    "previous": previous,
+                    "results": marshal(results, tegs)
+                }, 200
+
 
 @post.doc(
     security='KEY',
@@ -531,6 +580,11 @@ class Post(Resource):
                             'status': 0,
                             'res': 'Please create a stripe account'
                         }, 200
+                if tags != []:
+                    for tag in tags:
+                        new_tag=Tags(post=newPost.id,tags=tag,category=category)
+                        db.session.add(new_tag)
+                        db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 
@@ -630,6 +684,11 @@ class Post(Resource):
                             'status': 0,
                             'res': 'Please create a stripe account'
                         }, 200
+                if tags != []:
+                    for tag in tags:
+                        new_tag=Tags(post=newPost.id,tags=tag,category=category)
+                        db.session.add(new_tag)
+                        db.session.commit()
                 if summarized and translated == True:
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
 

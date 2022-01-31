@@ -418,10 +418,14 @@ class Home(Resource):
                                 }
                             }, 200
                     if pay == 'paid':
-                        if cat == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid==True)
-                        else:
+                        if cat == None and tag == None:
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid == True)
+                        if cat != None and tag == None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).order_by(func.random()).filter(Posts.paid ==True)
+                        if tag != None and cat == None: 
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(Tags,(Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == True,Tags.tags == tag))
+                        if tag != None and cat != None:
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).join(Tags,(Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == True,Tags.tags == tag))
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
