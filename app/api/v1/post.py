@@ -293,7 +293,7 @@ class ptag(Resource):
             next = "/api/v1/post/tags?start="+str(int(start)+1)+"&limit="+limit+"&count="+count
             previous = "/api/v1/post/tags?start="+str(int(start)-1)+"&limit="+limit+"&count="+count
             if category == None:
-                results = Tags.query.order_by(func.random()).paginate(int(start), int(count), False).items
+                results = Tags.query.distinct(Tags.tags).order_by(func.random()).paginate(int(start), int(count), False).items
             else:
                 results = Tags.query.join(Posts,(Posts.id == Tags.post)).order_by(func.random()).filter(Posts.category_id == category).paginate(int(start), int(count), False).items
             return {
