@@ -326,6 +326,7 @@ class email_verification(Resource):
             'category':'category of posts',
             'tag':'tag of posts',
             'count': 'Number results per page',
+            'recent':'recent posts',
             'id': 'Article id'},
     responses={
         200: 'ok',
@@ -366,6 +367,8 @@ class Home(Resource):
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
                     if pay == None:
+                        if recent == 'recent':
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.created_on)).filter(Posts.paid == False)
                         if cat == None and tag == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid == False)
                         if cat != None and tag == None:
@@ -418,6 +421,8 @@ class Home(Resource):
                                 }
                             }, 200
                     if pay == 'paid':
+                        if recent == 'recent':
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.created_on)).filter(Posts.paid == True)
                         if cat == None and tag == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid == True)
                         if cat != None and tag == None:
