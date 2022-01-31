@@ -21,7 +21,7 @@ from app.services import mail
 import stripe
 from .v1 import user, info, token, search, post,payment
 from app.models import Report, Users, Language, Save, Setting, \
-         Posttype, Rating, Ratingtype,Translated,Posts,Reporttype,Post_Access
+         Posttype, Rating, Ratingtype,Translated,Posts,Reporttype,Post_Access,Tags
 from sqlalchemy import or_, and_, desc,asc
 from flask import current_app as app
 
