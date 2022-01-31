@@ -360,6 +360,7 @@ class Home(Resource):
             cat = request.args.get('category', None)
             tag = request.args.get('tag', None)
             post_type = request.args.get('ptype', '1')
+            recent =request.args.get('tag', None)
             # Still to fix the next and previous WRT Sqlalchemy
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
             
