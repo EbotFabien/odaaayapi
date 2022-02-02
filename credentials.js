@@ -139,7 +139,7 @@
 
 ### signup
 if code is not None:
-                user1 = Users.query.filter_by(phone=phone_number).first()
+                user1 = Users.query.filter_by(phone=phone_number).first()  
                 if user1:
                     check=phone.checkverification(user1.phone,code)
 
