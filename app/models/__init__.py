@@ -231,7 +231,18 @@ class Users(db.Model):
     def get_task_in_progress(self, name):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
-    
+    def get_reset_token(self,expire_sec=1800):
+            s = Serializer(current_app.config['SECRET_KEY'],expire_sec)
+            return s.dumps({'user_id':self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token) ['user_id']
+        except:
+            return None
+        return Users.query.get(user_id) 
   
 #class Postsummary(db.Model):
  #   id = db.Column(db.Integer, primary_key = True)

@@ -74,6 +74,17 @@ def verify_email(email,r):
                 '''
     mail.send(msg)
 
+def reset_password(email,r):
+    msg = Message('Verify your  odaaay account',
+                  sender='noreply@demo.com',
+                  recipients=[email])
+    
+    msg.body = f''' To reset your odaaay account password,visit the following link:
+                {r}
+     
+                if you did not make this request then simply ignore this email and no changes will be made
+                '''
+    mail.send(msg)
     
 '''
 def send_password_reset_email(user):

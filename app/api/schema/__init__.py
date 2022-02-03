@@ -70,7 +70,10 @@ reset_pass =  apisec.model('reset_pass',{
 resetpassword = apisec.model('resetpassword',{
     'email':fields.String(required=True)
 })
-
+confirmpassword = apisec.model('confirmpassword',{
+    'token':fields.String(required=True),
+    'password':fields.String(required=True),
+})
 check_pass =apisec.model('check_pass',{
     #'code':fields.String(required=True),
     'email':fields.String(required=True),

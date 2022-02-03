@@ -281,10 +281,9 @@ class Resetpassword(Resource):
             check=Users.query.filter_by(email=email).first()
             if check:
                 verification_code = phone.generate_code()
-                check.code = verification_code
-                check.code_expires_in = datetime.utcnow() + timedelta(minutes=5)
-                db.session.commit()
-                mail.send_email(app,[email],verification_code)
+                token=check.get_reset_token()
+                link='https://odaaay.co/api/v1/auth/email_verification/'+str(token)
+                mail.reset_password(email,link)
                 return {
                 'status': 1,
                 'res': 'email has been sent'
@@ -294,6 +293,44 @@ class Resetpassword(Resource):
                 'status': 0,
                 'res': 'user not found'
                 },201
+@signup.doc(
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+
+
+@signup.route('/auth/confirmpassword')
+class Resetpassword(Resource):
+    # Limiting the user request to localy prevent DDoSing
+    @limiter.limit("10/hour")
+    @signup.expect(schema.confirmpassword)
+    def post(self):
+        signup_data = request.get_json()
+        if signup_data:
+            token = signup_data['token'] 
+            check=Users.verify_reset_token(token)
+            if check is not None:
+                check.passwordhash(signup_data['password'])
+                db.session.commit()
+                return {
+                    'status': 1,
+                    'res': 'user password has been reset'
+                },200
+            else:
+                return {
+                'status': 0,
+                'res': 'token has expired,please get a new token'
+                },201
+
 
 @signup.route('/auth/email_verification/<uuid>')
 class email_verification(Resource):
@@ -360,7 +397,7 @@ class Home(Resource):
             cat = request.args.get('category', None)
             tag = request.args.get('tag', None)
             post_type = request.args.get('ptype', '1')
-            recent =request.args.get('tag', None)
+            recent =request.args.get('recent', None)
             # Still to fix the next and previous WRT Sqlalchemy
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
             
