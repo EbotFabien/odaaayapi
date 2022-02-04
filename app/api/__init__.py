@@ -278,11 +278,12 @@ class Resetpassword(Resource):
         signup_data = request.get_json()
         if signup_data:
             email = signup_data['email'] 
+            lang = signup_data['lang'] 
             check=Users.query.filter_by(email=email).first()
             if check:
                 verification_code = phone.generate_code()
                 token=check.get_reset_token()
-                link='https://odaaay.co/api/v1/auth/email_verification/'+str(token)
+                link='https://odaaay.co/api/'+lang+'/resetpassword?token='+str(token)
                 mail.reset_password(email,link)
                 return {
                 'status': 1,
@@ -462,13 +463,13 @@ class Home(Resource):
                         if recent == 'recent':
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.created_on)).filter(Posts.paid == True)
                         if cat == None and tag == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid == True)
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(func.random()).filter(Posts.paid == False)
                         if cat != None and tag == None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).order_by(func.random()).filter(Posts.paid ==True)
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).order_by(func.random()).filter(Posts.paid ==False)
                         if tag != None and cat == None: 
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(Tags,(Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == True,Tags.tags == tag))
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(Tags,(Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False,Tags.tags == tag))
                         if tag != None and cat != None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).join(Tags,(Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == True,Tags.tags == tag))
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.category_id==cat)).join(Posts).join(Tags,(Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False,Tags.tags == tag))
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(limit), count=int(count)) if posts_feed.has_next else None 
