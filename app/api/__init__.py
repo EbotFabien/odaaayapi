@@ -310,7 +310,7 @@ class Resetpassword(Resource):
 
 
 @signup.route('/auth/confirmpassword')
-class Resetpassword(Resource):
+class Confirmp(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
     @signup.expect(schema.confirmpassword)
