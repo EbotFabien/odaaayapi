@@ -273,7 +273,7 @@ class Signup_email(Resource):
 class Reset(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
-    @signup.expect(schema.resetpasswor)
+    @signup.expect(schema.resetpassword)
     def post(self):
         signup_data = request.get_json()
         if signup_data:
@@ -317,7 +317,7 @@ class Confirmp(Resource):
     def post(self):
         signup_data = request.get_json()
         if signup_data:
-            token = signup_data['tokenq'] 
+            token = signup_data['token'] 
             check=Users.verify_reset_token(token)
             if check is not None:
                 check.passwordhash(signup_data['password'])

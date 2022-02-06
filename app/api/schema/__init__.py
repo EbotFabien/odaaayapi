@@ -67,7 +67,7 @@ reset_pass =  apisec.model('reset_pass',{
     'number':fields.String(required=False),
 })
 
-resetpasswor = apisec.model('resetpasswor',{
+resetpassword = apisec.model('resetpassword',{
     'email':fields.String(required=True),
     'lang':fields.String(required=True),
 })
