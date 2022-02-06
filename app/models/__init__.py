@@ -232,12 +232,12 @@ class Users(db.Model):
         return Task.query.filter_by(name=name, user=self,
                                     complete=False).first()
     def get_reset_token(self,expire_sec=1800):
-            s = Serializer(current_app.config['SECRET_KEY'],expire_sec)
+            s = Serializer(app.config['SECRET_KEY'],expire_sec)
             return s.dumps({'user_id':self.id}).decode('utf-8')
 
     @staticmethod
     def verify_reset_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
+        s = Serializer(app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token) ['user_id']
         except:
