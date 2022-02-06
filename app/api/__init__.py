@@ -270,7 +270,7 @@ class Signup_email(Resource):
 
 
 @signup.route('/auth/resetpassword')
-class Resetpassword(Resource):
+class Reset(Resource):
     # Limiting the user request to localy prevent DDoSing
     @limiter.limit("10/hour")
     @signup.expect(schema.resetpassword)
