@@ -1,5 +1,5 @@
 from flask import Blueprint, url_for
-from app.services import mail, phone
+
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
@@ -83,6 +83,7 @@ apisec = Api(app=api, doc='/docs', version='1.9.0', title='Odaaay API.',
 CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
+from app.services import mail, phone
 uploader = apisec.parser()
 uploader.add_argument('file', location='files', type=FileStorage,
                       required=True, help="You must parse a file")
