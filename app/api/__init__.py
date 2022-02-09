@@ -1,4 +1,3 @@
-from . import schema
 from flask import Blueprint, url_for
 from app.services import mail, phone
 from flask_restplus import Api, Resource, fields, reqparse, marshal
@@ -95,6 +94,8 @@ apisec.add_namespace(token)
 apisec.add_namespace(post)
 apisec.add_namespace(search)
 apisec.add_namespace(payment)
+
+from . import schema
 
 
 login = apisec.namespace('/api/auth',
