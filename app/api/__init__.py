@@ -1,4 +1,5 @@
 from flask import Blueprint, url_for
+
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
@@ -19,8 +20,11 @@ import os
 from flask import current_app as app
 from sqlalchemy import func, or_, and_
 import re
-import stripe
 
+import stripe
+from .v1 import user, info, token, search, post, payment
+from app.models import Report, Users, Language, Save, Setting, \
+    Posttype, Rating, Ratingtype, Translated, Posts, Reporttype, Post_Access, Tags
 from sqlalchemy import or_, and_, desc, asc
 from flask import current_app as app
 
@@ -80,10 +84,6 @@ CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
 from app.services import mail, phone
-from .v1 import user, info, token, search, post, payment
-from app.models import Report, Users, Language, Save, Setting, \
-    Posttype, Rating, Ratingtype, Translated, Posts, Reporttype, Post_Access, Tags
-    
 uploader = apisec.parser()
 uploader.add_argument('file', location='files', type=FileStorage,
                       required=True, help="You must parse a file")
