@@ -1,4 +1,4 @@
-from app.api import apisec
+from .api import apisec
 from flask_restplus import Namespace, Resource, fields
 
 apiinfo = apisec.model('Info', {
@@ -15,30 +15,30 @@ logindata = apisec.model('Login', {
 
 signupdata = apisec.model('Signup', {
     'username': fields.String(required=False, description="The username for the application")
-    #'phonenumber': fields.String(required=True, description="Users phone number")
+    # 'phonenumber': fields.String(required=True, description="Users phone number")
 })
-full_login =  apisec.model('full_login', {
+full_login = apisec.model('full_login', {
     'email': fields.String(required=True, description="Email"),
     'password': fields.String(required=True, description="Users Password"),
-    #'username':fields.String(required=False, description="The username for the application"),
-    #'phone':  fields.String(required=False, description="Users phone number"),
-    #'code':fields.String(required=False, description="verification code"),
-    #'phone_login':fields.Boolean(required=True, description="determine_login"),
+    # 'username':fields.String(required=False, description="The username for the application"),
+    # 'phone':  fields.String(required=False, description="Users phone number"),
+    # 'code':fields.String(required=False, description="verification code"),
+    # 'phone_login':fields.Boolean(required=True, description="determine_login"),
 
 })
 
-Reported_post = apisec.model('Reported_post',{
+Reported_post = apisec.model('Reported_post', {
     'type':  fields.List(fields.Integer(required=True)),
-    'post_id':fields.String(required=True),
-    'reason':fields.String(required=False),
+    'post_id': fields.String(required=True),
+    'reason': fields.String(required=False),
 })
 
-saves_post = apisec.model('saves_post',{
-    'Post_id':fields.String(required=True)
+saves_post = apisec.model('saves_post', {
+    'Post_id': fields.String(required=True)
 })
 
 
-channelfinal = apisec.model('channelreturndata',{
+channelfinal = apisec.model('channelreturndata', {
     'id': fields.Integer(required=True),
     'name': fields.String(required=True),
     'description': fields.String(required=True)
@@ -46,7 +46,7 @@ channelfinal = apisec.model('channelreturndata',{
 
 user_post_sav = apisec.model('postreturnuserdata', {
     'id': fields.Integer(required=True),
-    'uuid':fields.String(required=True),
+    'uuid': fields.String(required=True),
     'title': fields.String(required=True),
     'postchannel': fields.List(fields.Nested(channelfinal)),
     'post_url': fields.String(required=True),
@@ -56,49 +56,49 @@ user_post_sav = apisec.model('postreturnuserdata', {
     'uploader_date': fields.DateTime(required=True)
 })
 
-saved = apisec.model('saved',{
-    "content":fields.String(required=True),
-    "user_id":fields.String(required=True),
-    "post___data":fields.List(fields.Nested(user_post_sav)),
+saved = apisec.model('saved', {
+    "content": fields.String(required=True),
+    "user_id": fields.String(required=True),
+    "post___data": fields.List(fields.Nested(user_post_sav)),
 })
 
-reset_pass =  apisec.model('reset_pass',{
-    'email':fields.String(required=False),
-    'number':fields.String(required=False),
+reset_pass = apisec.model('reset_pass', {
+    'email': fields.String(required=False),
+    'number': fields.String(required=False),
 })
 
-resetpassword = apisec.model('resetpassword',{
-    'email':fields.String(required=True),
-    'lang':fields.String(required=True),
+resetpassword = apisec.model('resetpassword', {
+    'email': fields.String(required=True),
+    'lang': fields.String(required=True),
 })
-confirmpassword = apisec.model('confirmpassword',{
-    'token':fields.String(required=True),
-    'password':fields.String(required=True),
+confirmpassword = apisec.model('confirmpassword', {
+    'token': fields.String(required=True),
+    'password': fields.String(required=True),
 })
-check_pass =apisec.model('check_pass',{
-    #'code':fields.String(required=True),
-    'email':fields.String(required=True),
-    'password':fields.String(required=True),
-})
-
-check_code =apisec.model('check_code',{
-    'code':fields.String(required=True),
-    'email':fields.String(required=True)
+check_pass = apisec.model('check_pass', {
+    # 'code':fields.String(required=True),
+    'email': fields.String(required=True),
+    'password': fields.String(required=True),
 })
 
-signupdataemail= apisec.model('signup',{
+check_code = apisec.model('check_code', {
+    'code': fields.String(required=True),
+    'email': fields.String(required=True)
+})
+
+signupdataemail = apisec.model('signup', {
     'user_name': fields.String(required=True, description="Users Name"),
-    #'code':fields.String(required=False, description="verification code"),
+    # 'code':fields.String(required=False, description="verification code"),
     'email': fields.String(required=True, description="Users Email"),
-    'password':fields.String(required=True, description="Password"),
-    #'phone_number':fields.String(required=False, description="Phone Number"),
+    'password': fields.String(required=True, description="Password"),
+    # 'phone_number':fields.String(required=False, description="Phone Number"),
 })
 
-verifyemail= apisec.model('verify',{
+verifyemail = apisec.model('verify', {
     'code': fields.String(required=True, description="The username for the application"),
     'email': fields.String(required=True, description="Users Email")
 })
-channeldata = apisec.model('channel',{
+channeldata = apisec.model('channel', {
     'id': fields.Integer(required=True),
     'name': fields.String(required=True, description="name of channel"),
     'description': fields.String(required=True, description="description of channel"),
@@ -130,7 +130,7 @@ users_dat = apisec.model('users_dat', {
     'username': fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=True),
-    'picture':fields.String(required=True),
+    'picture': fields.String(required=True),
 })
 
 users_dat1 = apisec.model('users_dat', {
@@ -138,8 +138,8 @@ users_dat1 = apisec.model('users_dat', {
     'username': fields.String(required=True),
     'uuid': fields.String(required=True),
     'bio': fields.String(required=True),
-    'picture':fields.String(required=True),
-    #'followed': fields.List(fields.Nested(users_dat)),
+    'picture': fields.String(required=True),
+    # 'followed': fields.List(fields.Nested(users_dat)),
 })
 
 postdata = apisec.model('postreturndata', {
@@ -157,25 +157,23 @@ postdata = apisec.model('postreturndata', {
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
-    'mini' : fields.Float(required=True),
-    'maxi':fields.Float(required=True),
+    'mini': fields.Float(required=True),
+    'maxi': fields.Float(required=True),
     'paid': fields.Boolean(required=True),
     'clap': fields.List(fields.Nested(element)),
     'uploader_data': fields.List(fields.Nested(users_dat)),
 })
 
 
-
 lang_post = apisec.model('trans_post', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'content': fields.String(required=True),
-    'fullcontent':fields.String(required=True),
+    'fullcontent': fields.String(required=True),
     'language_id': fields.Integer(required=True),
     'tags': fields.String(required=True),
     'posts': fields.List(fields.Nested(postdata)),
 })
-
 
 
 trendingdata = apisec.inherit('trending', postdata, {})
@@ -183,7 +181,6 @@ trendingdata = apisec.inherit('trending', postdata, {})
 feeddata = apisec.model('feed', postdata, {})
 
 discoverdata = apisec.model('discover', postdata, {})
-
 
 
 homedata = apisec.model('Home', {
@@ -201,7 +198,3 @@ send_verification = apisec.model('send_verification', {
 Not_Interested = apisec.model('Not_Interested', {
     'uuid': fields.String(required=True, description="code sent to user from server")
 })
-
-
-
-
