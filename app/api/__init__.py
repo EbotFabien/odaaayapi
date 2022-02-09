@@ -280,7 +280,7 @@ class Reset(Resource):
             if check:
                 verification_code = phone.generate_code()
                 token = check.get_reset_token()
-                link = 'https://odaaay.co/'+lang + \
+                link = 'https://odaaay.co/api/'+lang + \
                     '/resetpassword?token='+str(token)
                 mail.reset_password(email, link)
                 return {
