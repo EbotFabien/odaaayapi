@@ -1,4 +1,4 @@
-from .api import apisec
+from app.api import apisec
 from flask_restplus import Namespace, Resource, fields
 
 apiinfo = apisec.model('Info', {
