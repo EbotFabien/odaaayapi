@@ -781,21 +781,26 @@ class receive_check(Resource):
             user = Users.query.filter_by(uuid=data['uuid']).first()
             now_utc = datetime.now(timezone.utc)
             start_ = datetime.combine(now_utc, datetime.min.time())
-            notif = Notification.query.filter(and_(Notification.user_id == user.id, Notification.created_on >= start_ - timedelta(
-                days=7))).order_by(desc(Notification.created_on)).paginate(int(start), int(count), False).items
-            next = "/api/v1/post/receive/notification?start=" + \
-                str(int(start)+1)+"&limit="+limit+"&count="+count
-            previous = "/api/v1/post/receive/notification?start=" + \
-                str(int(start)-1)+"&limit="+limit+"&count="+count
+            if user:
+                notif = Notification.query.filter(and_(Notification.user_id == user.id, Notification.created_on >= start_ - timedelta(
+                    days=7))).order_by(desc(Notification.created_on)).paginate(int(start), int(count), False).items
+                next = "/api/v1/post/receive/notification?start=" + \
+                    str(int(start)+1)+"&limit="+limit+"&count="+count
+                previous = "/api/v1/post/receive/notification?start=" + \
+                    str(int(start)-1)+"&limit="+limit+"&count="+count
 
-            if user.id:
+                if user.id:
+                    return{
+                        "start": start,
+                        "limit": limit,
+                        "count": count,
+                        "next": next,
+                        "previous": previous,
+                        "results": marshal(notif, usernotif)
+                    }, 200
+            else:
                 return{
-                    "start": start,
-                    "limit": limit,
-                    "count": count,
-                    "next": next,
-                    "previous": previous,
-                    "results": marshal(notif, usernotif)
+                "status": 0
                 }, 200
 
     @post.expect(verify_notification)
