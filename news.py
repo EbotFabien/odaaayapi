@@ -38,11 +38,12 @@ def recreate_db():
         db.drop_all()
         db.create_all()
         db.session.commit()
-        print('ok')
+        print('db')
 
 
 @manager.command
 def languages():
+    print('lang')
     with app.app_context():
         language_dict = {'en': "english", 'es': "espagnol", 'ar': "arab",
                          'pt': "portugese", 'sw': "swahili", 'fr': "french", 'ha': "hausa"}
@@ -103,9 +104,9 @@ def test():
 
 
 if __name__ == "__main__":
-    # recreate_db()
-   # languages()
-    # category()
+    recreate_db()
+    languages()
+    category()
     manager.run()
 
     # run()
