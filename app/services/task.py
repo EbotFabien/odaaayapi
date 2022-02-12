@@ -96,9 +96,10 @@ def translate_posts(post_id, user_id,app):
                         new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
-        title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
-        content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
-        full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
+        with app.app_context():
+            title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
+            content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
+            full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
         p = 1
         for i in tqdm(languages):
             # _set_task_progress(p/len(languages) * 100)
@@ -115,7 +116,8 @@ def translate_posts(post_id, user_id,app):
                         p += 1         
     except:
         _set_task_progress(100)
-        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        with app.app_context():
+            app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
 def summarize_posts(post_id, user_id,app):
@@ -145,6 +147,7 @@ def summarize_posts(post_id, user_id,app):
                 db.session.commit()
         except:
             _set_task_progress(100)
-            app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+            with app.app_context():
+                app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
     
