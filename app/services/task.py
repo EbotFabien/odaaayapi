@@ -65,9 +65,8 @@ def export_posts(user_id):
 
 def translate_posts(post_id, user_id):
     languages = ['en', 'es', 'pt', 'sw', 'ha', 'ar', 'fr']
-    with app.app_context():
-        post = Posts.query.get(post_id)
-        category=Category.query.get(post.category_id)
+    post = Posts.query.get(post_id)
+    category=Category.query.get(post.category_id)
     if post:
         user = Users.query.get(user_id)
         post_auto_lang = translator.detect(post.title)
@@ -117,8 +116,7 @@ def translate_posts(post_id, user_id):
                         p += 1         
     except:
         _set_task_progress(100)
-        with app.app_context():
-            app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
 def summarize_posts(post_id, user_id):
@@ -148,7 +146,6 @@ def summarize_posts(post_id, user_id):
                 db.session.commit()
         except:
             _set_task_progress(100)
-            with app.app_context():
-                app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+            app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
     
