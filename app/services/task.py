@@ -24,8 +24,8 @@ from sqlalchemy import or_, and_, distinct, func
 #from multi_rake import Rake
 
 
-#app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
-#app.app_context().push()
+app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
+app.app_context().push()
 
 translator = Translator()
 
