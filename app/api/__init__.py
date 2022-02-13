@@ -1,5 +1,5 @@
 from flask import Blueprint, url_for
-api = Blueprint('api', __name__, template_folder='../templates')
+
 
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
@@ -23,9 +23,7 @@ from sqlalchemy import func, or_, and_
 import re
 
 import stripe
-from .v1 import user, info, token, search, post, payment
-from app.models import Report, Users, Language, Save, Setting, \
-    Posttype, Rating, Ratingtype, Translated, Posts, Reporttype, Post_Access, Tags
+
 from sqlalchemy import or_, and_, desc, asc
 from flask import current_app as app
 
@@ -77,7 +75,7 @@ if v == 1:
     #scheme = 'http' if '8000' in self.base_url else 'https'
     # return url_for(self.endpoint('specs'), _external=True, _scheme=scheme)
 
-
+api = Blueprint('api', __name__, template_folder='../templates')
 apisec = Api(app=api, doc='/docs', version='1.9.0', title='Odaaay API.',
              description='This documentation contains all routes to access the Odaaay API. \npip install googletransSome routes require authorization and can only be gotten \
     from the odaaay company', license='../LICENSE', license_url='www.odaaay.com', contact='leslie.etubo@gmail.com', authorizations=authorizations)
@@ -85,6 +83,10 @@ CORS(api, resources={r"/api/*": {"origins": "*"}})
 
 from . import schema
 from app.services import mail, phone
+from .v1 import user, info, token, search, post, payment
+from app.models import Report, Users, Language, Save, Setting, \
+    Posttype, Rating, Ratingtype, Translated, Posts, Reporttype, Post_Access, Tags
+
 uploader = apisec.parser()
 uploader.add_argument('file', location='files', type=FileStorage,
                       required=True, help="You must parse a file")
