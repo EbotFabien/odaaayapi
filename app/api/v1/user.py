@@ -644,7 +644,7 @@ class Userprefs(Resource):
             if acc_ == None:
                 status_=0
                 status=0
-            if acc_ != None:
+            if acc_ != None: 
                 if acc_.valid == True:
                     status=2
                 if acc_.valid == False:
