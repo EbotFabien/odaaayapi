@@ -478,7 +478,7 @@ class Home(Resource):
                                 Posts).order_by(desc(Posts.created_on)).filter(Posts.paid == True)
                         if cat == None and tag == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts).order_by(func.random()).filter(Posts.paid == False)
+                                Posts).order_by(func.random()).filter(Posts.paid == True)
                         if cat != None and tag == None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
                                 Posts).order_by(func.random()).filter(Posts.paid == False)
