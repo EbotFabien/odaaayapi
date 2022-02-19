@@ -1,6 +1,6 @@
 from faker import Faker
 from app.models import Users, Language, Save, Setting, \
-    Posts, Translated, Posttype, Rating, Ratingtype
+    Posts, Translated, Posttype, Rating, Ratingtype, Category
 from app import db, createapp
 import random
 import sentry_sdk
@@ -12,7 +12,7 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand, upgrade
 import unittest
 import os
-from app.services import mail
+#from app.services import mail
 from flask import current_app
 #import ssl
 
@@ -26,9 +26,11 @@ migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 name = '''(API) ~ By Leslie Etubo T, E. Fabien'''
 
+
 @manager.command
 def logo():
     print(name)
+
 
 @manager.command
 def recreate_db():
@@ -36,21 +38,38 @@ def recreate_db():
         db.drop_all()
         db.create_all()
         db.session.commit()
-        print('ok')
+        print('db')
+
 
 @manager.command
 def languages():
+    print('lang')
     with app.app_context():
-        language_dict = {'en':"english", 'es':"espagnol", 'ar':"arab", 'pt':"portugese", 'sw':"swahili", 'fr':"french", 'ha':"hausa"}
+        language_dict = {'en': "english", 'es': "espagnol", 'ar': "arab",
+                         'pt': "portugese", 'sw': "swahili", 'fr': "french", 'ha': "hausa"}
         for i in language_dict:
-            lan=Language(lang_type="N",code=i,name=language_dict[i])
+            lan = Language(lang_type="N", code=i, name=language_dict[i])
             db.session.add(lan)
             db.session.commit()
-        lan1=Posttype(content="Text")
-        lan2=Posttype(content="Video")
+        lan1 = Posttype(content="Text")
+        lan2 = Posttype(content="Video")
         db.session.add(lan1)
         db.session.add(lan2)
         db.session.commit()
+
+
+@manager.command
+def category():
+    print("cat")
+    with app.app_context():
+        language_dict = ['Sport', 'Technology', 'Science', 'Gaming', 'Entertainment',
+                         'Politics and News', 'Education', 'Animals & Pets', 'Autos & Vehicules', 'Films & Animations']
+        for i in language_dict:
+            lan = Category(name=i)
+            db.session.add(lan)
+            db.session.commit()
+
+
 @manager.command
 def run():
     logo()
@@ -70,8 +89,9 @@ def run():
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        #ssl_context=context
+        # ssl_context=context
     )
+
 
 @manager.command
 def test():
@@ -82,9 +102,11 @@ def test():
         return 0
     return 1
 
+
 if __name__ == "__main__":
     #recreate_db()
-   # languages()
+    #languages()
+    #category()
     manager.run()
-    
-    #run()
+
+    # run()

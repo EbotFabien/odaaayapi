@@ -18,6 +18,8 @@ class Config(object):
     # 'postgresql+psycopg2://test:test@db/test'
     SQLALCHEMY_TRACK_MODIFICATIONS = True 
     LANGUAGES = ['en', 'fr', 'arb', 'por']
+    GOOGLE_ID = "945224984879-lpaj6i3p37432uavn683bbf4m9i0kj0j.apps.googleusercontent.com"
+    GOOGLE_SECRET= "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"
     RESTPLUS_VALIDATE = True
     SWAGGER_UI_OPERATION_ID = True
     SWAGGER_UI_REQUEST_DURATION = True
@@ -30,15 +32,15 @@ class Config(object):
     stripe_publishable_key= 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 465
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = True
+    MAIL_SERVER = 'smtp.infomaniak.com'#'smtp.gmail.com'
+    MAIL_PORT = 587#465
+    MAIL_USE_TLS = True#False
+    #MAIL_USE_SSL = True
     # gmail authentication
-    MAIL_USERNAME = 'touchone0001@gmail.com'
-    MAIL_PASSWORD = 'onetouch000100'
+    MAIL_USERNAME = 'info@resilion.eu'#'touchone0001@gmail.com'
+    MAIL_PASSWORD = 'Vincent123$'#'onetouch000100'
     # mail accounts
-    MAIL_DEFAULT_SENDER = 'touchone0001@gmail.com'
+    MAIL_DEFAULT_SENDER = 'info@resilion.eu'#'touchone0001@gmail.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
     UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
@@ -52,7 +54,7 @@ class Config(object):
     RQ_DASHBOARD_USERNAME='rqadmin'
     RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
-    ADMINS = ['touchone0001@gmail.com']
+    ADMINS = ['info@resilion.eu']
     TWILIO_ACCOUNT_SID = 'AC34d11121e84d9beaf449f2d85e0aa9e0'
     TWILIO_SERVICE = 'VA9feeac8c10bfb8462fdb156da6b51e76'
     TWILIO_AUTH_TOKEN = 'dc514fbcff751ce60f83237bd902e352'

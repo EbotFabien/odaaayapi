@@ -644,7 +644,7 @@ class Userprefs(Resource):
             if acc_ == None:
                 status_=0
                 status=0
-            if acc_ != None:
+            if acc_ != None: 
                 if acc_.valid == True:
                     status=2
                 if acc_.valid == False:
@@ -924,7 +924,7 @@ class User_Random(Resource):
             req_data = request.get_json()
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            channel = Users.query.filter_by(verified_phone=True).order_by(func.random()).paginate(int(start),int(count), False).items
+            channel = Users.query.filter_by(user_visibility=True).order_by(func.random()).paginate(int(start),int(count), False).items
             followed =[]
             latest=[]
             followers=user.has_followed()

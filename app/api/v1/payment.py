@@ -26,6 +26,7 @@ from sqlalchemy import or_,and_,func
 import stripe
 from flask import current_app as app
 from config import Config
+from datetime import datetime
 
 #with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
@@ -246,11 +247,21 @@ class buy(Resource):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        now=datetime.now()
+        ts = int(data['iat'])
+        old= datetime.utcfromtimestamp(ts)
+        new=str(now-old)
+        hour=new[0:new.index(':')]
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type']
         lan=req_data['lang']
         seller=Users.query.filter_by(uuid=req_data['uuid']).first()
         acc=Account.query.filter_by(user=seller.id).first()
+        if int(hour) >= 24:
+            return {
+                    'status': 0,
+                    'res': 'logout',
+            }, 200
 
         if Type == "subs":
             if seller.paid==True:
@@ -375,6 +386,11 @@ class Portal(Resource):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        now=datetime.now()
+        ts = int(data['iat'])
+        old= datetime.utcfromtimestamp(ts)
+        new=str(now-old)
+        hour=new[0:new.index(':')]
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type']
         lan=req_data['lang']
@@ -382,6 +398,11 @@ class Portal(Resource):
 
         if Type == True:
             if acc.valid == True:
+                if int(hour) >= 24:
+                    return {
+                            'status': 0,
+                            'res': 'logout',
+                    }, 200
                 link=stripe.Account.create_login_link(
                     acc.account_id,
                     )

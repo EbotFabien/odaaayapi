@@ -66,7 +66,6 @@ Flask-SQLAlchemy==2.4.1
 Flask-Uploads==0.2.1
 Flask-WTF==0.14.2
 future==0.18.2
-get==2019.4.13
 gevent==20.5.0
 gevent-websocket==0.10.1
 googletrans==2.4.0
