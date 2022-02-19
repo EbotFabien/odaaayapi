@@ -285,7 +285,7 @@ class ptag(Resource):
                 "limit": limit,
                 "count": count,
                 "next": next,
-                "previous": previous,
+                "previous": total,
                 "results": marshal(results1, tegs)
             }, 200
 
