@@ -188,9 +188,12 @@ class Login_email(Resource):
                         db.session.commit()
                         return {'res': 'Your account is blocked,contact service'}, 401
             else:
+                link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
+                str(user1.uuid)
+                mail.verify_email(email, link)
                 return {
                     'status': 6,
-                    'res': 'User account deactivated'
+                    'res': 'User account deactivated,a mail has been sent to verify your account'
                 }, 200
         else:
             return {
