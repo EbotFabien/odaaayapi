@@ -263,27 +263,28 @@ class ptag(Resource):
                 str(int(start)+1)+"&limit="+limit+"&count="+count
             previous = "/api/v1/post/tags?start=" + \
                 str(int(start)-1)+"&limit="+limit+"&count="+count
+            results1=[]
             if category == None:
                 results = Tags.query.distinct(Tags.tags).paginate(    #order_by(func.random())
                     int(start), int(count), False).items
                 for tag in results:
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total < 5:
-                        results.remove(tag)
+                    if total > 5:
+                        results1.append(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
                     Posts.category_id == category).paginate(int(start), int(count), False).items
                 for tag in results:
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total < 5:
-                        results.remove(tag)
+                    if total > 5:
+                        results1.append(tag)
             return {
                 "start": start,
                 "limit": limit,
                 "count": count,
                 "next": next,
                 "previous": previous,
-                "results": marshal(results, tegs)
+                "results": marshal(results1, tegs)
             }, 200
 
 
