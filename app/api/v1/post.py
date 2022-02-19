@@ -270,7 +270,7 @@ class ptag(Resource):
                 for tag in results:
                     results1=[]
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total < 1:
+                    if total < 5:
                         results.remove(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
@@ -278,7 +278,7 @@ class ptag(Resource):
                 for tag in results:
                     results1=[]
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total < 1:
+                    if total < 5:
                         results.remove(tag)
             return {
                 "start": start,
@@ -286,7 +286,7 @@ class ptag(Resource):
                 "count": count,
                 "next": next,
                 "previous": previous,
-                "results": marshal(results1, tegs)
+                "results": marshal(results, tegs)
             }, 200
 
 
