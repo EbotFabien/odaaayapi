@@ -264,14 +264,14 @@ class ptag(Resource):
             previous = "/api/v1/post/tags?start=" + \
                 str(int(start)-1)+"&limit="+limit+"&count="+count
             if category == None:
-                results = Tags.query.distinct(Tags.tags).order_by(func.random()).paginate(
+                results = Tags.query.distinct(Tags.tags).paginate(    #order_by(func.random())
                     int(start), int(count), False).items
                 for tag in results:
                     total=Tags.query.filter_by(tags=tag.tags).count()
                     if total < 5:
                         results.remove(tag)
             else:  
-                results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).order_by(func.random()).filter(
+                results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
                     Posts.category_id == category).paginate(int(start), int(count), False).items
                 for tag in results:
                     total=Tags.query.filter_by(tags=tag.tags).count()
