@@ -588,7 +588,7 @@ class Post(Resource):
                 }, 200
         else:
            return {
-                'status': 0,
+                'status': 7,
                 'res': 'Post exists already'
             }, 200     
 
