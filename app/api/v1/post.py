@@ -270,7 +270,7 @@ class ptag(Resource):
                 for tag in results:
                     results1=[]
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total > 5:
+                    if total > 2:
                         results1.append(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
