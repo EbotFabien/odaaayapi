@@ -78,8 +78,7 @@ def verify_email(email,r):
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('templates/verifycode.html',
-                                         code=r))
+               html_body='<html>cool</html>')
     
 
 def reset_password(email,r):
