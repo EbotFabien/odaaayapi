@@ -72,7 +72,7 @@ def invitation_email(token,email,sender,r):
     mail.send(msg)
 
 def verify_email(email,r):
-    destination=Config.UPLOAD_TEMP
+    destination=Config.UPLOAD_FOLDER
     skelet_email('Verify your  odaaay account',
                sender='noreply@demo.com',
                recipients=[email],
