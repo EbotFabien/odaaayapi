@@ -78,7 +78,7 @@ def verify_email(email,r):
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('verifycode.html',
+               html_body=render_template('/verifycode.html',
                                          code=r))
     
 
