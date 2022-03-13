@@ -2,6 +2,7 @@ from threading import Thread
 from flask import current_app,url_for
 from flask_mail import Message
 from app import mail
+from flask import render_template
 
 
 
@@ -44,6 +45,12 @@ def send_email(app, recipients, text_body,
             Thread(target=send_async_email,
                 args=(current_app._get_current_object(), msg)).start()
 
+def skelet_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    mail.send(msg)
+
 
 def Report(sender_u,text_body):
     Thread(target=_user_,
@@ -63,16 +70,17 @@ def invitation_email(token,email,sender,r):
     mail.send(msg)
 
 def verify_email(email,r):
-    msg = Message('Verify your  odaaay account',
-                  sender='noreply@demo.com',
-                  recipients=[email])
-    
-    msg.body = f''' To Verify your odaaay account,visit the following link:
-                {r}
-     
+
+    skelet_email('Verify your  odaaay account',
+               sender='noreply@demo.com',
+               recipients=[email],
+               text_body=f''' To reset your odaaay account password,Input the code below back in the app,
+                
                 if you did not make this request then simply ignore this email and no changes will be made
-                '''
-    mail.send(msg)
+                ''',
+               html_body=render_template('templates/verifycode.html',
+                                         code=r))
+    
 
 def reset_password(email,r):
     msg = Message('Verify your  odaaay account',
@@ -85,6 +93,8 @@ def reset_password(email,r):
                 if you did not make this request then simply ignore this email and no changes will be made
                 '''
     mail.send(msg)
+
+
     
 '''
 def send_password_reset_email(user):

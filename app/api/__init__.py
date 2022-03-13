@@ -190,7 +190,7 @@ class Login_email(Resource):
             else:
                 link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
                 str(user1.uuid)
-                mail.verify_email(email, link)
+                mail.verify_email(email, '12345')
                 return {
                     'status': 6,
                     'res': 'User account deactivated,a mail has been sent to verify your account'
@@ -246,7 +246,7 @@ class Signup_email(Resource):
             db.session.commit()
             link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
                 str(new.uuid)
-            mail.verify_email(email1, link)
+            mail.verify_email(email1, '12345')
             return {
                 'status': 3,
                 'res': 'please verify your account'
