@@ -84,7 +84,7 @@ def verify_email(email,r):
     
 
 def reset_password(email,r):
-    msg = Message('Verify your  odaaay account',
+    msg = Message('Verify your  odaaay account',   
                   sender='noreply@demo.com',
                   recipients=[email])
     
