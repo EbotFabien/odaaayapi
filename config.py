@@ -42,7 +42,7 @@ class Config(object):
     # mail accounts
     MAIL_DEFAULT_SENDER = 'info@resilion.eu'#'touchone0001@gmail.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
-    UPLOAD_TEMP = os.getcwd()+'/app/services/templates'
+    UPLOAD_TEMP = os.getcwd()+'/app/app/services/templates'
     UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
     CACHE_TYPE= "simple" # Flask-Caching related configs
