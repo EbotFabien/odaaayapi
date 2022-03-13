@@ -3,6 +3,8 @@ from flask import current_app,url_for
 from flask_mail import Message
 from app import mail
 from flask import render_template
+import os
+from config import Config
 
 
 
@@ -70,7 +72,7 @@ def invitation_email(token,email,sender,r):
     mail.send(msg)
 
 def verify_email(email,r):
-
+    destination=Config.UPLOAD_TEMP
     skelet_email('Verify your  odaaay account',
                sender='noreply@demo.com',
                recipients=[email],
@@ -78,8 +80,7 @@ def verify_email(email,r):
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('/verifycode.html',
-                                         code=r))
+               html_body=render_template(os.path.join(destination,'verifycode.html'),code=r))
     
 
 def reset_password(email,r):
