@@ -93,6 +93,7 @@ def reset_password(email,r):
      
                 if you did not make this request then simply ignore this email and no changes will be made
                 '''
+    msg.html='<html>ok</html>'
     mail.send(msg)
 
 
