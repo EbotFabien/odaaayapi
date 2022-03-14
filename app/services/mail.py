@@ -80,7 +80,7 @@ def verify_email(email,r):
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body='<html>code</html>')
+               html_body=render_template(os.path.join(destination,'verifycode.html'),code=r))
     
 
 def reset_password(email,r):
@@ -93,7 +93,6 @@ def reset_password(email,r):
      
                 if you did not make this request then simply ignore this email and no changes will be made
                 '''
-    msg.html='<html>ok</html>'
     mail.send(msg)
 
 
