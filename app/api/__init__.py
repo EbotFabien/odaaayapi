@@ -190,7 +190,7 @@ class Login_email(Resource):
             else:
                 link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
                 str(user1.uuid)
-                mail.reset_password(email, '12345')
+                mail.verify_email(email, '12345')
                 return {
                     'status': 6,
                     'res': 'User account deactivated,a mail has been sent to verify your account'
