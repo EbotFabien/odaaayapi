@@ -75,7 +75,7 @@ def verify_email(email,r):
     destination=Config.UPLOAD_TEMP
     skelet_email('Verify your  odaaay account',
                sender='noreply@demo.com',
-               recipients=[email],
+               recipients=['admin@odaaay.com'],
                text_body=f''' To reset your odaaay account password,Input the code below back in the app,
                 
                 if you did not make this request then simply ignore this email and no changes will be made
