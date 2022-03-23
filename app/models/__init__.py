@@ -95,6 +95,7 @@ class Users(db.Model):
         db.Integer, db.ForeignKey('language.id'), nullable=True)
     handle = db.Column(db.String(120), nullable=True)
     code_expires_in = db.Column(db.DateTime)
+    code = db.Column(db.Integer)
     verified_email = db.Column(db.Boolean, nullable=False, default=False)
     verified_phone = db.Column(db.Boolean, nullable=False, default=False)
     tries = db.Column(db.Integer, default=0)

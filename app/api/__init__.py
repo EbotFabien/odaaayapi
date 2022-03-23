@@ -20,6 +20,7 @@ import os
 from flask import current_app as app
 from sqlalchemy import func, or_, and_
 import re
+import random
 
 import stripe
 from .v1 import user, info, token, search, post, payment
@@ -29,6 +30,7 @@ from sqlalchemy import or_, and_, desc, asc
 from flask import current_app as app
 
 from config import Config
+from datetime import datetime
 
 # with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
@@ -224,11 +226,25 @@ class Signup_email(Resource):
         signup_data = request.get_json()
         if signup_data:
             # lang
-            username = signup_data['user_name']
+            username = signup_data['user_name'] or None
             email1 = signup_data['email']
-            password = signup_data['password']
+            password = signup_data['password'] or None
+            code = signup_data['code'] or None
             email = Users.query.filter_by(email=email1).first()
             user = Users.query.filter_by(username=username).first()
+            if code is not None:
+                if user.code == code and user.code_expires_in > datetime.now() :
+                    link = 'https://odaaay.co/en/login'
+                    user.verified_email = True
+                    user.user_visibility = True
+                    db.session.commit()
+                    mail.welcome_email(user.email)
+                    return redirect(link)
+                else:
+                    return {
+                    'status': 0,
+                    'res': 'Code has been taken'
+                }, 200
             if email is not None:
                 return {
                     'status': 1,
@@ -243,10 +259,12 @@ class Signup_email(Resource):
             new = Users(username, str(uuid.uuid4()), False, email1)
             db.session.add(new)
             new.passwordhash(password)
+            new.code=int(random.randrange(100000, 999999))
+            new.code_expires_in=datetime.utcnow() + timedelta(days=1)
             db.session.commit()
             link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
                 str(new.uuid)
-            mail.verify_email(email1, '12345')
+            mail.verify_email(email1,code)
             return {
                 'status': 3,
                 'res': 'please verify your account'
@@ -350,6 +368,7 @@ class email_verification(Resource):
                 exuser.verified_email = True
                 exuser.user_visibility = True
                 db.session.commit()
+                mail.welcome_email(exuser.email)
                 return redirect(link)
 
             else:

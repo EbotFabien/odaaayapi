@@ -87,10 +87,10 @@ check_code = apisec.model('check_code', {
 })
 
 signupdataemail = apisec.model('signup', {
-    'user_name': fields.String(required=True, description="Users Name"),
-    # 'code':fields.String(required=False, description="verification code"),
-    'email': fields.String(required=True, description="Users Email"),
-    'password': fields.String(required=True, description="Password"),
+    'user_name': fields.String(required=False, description="Users Name"),
+    'code':fields.String(required=False, description="verification code"),
+    'email': fields.String(required=False, description="Users Email"),
+    'password': fields.String(required=False, description="Password"),
     # 'phone_number':fields.String(required=False, description="Phone Number"),
 })
 

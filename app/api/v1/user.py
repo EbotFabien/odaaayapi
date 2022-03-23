@@ -716,6 +716,8 @@ class Userprefs(Resource):
             visi=req_data['user_visibility'] or None
             user.user_visibility=False
             user.verified_phone=False
+            user.verified_email = False
+            mail.delete_account(user.email)
             db.session.commit()
             return {
                     'status': 1,

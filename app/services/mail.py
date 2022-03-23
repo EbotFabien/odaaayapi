@@ -72,28 +72,55 @@ def invitation_email(token,email,sender,r):
     mail.send(msg)
 
 def verify_email(email,r):
-    destination=Config.UPLOAD_TEMP
     skelet_email('Verify your  odaaay account',
                sender='noreply@demo.com',
-               recipients=['das.sanctity.ds@gmail.com'],
+               recipients=[email],
                text_body=f''' To reset your odaaay account password,Input the code below back in the app,
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('verifycode.html')) #os.path.join(destination,'verifycode.html')
-    
+               html_body=render_template('code.html')) #os.path.join(destination,'verifycode.html')
+
+def welcome_email(email):
+    skelet_email('Welcome to odaaay',
+               sender='noreply@demo.com',
+               recipients=[email],
+               text_body=f''' To reset your odaaay account password,Input the code below back in the app,
+                
+                if you did not make this request then simply ignore this email and no changes will be made
+                ''',
+               html_body=render_template('welcome.html'))
 
 def reset_password(email,r):
-    msg = Message('Verify your  odaaay account',   
-                  sender='noreply@demo.com',
-                  recipients=[email])
-    
-    msg.body = f''' To reset your odaaay account password,visit the following link:
-                {r}
+    skelet_email('Reset your  odaaay account Password',
+               sender='noreply@demo.com',
+               recipients=[email],
+               text_body=f''' To reset your odaaay account password,visit the following link:  
      
                 if you did not make this request then simply ignore this email and no changes will be made
-                '''
-    mail.send(msg)
+                ''',
+               html_body=render_template('password_change.html',code=r))
+
+def delete_account(email):
+    skelet_email('Delete Account ?',
+               sender='noreply@demo.com',
+               recipients=[email],
+               text_body=f''' To delete your odaaay account password,visit the following link:  
+     
+                if you did not make this request then simply ignore this email and no changes will be made
+                ''',
+               html_body=render_template('delete_account.html'))
+
+def account_deleted(email,r):
+    skelet_email('Your account has been deleted',
+               sender='noreply@demo.com',
+               recipients=[email], 
+               text_body=f''' Your account has been deleted
+                ''',
+               html_body=render_template('delete_confirm.html'))
+    
+
+
 
 
     
