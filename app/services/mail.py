@@ -79,7 +79,7 @@ def verify_email(email,r):
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('code.html')) #os.path.join(destination,'verifycode.html')
+               html_body=render_template('verify_code.html',code=r)) #os.path.join(destination,'verifycode.html')
 
 def welcome_email(email):
     skelet_email('Welcome to odaaay',
@@ -111,7 +111,7 @@ def delete_account(email):
                 ''',
                html_body=render_template('delete_account.html'))
 
-def account_deleted(email,r):
+def account_deleted(email):
     skelet_email('Your account has been deleted',
                sender='noreply@demo.com',
                recipients=[email], 
