@@ -524,7 +524,7 @@ class User_following(Resource):
                 else:
                     return{'status': 1, 'res':'You have sub already'},200
             else:
-                user.follow(user_to_follow)
+                user.follow(user_to_follow)# here   
                 db.session.commit()
                 return{'status': 1, 'res':'success'},200
         else:
@@ -715,7 +715,7 @@ class Userprefs(Resource):
         if req_data['type'] =='deactivate':
             #visi=req_data['user_visibility'] or None
             language=Language.query.filter_by(id=user.language_id).first()
-            link='https://odaaay.co/'+str(language.code)+'/user/confirm_delete/'+str(user.uuid)
+            link='https://odaaay.com/'+str(language.code)+'/user/confirm_delete/'+str(user.uuid)
             mail.delete_account(user.email,link)
             db.session.commit()
             return {
@@ -839,10 +839,10 @@ class User_confirm_delete(Resource):
             user.verified_phone=False
             user.verified_email = False
             language=Language.query.filter_by(id=user.language_id).first()
-            link="https://odaaay.co/"+str(language.code)+'/delete-account=true'
+            link="https://odaaay.com/"+str(language.code)+'/delete-account=true'
             mail.account_deleted(user.email)
             return link
-            
+
 #test
 @user.doc(
     security='KEY',
