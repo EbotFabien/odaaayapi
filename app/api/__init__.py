@@ -233,7 +233,7 @@ class Signup_email(Resource):
             email = Users.query.filter_by(email=email1).first()
             user = Users.query.filter_by(username=username).first()
             if code is not None:
-                if user.code == code and user.code_expires_in > datetime.now() :
+                if user.code == code : #and user.code_expires_in < datetime.now() :
                     link = 'https://odaaay.co/en/login'
                     user.verified_email = True
                     user.user_visibility = True
