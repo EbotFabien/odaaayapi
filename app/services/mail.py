@@ -81,7 +81,7 @@ def verify_email(email,r):
                 ''',
                html_body=render_template('verify_code.html',code=r)) #os.path.join(destination,'verifycode.html')
 
-def welcome_email(email):
+def welcome_email(email,N):
     skelet_email('Welcome to odaaay',
                sender='noreply@demo.com',
                recipients=[email],
@@ -89,7 +89,7 @@ def welcome_email(email):
                 
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('welcome.html'))
+               html_body=render_template('welcome.html',name=N))
 
 def reset_password(email,r):
     skelet_email('Reset your  odaaay account Password',
@@ -101,7 +101,7 @@ def reset_password(email,r):
                 ''',
                html_body=render_template('password_change.html',code=r))
 
-def delete_account(email):
+def delete_account(email,link):
     skelet_email('Delete Account ?',
                sender='noreply@demo.com',
                recipients=[email],
@@ -109,7 +109,7 @@ def delete_account(email):
      
                 if you did not make this request then simply ignore this email and no changes will be made
                 ''',
-               html_body=render_template('delete_account.html'))
+               html_body=render_template('delete_confirm.html',link=link))
 
 def account_deleted(email):
     skelet_email('Your account has been deleted',
@@ -117,7 +117,7 @@ def account_deleted(email):
                recipients=[email], 
                text_body=f''' Your account has been deleted
                 ''',
-               html_body=render_template('delete_confirm.html'))
+               html_body=render_template('delete_account.html'))
     
 
 

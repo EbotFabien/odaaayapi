@@ -234,11 +234,11 @@ class Signup_email(Resource):
             user = Users.query.filter_by(username=username).first()
             if code is not None:
                 if user.code == code : #and user.code_expires_in < datetime.now() :
-                    link = 'https://odaaay.co/en/login'
+                    link = 'https://odaaay.com/en/login'
                     user.verified_email = True
                     user.user_visibility = True
                     db.session.commit()
-                    mail.welcome_email(user.email)
+                    mail.welcome_email(user.email,user.username)
                     return redirect(link)
                 else:
                     return {
@@ -364,7 +364,7 @@ class email_verification(Resource):
         if uuid:
             exuser = Users.query.filter_by(uuid=uuid).first()
             if exuser:
-                link = 'https://odaaay.co/en/login'
+                link = 'https://odaaay.com/en/login'
                 exuser.verified_email = True
                 exuser.user_visibility = True
                 db.session.commit()

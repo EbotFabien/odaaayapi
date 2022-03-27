@@ -713,11 +713,10 @@ class Userprefs(Resource):
                     "res":"This phone number doesn't belong to this user"
                 }, 400 
         if req_data['type'] =='deactivate':
-            visi=req_data['user_visibility'] or None
-            user.user_visibility=False
-            user.verified_phone=False
-            user.verified_email = False
-            mail.delete_account(user.email)
+            #visi=req_data['user_visibility'] or None
+            language=Language.query.filter_by(id=user.language_id).first()
+            link='https://odaaay.co/'+str(language.code)+'/user/confirm_delete/'+str(user.uuid)
+            mail.delete_account(user.email,link)
             db.session.commit()
             return {
                     'status': 1,
@@ -810,7 +809,40 @@ class User_ip_address(Resource):
                 'res':"input IP"
             }
 
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/confirm_delete/<uuid>')
+class User_confirm_delete(Resource):
 
+    def post(self,uuid):
+        user = Users.query.filter_by(uuid=uuid).first()
+        
+        if user:
+            user.user_visibility=False
+            user.verified_phone=False
+            user.verified_email = False
+            language=Language.query.filter_by(id=user.language_id).first()
+            link="https://odaaay.co/"+str(language.code)+'/delete-account=true'
+            mail.account_deleted(user.email)
+            return link
+            
 #test
 @user.doc(
     security='KEY',
