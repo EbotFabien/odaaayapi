@@ -714,8 +714,7 @@ class Userprefs(Resource):
                 }, 400 
         if req_data['type'] =='deactivate':
             #visi=req_data['user_visibility'] or None
-            language=Language.query.filter_by(id=user.language_id).first()
-            link='https://odaaay.com/'+str(language.code)+'/user/confirm_delete/'+str(user.uuid)
+            link='https://odaaay.com/api/v1/user/confirm_delete/'+str(user.uuid)
             mail.delete_account(user.email,link)
             db.session.commit()
             return {
