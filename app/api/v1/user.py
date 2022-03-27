@@ -23,6 +23,7 @@ from config import Config
 import base64
 import os.path
 from os import path
+from werkzeug.utils import redirect
 
 
 #with app.app_context().push():
@@ -840,7 +841,7 @@ class User_confirm_delete(Resource):
             language=Language.query.filter_by(id=user.language_id).first()
             link='https://odaaay.com/'+str(language.code)+'/delete-account?delete=true'
             mail.account_deleted(user.email)
-            return link
+            return redirect (link)
 
 #test
 @user.doc(
