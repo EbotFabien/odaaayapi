@@ -830,7 +830,7 @@ class User_ip_address(Resource):
 @user.route('/user/confirm_delete/<uuid>')
 class User_confirm_delete(Resource):
 
-    def post(self,uuid):
+    def get(self,uuid):
         user = Users.query.filter_by(uuid=uuid).first()
         
         if user:
