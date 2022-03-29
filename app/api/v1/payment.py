@@ -567,6 +567,7 @@ class hook(Resource):
                 sub=Subs(user_sub=client.id,product_user=product.id,sub_id=subscription)
                 db.session.add(sub)
                 db.session.commit()
+                mail.subscription_message(product.picture,product.username)
 
         if event['type'] == "checkout.session.completed":#pay post
             subscription_schedule = event['data']['object']

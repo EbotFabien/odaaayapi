@@ -527,6 +527,7 @@ class User_following(Resource):
             else:
                 user.follow(user_to_follow)# here   
                 db.session.commit()
+                mail.subscription_message(user_to_follow.picture,user_to_follow.username)
                 return{'status': 1, 'res':'success'},200
         else:
             return {'status': 0, 'res':'fail'},200

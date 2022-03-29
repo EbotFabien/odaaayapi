@@ -118,6 +118,16 @@ def account_deleted(email):
                text_body=f''' Your account has been deleted
                 ''',
                html_body=render_template('delete_account.html'))
+
+def subscription_message(email,image,subscribed_to):
+    if image[0]!='h':
+        image='https://odaaay.com/api/static/files/'+image
+    skelet_email('Thanks for subscribing',
+               sender='noreply@demo.com',
+               recipients=[email], 
+               text_body=f''' You have subscribed to the following
+                ''',
+               html_body=render_template('subscription.html',subscribed_to=subscribed_to,image=image))
     
 
 

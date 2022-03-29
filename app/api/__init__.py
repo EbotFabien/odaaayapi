@@ -233,18 +233,24 @@ class Signup_email(Resource):
             email = Users.query.filter_by(email=email1).first()
             user = Users.query.filter_by(username=username).first()
             if code is not None:
-                if user.code == code : #and user.code_expires_in < datetime.now() :
-                    link = 'https://odaaay.com/en/login'
-                    user.verified_email = True
-                    user.user_visibility = True
-                    db.session.commit()
-                    mail.welcome_email(user.email,user.username)
-                    return redirect(link)
+                if user.verified_email == False:
+                    if user.code == code : #and user.code_expires_in < datetime.now() :
+                        link = 'https://odaaay.com/en/login'
+                        user.verified_email = True
+                        user.user_visibility = True
+                        db.session.commit()
+                        mail.welcome_email(user.email,user.username)
+                        return redirect(link)
+                    else:
+                        return {
+                        'status': 0,
+                        'res': 'Code has been taken'
+                    }, 200
                 else:
                     return {
-                    'status': 0,
-                    'res': 'Code has been taken'
-                }, 200
+                        'status': 0,
+                        'res': 'Code has been sent'
+                    }, 200
             if email is not None:
                 return {
                     'status': 1,
@@ -255,10 +261,12 @@ class Signup_email(Resource):
                     'status': 2,
                     'res': 'user_name is taken'
                 }, 200
-
+            lang = signup_data['lang'] or None
+            language= Language.query.filter_by(code=lang).first()
             new = Users(username, str(uuid.uuid4()), False, email1)
             db.session.add(new)
             new.passwordhash(password)
+            new.language_id=language.id
             new.code=int(random.randrange(100000, 999999))
             new.code_expires_in=datetime.utcnow() + timedelta(days=1)
             db.session.commit()
