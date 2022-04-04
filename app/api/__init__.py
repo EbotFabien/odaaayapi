@@ -235,12 +235,12 @@ class Signup_email(Resource):
             if code is not None:
                 if user.verified_email == False:
                     if user.code == code : #and user.code_expires_in < datetime.now() :
-                        link = 'https://odaaay.com/en/login'
+                        link ='https://odaaay.com/'+'en/login'
                         user.verified_email = True
                         user.user_visibility = True
                         db.session.commit()
                         mail.welcome_email(user.email,user.username)
-                        redirect(link)
+                        return redirect (link)
                     else:
                         return {
                         'status': 0,
