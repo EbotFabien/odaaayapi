@@ -839,6 +839,7 @@ class User_confirm_delete(Resource):
             user.user_visibility=False
             user.verified_phone=False
             user.verified_email = False
+            db.session.commit()
             language=Language.query.filter_by(id=user.language_id).first()
             link='https://odaaay.com/'+str(language.code)+'/delete-account?delete=true'
             mail.account_deleted(user.email)
