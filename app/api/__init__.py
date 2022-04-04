@@ -240,7 +240,10 @@ class Signup_email(Resource):
                         user.user_visibility = True
                         db.session.commit()
                         mail.welcome_email(user.email,user.username)
-                        return redirect (link)
+                        return {
+                        'status': 10,
+                        'res': 'Code sent clean'
+                        }, 200
                     else:
                         return {
                         'status': 0,
