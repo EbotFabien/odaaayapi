@@ -73,7 +73,7 @@ def invitation_email(token,email,sender,r):
 
 def verify_email(email,r):
     skelet_email('Verify your  odaaay account',
-               sender='noreply@demo.com',
+               sender='hello@odaaay.com',
                recipients=[email],
                text_body=f''' To reset your odaaay account password,Input the code below back in the app,
                 
@@ -83,7 +83,7 @@ def verify_email(email,r):
 
 def welcome_email(email,N):
     skelet_email('Welcome to odaaay',
-               sender='noreply@demo.com',
+               sender='hello@odaaay.com',
                recipients=[email],
                text_body=f''' To reset your odaaay account password,Input the code below back in the app,
                 
@@ -93,7 +93,7 @@ def welcome_email(email,N):
 
 def reset_password(email,r):
     skelet_email('Reset your  odaaay account Password',
-               sender='noreply@demo.com',
+               sender='hello@odaaay.com',
                recipients=[email],
                text_body=f''' To reset your odaaay account password,visit the following link:  
      
@@ -103,7 +103,7 @@ def reset_password(email,r):
 
 def delete_account(email,link):
     skelet_email('Delete Account ?',
-               sender='noreply@demo.com',
+               sender='hello@odaaay.com',
                recipients=[email],
                text_body=f''' To delete your odaaay account password,visit the following link:  
      
@@ -113,7 +113,7 @@ def delete_account(email,link):
 
 def account_deleted(email):
     skelet_email('Your account has been deleted',
-               sender='noreply@demo.com',
+               sender='hello@odaaay.com',
                recipients=[email], 
                text_body=f''' Your account has been deleted
                 ''',
@@ -123,7 +123,7 @@ def subscription_message(email,image,subscribed_to):
     if image[0]!='h':
         image='https://odaaay.com/api/static/files/'+image
     skelet_email('Thanks for subscribing',
-               sender='noreply@demo.com',
+               sender='hello@odaaay.com',
                recipients=[email], 
                text_body=f''' You have subscribed to the following
                 ''',
