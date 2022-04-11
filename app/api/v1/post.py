@@ -501,7 +501,7 @@ class Post(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language = Language.query.filter_by(code=got_language).first()
         followers_ = user.is_followers()
-        post_done = Posts.query.filter_by(title=title).first()
+        post_done = Posts.query.filter(and_(title=title,visibility=True)).first()
         lang = language.id
         if payment == True and subs == True:
             return {
