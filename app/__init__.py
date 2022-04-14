@@ -111,7 +111,7 @@ def createapp(configname):
         session['google_token'] = (resp['access_token'], '')
         me = google.get('userinfo')
         user=Users.query.filter_by(email=me.data['email']).first()
-        link='https://odaaay.co/'+me.data['locale'][0:2]+'/login'
+        link='https://odaaay.com/'+me.data['locale'][0:2]+'/login'
         if user:
             token = jwt.encode({
                 'user': user.username,
