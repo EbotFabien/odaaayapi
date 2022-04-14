@@ -131,6 +131,8 @@ def createapp(configname):
                     },
                 )
                 user.customer_id=customer['id']
+                user.verified_email = True
+                user.user_visibility = True
                 db.session.commit()
             #return jsonify({"data": me.data,"token":session['google_token']})
             return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
@@ -148,6 +150,8 @@ def createapp(configname):
                     },
                 )
                 user.customer_id=customer['id']
+                user.verified_email = True
+                user.user_visibility = True
                 db.session.commit()
             token = jwt.encode({
                 'user': user.username,

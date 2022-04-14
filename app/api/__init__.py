@@ -190,8 +190,8 @@ class Login_email(Resource):
                         db.session.commit()
                         return {'res': 'Your account is blocked,contact service'}, 401
             else:
-                link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
-                str(user1.uuid)
+                user1.code=int(random.randrange(100000, 999999))
+                db.session.commit()
                 mail.verify_email(email,user1.code)
                 return {
                     'status': 6,
@@ -354,6 +354,8 @@ class Confirmp(Resource):
             check = Users.verify_reset_token(token)
             if check is not None:
                 check.passwordhash(signup_data['password'])
+                check.verified_email = True
+                check.user_visibility = True
                 db.session.commit()
                 return {
                     'status': 1,
