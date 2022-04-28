@@ -26,9 +26,6 @@ import jwt, uuid
 from datetime import timedelta,datetime,timezone
 from config import Config
 
-
-
-
 bycrypt = Bcrypt()
 db = SQLAlchemy()
 search = Search(db=db)

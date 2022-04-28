@@ -24,6 +24,16 @@ import base64
 import os.path
 from os import path
 from werkzeug.utils import redirect
+import cloudinary
+import cloudinary.uploader
+
+
+
+cloudinary.config(
+    cloud_name="odaaay",
+    api_key="893419336671437",
+    api_secret="lIGoIkb5l7vZGpcD-k18Py49nGQ"
+)
 
 
 #with app.app_context().push():
@@ -270,7 +280,8 @@ class backdrop(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
-            user.background=str(data['uuid'])+"/backdrop/"+Name
+            upload_result = cloudinary.uploader.upload(File)
+            user.background=upload_result["secure_url"]#str(data['uuid'])+"/backdrop/"+Name
             db.session.commit()
             return {
                     "status":1,
@@ -283,7 +294,8 @@ class backdrop(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
-            user.background=str(data['uuid'])+"/backdrop/"+Name
+            upload_result = cloudinary.uploader.upload(File)
+            user.background=upload_result["secure_url"]#str(data['uuid'])+"/backdrop/"+Name
             db.session.commit()
             return {
                     "status":1,
@@ -346,7 +358,8 @@ class Uplu(Resource):
                 os.remove(fil)
             with open(fil, 'wb') as image_file:
                 image_file.write(base64.b64decode(File))
-            user.picture=str(data['uuid'])+"/profile/"+ex
+                upload_result = cloudinary.uploader.upload(image_file)
+            user.picture=upload_result["secure_url"]#str(data['uuid'])+"/profile/"+ex
             db.session.commit()
             return {
                     "status":1,

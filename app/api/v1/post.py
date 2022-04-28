@@ -38,6 +38,17 @@ import stripe
 from flask import current_app as app
 from config import Config
 from datetime import timedelta, datetime, timezone
+import cloudinary
+import cloudinary.uploader
+
+
+
+cloudinary.config(
+    cloud_name="odaaay",
+    api_key="893419336671437",
+    api_secret="lIGoIkb5l7vZGpcD-k18Py49nGQ"
+)
+
 
 # with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
@@ -328,9 +339,10 @@ class Upl(Resource):
                 os.makedirs(fila)
             fil = os.path.join(fila, Name)  # ,Name)
             File.save(fil)
+            upload_result = cloudinary.uploader.upload(File)
             return {
                 "status": 1,
-                "thumb_url": str(data['uuid'])+"/post/"+Name,
+                "thumb_url":upload_result["secure_url"], #str(data['uuid'])+"/post/"+Name,
             }, 200
 
         if File.mimetype == "image/jpg":
@@ -340,9 +352,10 @@ class Upl(Resource):
                 os.makedirs(fila)
             fil = os.path.join(fila, Name)  # ,Name)
             File.save(fil)
+            upload_result = cloudinary.uploader.upload(File)
             return {
                 "status": 1,
-                "thumb_url": str(data['uuid'])+"/post/"+Name,
+                "thumb_url":upload_result["secure_url"], #str(data['uuid'])+"/post/"+Name,
             }, 200
         else:
             return {
