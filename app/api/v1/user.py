@@ -280,7 +280,7 @@ class backdrop(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
-            upload_result = cloudinary.uploader.upload(File)
+            upload_result = cloudinary.uploader.upload(args)
             user.background=upload_result["secure_url"]#str(data['uuid'])+"/backdrop/"+Name
             db.session.commit()
             return {
