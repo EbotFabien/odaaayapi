@@ -358,7 +358,7 @@ class Uplu(Resource):
                 os.remove(fil)
             with open(fil, 'wb') as image_file:
                 image_file.write(base64.b64decode(File))
-                upload_result = cloudinary.uploader.upload(image_file)
+                upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/17c6c9ac-22ca-4003-a403-71a2f79c654b/profile/Leslie.png')
             user.picture=upload_result["secure_url"]#str(data['uuid'])+"/profile/"+ex
             db.session.commit()
             return {
