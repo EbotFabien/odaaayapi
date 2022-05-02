@@ -339,7 +339,7 @@ class Upl(Resource):
                 os.makedirs(fila)
             fil = os.path.join(fila, Name)  # ,Name)
             File.save(fil)
-            upload_result = cloudinary.uploader.upload(File)
+            upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/'+str(data['uuid'])+"/post/"+Name)
             return {
                 "status": 1,
                 "thumb_url":upload_result["secure_url"], #str(data['uuid'])+"/post/"+Name,
@@ -352,7 +352,7 @@ class Upl(Resource):
                 os.makedirs(fila)
             fil = os.path.join(fila, Name)  # ,Name)
             File.save(fil)
-            upload_result = cloudinary.uploader.upload(File)
+            upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/'+str(data['uuid'])+"/post/"+Name)
             return {
                 "status": 1,
                 "thumb_url":upload_result["secure_url"], #str(data['uuid'])+"/post/"+Name,
