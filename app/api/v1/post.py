@@ -40,6 +40,7 @@ from config import Config
 from datetime import timedelta, datetime, timezone
 import cloudinary
 import cloudinary.uploader
+import numpy as np
 
 
 
@@ -546,6 +547,10 @@ class Post(Resource):
                 newPost.tags = s[1:-1]
                 newPost.user_name = user.username
                 db.session.commit()
+                steps = np.random.randint(25,550)
+                for i in range(steps):
+                    newPost.add_clap(user)
+                    db.session.commit()
                 if payment == True:
                     acc = Account.query.filter_by(user=user.id).first()
                     newPost.thumb_url_ = thumb_url_
@@ -662,6 +667,10 @@ class Post(Resource):
                 newPost.tags = s[1:-1]
                 newPost.subs_only = subs
                 db.session.commit()
+                steps = np.random.randint(25,550)
+                for i in range(steps):
+                    newPost.add_clap(user)
+                    db.session.commit()
                 if payment == True:
                     acc = Account.query.filter_by(user=user.id).first()
                     if acc:

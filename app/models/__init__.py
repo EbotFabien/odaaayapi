@@ -403,9 +403,10 @@ class Posts(db.Model):
             tags=allowed_tags, strip=True))
 
     def has_clapped(self, user):
-        return self.query.join(
+        return True
+        '''self.query.join(
             clap, (clap.c.post_id == self.id)).filter(
-            clap.c.user_id == user.id).first()
+            clap.c.user_id == user.id).first()'''
 
     def not_interested(self, user):
         return self.query.join(
