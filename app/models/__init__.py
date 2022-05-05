@@ -425,8 +425,8 @@ class Posts(db.Model):
         return self.clap.filter(clap.c.post_id == self.id).count()
 
     def add_clap(self, user):
-        if not self.has_clapped(user):
-            self.clap.append(user)
+        #if not self.has_clapped(user):
+        self.clap.append(user)
 
     def remove_clap(self, user):
         if self.has_clapped(user):
