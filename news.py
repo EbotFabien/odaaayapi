@@ -105,8 +105,8 @@ def test():
 
 if __name__ == "__main__":
     #recreate_db()
-    #languages()
-    #category()
+    languages()
+    category()
     manager.run()
 
     # run()
