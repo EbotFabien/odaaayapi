@@ -1,5 +1,5 @@
 from flask import Blueprint, url_for
-#api = Blueprint('api', __name__, template_folder='../templates')
+api = Blueprint('api', __name__, template_folder='../templates')
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
