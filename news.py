@@ -26,6 +26,12 @@ migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 name = '''(API) ~ By Leslie Etubo T, E. Fabien'''
 
+sentry_sdk.init(
+        dsn="https://076148b85ca74c93b2c9ab0e07c2bd24@o1249285.ingest.sentry.io/6409744",
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0
+
+    )
 
 @manager.command
 def logo():
@@ -74,12 +80,7 @@ def category():
 def run():
     #logo()
     # Error tracking and logging with sentry
-    sentry_sdk.init(
-        dsn="https://076148b85ca74c93b2c9ab0e07c2bd24@o1249285.ingest.sentry.io/6409744",
-        integrations=[FlaskIntegration()],
-        traces_sample_rate=0.5
-
-    )
+    
     # Initializing log
     # file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
