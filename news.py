@@ -72,18 +72,20 @@ def category():
 
 @manager.command
 def run():
-    logo()
+    #logo()
     # Error tracking and logging with sentry
     sentry_sdk.init(
-        dsn="https://8bac745f37514ce3a64a390156f2a5cc@sentry.io/5188770",
-        integrations=[FlaskIntegration()]
-    )
+        dsn="https://076148b85ca74c93b2c9ab0e07c2bd24@o1249285.ingest.sentry.io/6409744",
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=0.5
 
+    )
     # Initializing log
     # file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
     # file_handler.setLevel(logging.INFO)
     # app.logger.addHandler(file_handler)
+    
     app.run(
         threaded=True,
         host=app.config.get('HOST'),
