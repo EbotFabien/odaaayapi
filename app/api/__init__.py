@@ -1,5 +1,5 @@
 from flask import Blueprint, url_for
-api = Blueprint('api', __name__, template_folder='../templates')
+#api = Blueprint('api', __name__, template_folder='../templates')
 from flask_restplus import Api, Resource, fields, reqparse, marshal
 from flask import Blueprint, render_template, abort, request, session
 from flask_cors import CORS
@@ -28,7 +28,7 @@ from app.models import Report, Users, Language, Save, Setting, \
     Posttype, Rating, Ratingtype, Translated, Posts, Reporttype, Post_Access, Tags
 from sqlalchemy import or_, and_, desc, asc
 from flask import current_app as app
-import start
+
 
 from config import Config
 from datetime import datetime
