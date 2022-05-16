@@ -109,6 +109,6 @@ if __name__ == "__main__":
     #recreate_db()
     #languages()
     manager.run()
-    print(ok)
+    
 
     # run()

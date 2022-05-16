@@ -34,7 +34,7 @@ from datetime import datetime
 
 # with app.app_context().push():
 stripe.api_key = Config.stripe_secret_key
-
+print(okbbbbbbbbbbbbbbbbbbbb)
 # API security eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZmFiaWVuIiwidXVpZCI6ImJlNTM1NDBlLWExMzItNDJiNy1iNzlkLTI4MWFhZGM1MWZjMyIsImV4cCI6MTYzMDg2ODQ1OCwiaWF0IjoxNjI4Mjc2NDU4fQ.u4KyP0J3qzV0coE3-kozIKI0sc8ZrEUYMWvUbQbSHQM
 authorizations = {
     'KEY': {
