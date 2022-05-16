@@ -65,12 +65,7 @@ def createapp(configname):
     app.redis = Redis.from_url(app.config['REDIS_URL'])
     stripe.api_key = Config.stripe_secret_key
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
-    sentry_sdk.init(
-        dsn="https://076148b85ca74c93b2c9ab0e07c2bd24@o1249285.ingest.sentry.io/6409744",
-        integrations=[FlaskIntegration()],
-        traces_sample_rate=1.0
-
-    )
+    
 
     google = oauth.remote_app(
         'google',

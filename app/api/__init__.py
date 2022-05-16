@@ -36,6 +36,13 @@ from datetime import datetime
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
+sentry_sdk.init(
+        dsn="https://076148b85ca74c93b2c9ab0e07c2bd24@o1249285.ingest.sentry.io/6409744",
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0
+
+    )
+
 
 
 # with app.app_context().push():
