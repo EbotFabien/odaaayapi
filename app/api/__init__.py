@@ -418,7 +418,7 @@ class email_verification(Resource):
     })
 @home.route('/home')
 class Home(Resource):
-    division_by_zero = 1 / 0
+   # division_by_zero = 1 / 0
     def get(self):
         # user getting data for their home screen
         try:
