@@ -148,6 +148,12 @@ userdata = post.model('userdata', {
     'picture': fields.String(required=True),
 })
 
+element = post.model('element', {
+    'clap_id': fields.Integer(required=True),
+    'user_id': fields.Integer(required=True),
+    'post_id': fields.Integer(required=True),
+
+})
 
 postdata = post.model('postreturndata', {
     'id': fields.Integer(required=True),
@@ -161,12 +167,7 @@ postdata = post.model('postreturndata', {
     'created_on': fields.DateTime(required=True),
 })
 
-element = apisec.model('element', {
-    'clap_id': fields.Integer(required=True),
-    'user_id': fields.Integer(required=True),
-    'post_id': fields.Integer(required=True),
 
-})
 user_post_sav = post.model('postreturnuserdata', {
     'id': fields.Integer(required=True),
     'uuid': fields.String(required=True),
