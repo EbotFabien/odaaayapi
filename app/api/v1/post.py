@@ -157,7 +157,15 @@ postdata = post.model('postreturndata', {
     'uploader_data': fields.List(fields.Nested(userdata)),
     'text_content': fields.String(required=True),
     'thumb_url': fields.String(required=False),
+    'clap': fields.List(fields.Nested(element)),
     'created_on': fields.DateTime(required=True),
+})
+
+element = apisec.model('element', {
+    'clap_id': fields.Integer(required=True),
+    'user_id': fields.Integer(required=True),
+    'post_id': fields.Integer(required=True),
+
 })
 user_post_sav = post.model('postreturnuserdata', {
     'id': fields.Integer(required=True),

@@ -373,8 +373,8 @@ class Posts(db.Model):
 
     clap = db.relationship(
         'Users', secondary=clap,
-        primaryjoin=(clap.c.post_id == id),
-        #secondaryjoin=(clap.c.user_id == Users.id),
+       # primaryjoin=(clap.c.user_id == Users.id),
+        secondaryjoin=(clap.c.post_id == id),
         backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
 
     Not_Interested = db.relationship(
