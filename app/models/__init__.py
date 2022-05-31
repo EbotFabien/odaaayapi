@@ -372,7 +372,7 @@ class Posts(db.Model):
     #  backref='summarized', lazy='dynamic')
 
     clap = db.relationship(
-        'clap', 
+        primary=clap, 
         primaryjoin=(clap.c.post_id == id),
         backref=db.backref('clap', uselist=False), uselist=False)
 
