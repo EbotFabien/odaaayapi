@@ -18,6 +18,7 @@ from markdown import markdown
 from werkzeug.utils import secure_filename
 import rq
 import redis
+from sqlalchemy import or_, and_
 
 
 Not_Interested = db.Table('Not_Interested',
@@ -56,6 +57,22 @@ clap = db.Table('clap',
 
 shorty = shortuuid.uuid()
 
+#clap = db.Table('clap',
+                #db.Column('clap_id', db.Integer,
+                        #  autoincrement=True, primary_key=True),
+                #db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+                #db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
+                #)
+
+class Clap(db.Model):
+    clap_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(
+        db.Integer, db.ForeignKey('posts.id'))
+
+    def __repr__(self):
+        return '<Clap>%r' % self.name
 
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -145,7 +162,7 @@ class Users(db.Model):
         return '<User %r>' % self.username
 
     def No_claps(self):
-        return self.clap.filter(clap.c.user_id == self.id).count()
+        return Clap.query.filter_by(user_id = self.id).count()
 
     def is_blocking(self, user):
         return self.blocked.filter(
@@ -371,11 +388,17 @@ class Posts(db.Model):
     #   primaryjoin=(id == Postsummary.post_id),
     #  backref='summarized', lazy='dynamic')
 
-    clap = db.relationship(
-        'Users', secondary=clap,
-        primaryjoin=(clap.c.user_id == Users.id),
-        secondaryjoin=(clap.c.post_id == id),
-        backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
+    #clap = db.relationship(
+        #'Users', secondary=clap,
+        #primaryjoin=(clap.c.user_id == Users.id),
+        #secondaryjoin=(clap.c.post_id == id),
+        #backref=db.backref('clap', lazy='dynamic'), lazy='dynamic')
+    
+    #clap = db.relationship("Clap",
+                               # primaryjoin=(author == Users.id),
+                               # backref=db.backref('uploader__data',  uselist=False),  uselist=False)
+    
+    clap =db.relationship("Clap", backref='clap')
 
     Not_Interested = db.relationship(
         'Users', secondary=Not_Interested,
@@ -422,15 +445,19 @@ class Posts(db.Model):
             self.Not_Interested.remove(user)
 
     def No__claps(self):
-        return self.clap.filter(clap.c.post_id == self.id).count()
+        return Clap.query.filter_by(post_id = self.id).count()
 
     def add_clap(self, user):
         #if not self.has_clapped(user):
-        self.clap.append(user)
+        clap=Clap(post_id=self.id,user_id=user)
+        db.session.add(clap)
+        db.session.commit()
 
     def remove_clap(self, user):
         if self.has_clapped(user):
-            self.clap.remove(user)
+            clap=Clap.query.filter(and_(Clap.post_id==self.id,Clap.user_id==user.id)).first()
+            db.session.delete(clap)
+            db.session.commit()
 
     def __init__(self, uploader, title, posttype, content, lang, post_url=None, video_url=None, thumb_url=None):
         self.text_content = content
