@@ -136,6 +136,13 @@
     ]
    }
 
+   #clap = db.Table('clap',
+   #db.Column('clap_id', db.Integer,
+           #  autoincrement=True, primary_key=True),
+   #db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+   #db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
+   #)
+
 
 
 signup

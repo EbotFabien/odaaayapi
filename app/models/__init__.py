@@ -57,14 +57,11 @@ clap = db.Table('clap',
 
 shorty = shortuuid.uuid()
 
-#clap = db.Table('clap',
-                #db.Column('clap_id', db.Integer,
-                        #  autoincrement=True, primary_key=True),
-                #db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
-                #db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
-                #)
+
 
 class Clap(db.Model):
+    __table_args__ = {'extend_existing': True}
+
     clap_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('users.id'))
