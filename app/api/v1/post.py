@@ -1103,11 +1103,11 @@ class ShoutPost(Resource):
         post = Posts.query.filter_by(uuid=req_data['Post_id']).first()
 
         if user:
-            if post.has_clapped(user):
-                return{
-                    "status": 0,
-                    "res": "You have already clapped on this post"
-                }, 200
+            #if post.has_clapped(user):
+            #    return{
+            #        "status": 0,
+            #        "res": "You have already clapped on this post"
+            #    }, 200
             if user:
                 post.add_clap(user.id)
                 db.session.commit()

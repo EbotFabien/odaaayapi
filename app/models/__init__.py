@@ -452,8 +452,7 @@ class Posts(db.Model):
 
     def remove_clap(self, user):
         if self.has_clapped(user):
-            clap=Clap.query.filter(and_(Clap.post_id==self.id,Clap.user_id==user.id)).first()
-            db.session.delete(clap)
+            Clap.query.filter(and_(Clap.post_id==self.id,Clap.user_id==user.id)).delete()
             db.session.commit()
 
     def __init__(self, uploader, title, posttype, content, lang, post_url=None, video_url=None, thumb_url=None):
