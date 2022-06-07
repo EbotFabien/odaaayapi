@@ -557,9 +557,10 @@ class Post(Resource):
                 newPost.user_name = user.username
                 db.session.commit()
                 steps = np.random.randint(25,550)
-                for i in range(steps):
-                    newPost.add_clap(user.id)
-                    db.session.commit()
+                if user.special == True:
+                    for i in range(steps):
+                        newPost.add_clap(user.id)
+                        db.session.commit()
                 if payment == True:
                     acc = Account.query.filter_by(user=user.id).first()
                     newPost.thumb_url_ = thumb_url_
@@ -677,9 +678,10 @@ class Post(Resource):
                 newPost.subs_only = subs
                 db.session.commit()
                 steps = np.random.randint(25,550)
-                for i in range(steps):
-                    newPost.add_clap(user.id)
-                    db.session.commit()
+                if user.special == True:
+                    for i in range(steps):
+                        newPost.add_clap(user.id)
+                        db.session.commit()
                 if payment == True:
                     acc = Account.query.filter_by(user=user.id).first()
                     if acc:
