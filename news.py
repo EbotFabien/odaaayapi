@@ -121,10 +121,10 @@ def test():
 
 
 if __name__ == "__main__":
-    recreate_db()
+    '''recreate_db()
     languages()
     category()
-    users()
+    users()'''
     manager.run()
     
     
