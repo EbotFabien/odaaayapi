@@ -15,6 +15,7 @@ import os
 #from app.services import mail
 from flask import current_app
 #import ssl
+import uuid
 
 
 #context = ssl.SSLContext()
@@ -59,6 +60,23 @@ def languages():
         db.session.add(lan2)
         db.session.commit()
 
+@manager.command
+def users():
+    print('users')
+    with app.app_context():
+        users_dict = {'one@odaaay.co': "The Herald", 'two@odaaay.co': "West African News", 'three@odaaay.co': "Media Online",
+                         'four@odaaay.co': "le Momehein", 'five@odaaay.co': "Zoom"}
+        for i in users_dict:
+            lang = 'en'
+            language= Language.query.filter_by(code=lang).first()
+            new = Users(users_dict[i], str(uuid.uuid4()), True, i)
+            db.session.add(new)
+            new.passwordhash('5kM11kk')
+            new.language_id=language.id
+            new.special=True
+            new.verified_email=True
+            new.verified_phone=True
+            db.session.commit()
 
 @manager.command
 def category():
@@ -103,8 +121,10 @@ def test():
 
 
 if __name__ == "__main__":
-    #recreate_db()
-    #languages()
+    recreate_db()
+    languages()
+    category()
+    users()
     manager.run()
     
     

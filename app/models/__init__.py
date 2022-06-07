@@ -120,6 +120,7 @@ class Users(db.Model):
     price_id = db.Column(db.String)
     price = db.Column(db.Float)
     paid = db.Column(db.Boolean, default=False)
+    special = db.Column(db.Boolean, default=False)
 
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
