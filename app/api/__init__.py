@@ -803,6 +803,7 @@ class homeArticle(Resource):
                 lang = request.args.get('lang', None)
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid=id).first()
+                trans=Translated.query.filter(and_(Translated.post_id==posts_feed.id,Translated.language_id==current_lang.id)).first()
                 user1 = Users.query.filter_by(id=posts_feed.author).first()
                 saves = Save.query.filter_by(post_id=posts_feed.id).count()
                 report = Report.query.filter_by(post_id=posts_feed.id).count()
@@ -819,7 +820,7 @@ class homeArticle(Resource):
                             "shouts": count_claps,
                             "saves": saves,
                             "report": report,
-                            'translated_feed': marshal(posts_feed, schema.postdata)
+                            'translated_feed': marshal(trans, schema.lang_post)
                         }
                     }, 200
 
