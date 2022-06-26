@@ -516,6 +516,7 @@ class Post(Resource):
         s = str(tags)
         got_language = req_data['lang']
         if lang == got_language:
+            got_language_=lang
             print('language good')
         else:
             if lang != None:
