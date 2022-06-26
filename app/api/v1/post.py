@@ -516,23 +516,13 @@ class Post(Resource):
         s = str(tags)
         got_language = req_data['lang']
         if lang == got_language:
-            got_language_=lang
             print('language good')
-        else:
-            if lang != None:
-                got_language_ = lang
-            elif lang == None:
-                lang=got_language
-                got_language_ = lang
-            elif got_language != None:
-                got_language_ = got_language
-            else:
-                got_language_ = 'en'  
+        
             
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        language = Language.query.filter_by(code=got_language_).first()
+        language = Language.query.filter_by(code=got_language).first()
         followers_ = user.is_followers()
         post_done = Posts.query.filter(and_(Posts.title==title,Posts.visibility==True)).first()
         lang = language.id   
