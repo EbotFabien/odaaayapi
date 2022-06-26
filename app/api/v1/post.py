@@ -517,6 +517,8 @@ class Post(Resource):
         got_language = req_data['lang']
         if lang == got_language:
             print('language good')
+        else:
+            got_language=lang
         
             
         token = request.headers['API-KEY']
