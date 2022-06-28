@@ -515,10 +515,11 @@ class Post(Resource):
         tags = req_data['Tags']
         s = str(tags)
         got_language = req_data['lang']
-        if lang == got_language:
+        '''if lang == got_language:
             print('language good')
         else:
-            got_language=lang
+            if lang == None:
+                got_language=lang'''
         
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
