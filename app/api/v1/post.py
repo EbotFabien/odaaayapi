@@ -520,7 +520,6 @@ class Post(Resource):
         else:
             got_language=lang
         
-            
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
