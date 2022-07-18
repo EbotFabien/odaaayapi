@@ -225,7 +225,7 @@ uploaderdata = user.model('uploaderdata',{
 })
 
 ip_data = user.model('address',{
-    'address':fields.String(required=True)
+    'address':fields.String(required=False)
 })
 Notification_seen = user.model('Notification_seen',{
     'notification_id':fields.String(required=True)
@@ -811,7 +811,7 @@ class User_ip_address(Resource):
         ip_address = req_data['address']
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
-        if ip_address:
+        if ip_address != None:
             response=rqs.get(ip_info)
             return{
                 'status':1,

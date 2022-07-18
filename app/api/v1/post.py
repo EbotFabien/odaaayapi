@@ -902,6 +902,11 @@ class Article_check(Resource):
         LANGUAGE = "english"
         SENTENCES_COUNT = 10
         url = req_data["Link"]
+        if url == '' or url == "" :
+            return {
+                'status': 2,
+                'res': "Please input a link"
+            }, 200
         sum_content = ''
         x = requests.get(url)
         if x is not None:
