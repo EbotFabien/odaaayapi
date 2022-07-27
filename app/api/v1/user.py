@@ -809,6 +809,11 @@ class User_ip_address(Resource):
        # token = request.headers['API-KEY']
         #data = jwt.decode(token, app.config.get('SECRET_KEY'))
         ip_address = req_data['address']
+        if ip_address == None:
+            return{
+                'status':0,
+                'res':"input IP"
+            }
        # user = Users.query.filter_by(uuid=data['uuid']).first()
         ip_info="http://ip-api.com/json/"+ip_address 
         if ip_address != None:
