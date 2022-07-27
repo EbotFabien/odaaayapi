@@ -83,7 +83,8 @@ def category():
     print("cat")
     with app.app_context():
         language_dict = ['Sport', 'Technology', 'Science', 'Gaming', 'Entertainment',
-                         'Politics and News', 'Education', 'Animals & Pets', 'Autos & Vehicules', 'Films & Animations','Music','Finance','People','Religion','dating']
+                         'Politics and News', 'Education', 'Animals & Pets', 'Autos & Vehicules',
+                          'Films & Animations','Music','Finance','People','Religion','dating']
         for i in language_dict:
             lan = Category(name=i)
             db.session.add(lan)
