@@ -55,7 +55,7 @@ def createapp(configname):
     CORS(app, resources=r'/api/*')
     bycrypt.init_app(app)
     db.init_app(app)
-    compress.init_app(app)
+    #compress.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
     oauth = OAuth(app)
