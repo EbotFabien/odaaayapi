@@ -122,7 +122,8 @@ def createapp(configname):
         session['google_token'] = (resp['access_token'], '')
         me = google.get('userinfo')
         user=Users.query.filter_by(email=me.data['email']).first()
-        link='https://odaaay.com/'+me.data['locale'][0:2]+'/login'
+        link='https://62fd38baee8fd0053f999b7d--luminous-boba-dd9d14.netlify.app/'+me.data['locale'][0:2]+'/login'
+        
         if user:
             token = jwt.encode({
                 'user': user.username,
