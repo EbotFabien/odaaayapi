@@ -322,7 +322,7 @@ class Reset(Resource):
             if check:
                 verification_code = phone.generate_code()
                 token = check.get_reset_token()
-                link = 'https://62fd38baee8fd0053f999b7d--luminous-boba-dd9d14.netlify.app/'+lang + \
+                link = 'https://6323c1b7d8004431a5d5a632--lambent-duckanoo-63ccf2.netlify.app/'+lang + \
                     '/resetpassword?token='+str(token)
                 mail.reset_password(email, link)
                 return {
@@ -384,7 +384,7 @@ class email_verification(Resource):
         if uuid:
             exuser = Users.query.filter_by(uuid=uuid).first()
             if exuser:
-                link = 'https://62fd38baee8fd0053f999b7d--luminous-boba-dd9d14.netlify.app/en/login'
+                link = 'https://6323c1b7d8004431a5d5a632--lambent-duckanoo-63ccf2.netlify.app/en/login'
                 exuser.verified_email = True
                 exuser.user_visibility = True
                 db.session.commit()

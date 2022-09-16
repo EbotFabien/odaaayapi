@@ -75,7 +75,7 @@ def createapp(configname):
         traces_sample_rate=1.0
 
     )
-
+   
 
     google = oauth.remote_app(
         'google',
@@ -122,7 +122,7 @@ def createapp(configname):
         session['google_token'] = (resp['access_token'], '')
         me = google.get('userinfo')
         user=Users.query.filter_by(email=me.data['email']).first()
-        link='https://62fd38baee8fd0053f999b7d--luminous-boba-dd9d14.netlify.app/'+me.data['locale'][0:2]+'/login'
+        link='https://6323c1b7d8004431a5d5a632--lambent-duckanoo-63ccf2.netlify.app/'+me.data['locale'][0:2]+'/login'
         
         if user:
             token = jwt.encode({

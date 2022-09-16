@@ -859,7 +859,7 @@ class User_confirm_delete(Resource):
             user.verified_email = False
             db.session.commit()
             language=Language.query.filter_by(id=user.language_id).first()
-            link='https://62fd38baee8fd0053f999b7d--luminous-boba-dd9d14.netlify.app/'+str(language.code)+'/delete-account?delete=true'
+            link='https://6323c1b7d8004431a5d5a632--lambent-duckanoo-63ccf2.netlify.app/'+str(language.code)+'/delete-account?delete=true'
             mail.account_deleted(user.email)
             return redirect (link)
 
