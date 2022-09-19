@@ -159,7 +159,7 @@ class Login_email(Resource):
         user1 = Users.query.filter_by(email=email).first()
         if user1:
             if user1.verified_email == True:
-                if user1.verify_password(password):
+                if user1.verify_password(password) != False:
                     user1.tries = 0
                     if user1.customer_id == None:
                         customer = stripe.Customer.create(

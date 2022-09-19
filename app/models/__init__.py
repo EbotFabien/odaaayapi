@@ -221,7 +221,10 @@ class Users(db.Model):
         self.password_hash = generate_password_hash(password_taken)
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        if password != None:
+            return check_password_hash(self.password_hash, password)
+        else:
+            return False
 
     def verify_phone(self, phone):
         return check_password_hash(self.user_number, phone)

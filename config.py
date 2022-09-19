@@ -49,7 +49,7 @@ class Config(object):
     CACHE_DEFAULT_TIMEOUT= 300
     PAGINATE_PAGE_SIZE = 4
     PAGINATE_PAGE_PARAM = "pagenumber"
-    PAGINATE_SIZE_PARAM = "pagesize"
+    PAGINATE_SIZE_PARAM = "pagesize"   
     PAGINATE_RESOURCE_LINKS_ENABLED = True
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
     RQ_DASHBOARD_USERNAME='rqadmin'
