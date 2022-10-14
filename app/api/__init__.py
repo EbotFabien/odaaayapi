@@ -491,7 +491,7 @@ class Home(Resource):
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None))
                                 
-                        posts_feed = posts_feeds.paginate(page=start ,per_page=count)
+                        posts_feed = posts_feeds.paginate(page=int(start) ,per_page=int(count))
                         #paginate(    
                         #    int(start), int(count), False)
                         total = (posts_feed.total/int(count))
@@ -556,7 +556,7 @@ class Home(Resource):
                         if tag != None and cat != None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.thumb_url != None, Tags.tags == tag))
-                        posts_feed = posts_feeds.paginate(page=start ,per_page=count)
+                        posts_feed = posts_feeds.paginate(page=int(start) ,per_page=int(count))
                         #paginate(
                          #   int(start), int(count), False)
                         total = (posts_feed.total/int(count))
