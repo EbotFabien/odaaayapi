@@ -491,13 +491,12 @@ class Home(Resource):
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None))
                                 
-                        posts_feed = posts_feeds.paginate(page=int(start) ,per_page=int(count))
-                        #paginate(    
-                        #    int(start), int(count), False)
+                        posts_feed = posts_feeds.paginate(    
+                            int(start), int(count), False)
                         total = (posts_feed.total/int(count))
-                        next_url = url_for('api./api/home_home', start=int(start)+1, limit=int(
+                        next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
                             limit), count=int(count)) if posts_feed.has_next else None
-                        previous = url_for('api./api/home_home', start=int(start), limit=int(
+                        previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(
                             limit), count=int(count)) if posts_feed.has_prev else None
 
                         if user is not None:
@@ -556,13 +555,12 @@ class Home(Resource):
                         if tag != None and cat != None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.thumb_url != None, Tags.tags == tag))
-                        posts_feed = posts_feeds.paginate(page=int(start) ,per_page=int(count))
-                        #paginate(
-                         #   int(start), int(count), False)
+                        posts_feed = posts_feeds.paginate(
+                            int(start), int(count), False)
                         total = (posts_feed.total/int(count))
-                        next_url = url_for('api./api/home_home', start=int(start)+1, limit=int(
+                        next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
                             limit), count=int(count)) if posts_feed.has_next else None
-                        previous = url_for('api./api/home_home', start=int(start), limit=int(
+                        previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(
                             limit), count=int(count)) if posts_feed.has_prev else None
 
                         if user is not None:
