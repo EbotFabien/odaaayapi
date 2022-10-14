@@ -495,9 +495,9 @@ class Home(Resource):
                         #paginate(    
                         #    int(start), int(count), False)
                         total = (posts_feed.total/int(count))
-                        next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
+                        next_url = url_for('api./api/home_home', start=int(start)+1, limit=int(
                             limit), count=int(count)) if posts_feed.has_next else None
-                        previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(
+                        previous = url_for('api./api/home_home', start=int(start), limit=int(
                             limit), count=int(count)) if posts_feed.has_prev else None
 
                         if user is not None:
@@ -560,9 +560,9 @@ class Home(Resource):
                         #paginate(
                          #   int(start), int(count), False)
                         total = (posts_feed.total/int(count))
-                        next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
+                        next_url = url_for('api./api/home_home', start=int(start)+1, limit=int(
                             limit), count=int(count)) if posts_feed.has_next else None
-                        previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(
+                        previous = url_for('api./api/home_home', start=int(start), limit=int(
                             limit), count=int(count)) if posts_feed.has_prev else None
 
                         if user is not None:
