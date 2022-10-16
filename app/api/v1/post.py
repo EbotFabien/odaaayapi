@@ -527,7 +527,10 @@ class Post(Resource):
         language = Language.query.filter_by(code=got_language).first()
         followers_ = user.is_followers()
         post_done = Posts.query.filter(and_(Posts.title==title,Posts.visibility==True)).first()
-        lang = language.id   
+        if language != None:
+            lang = language.id
+        else:
+            lang =1
         if payment == True and subs == True:
             return {
                 'status': 0,
@@ -916,6 +919,7 @@ class Article_check(Resource):
 
             metas = soup.findAll('meta')
 
+            thumbnail=''
             for i in metas:
                 if i.get('property') == "og:image":
                     thumbnail = i.get('content')

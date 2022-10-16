@@ -227,7 +227,7 @@ class Login_email(Resource):
 @signup.route('/auth/signup')
 class Signup_email(Resource):
     # Limiting the user request to localy prevent DDoSing
-    @limiter.limit("10/hour")
+    #@limiter.limit("10/hour")
     @signup.expect(schema.signupdataemail)
     def post(self):
         signup_data = request.get_json()
@@ -311,7 +311,7 @@ class Signup_email(Resource):
 @signup.route('/auth/resetpassword')
 class Reset(Resource):
     # Limiting the user request to localy prevent DDoSing
-    @limiter.limit("10/hour")
+    #@limiter.limit("10/hour")
     @signup.expect(schema.resetpassword)
     def post(self):
         signup_data = request.get_json()
@@ -352,7 +352,7 @@ class Reset(Resource):
 @signup.route('/auth/confirmpassword')
 class Confirmp(Resource):
     # Limiting the user request to localy prevent DDoSing
-    @limiter.limit("10/hour")
+    #@limiter.limit("10/hour")
     @signup.expect(schema.confirmpassword)
     def post(self):
         signup_data = request.get_json()
