@@ -16,6 +16,7 @@ class Config(object):
     #    or 'sqlite:///' + os.path.join(basedir, 'news.sqlite')
     # 'postgresql://localhost/news'
     # 'postgresql+psycopg2://test:test@db/test'
+    COMPRESS_REGISTER= True
     SQLALCHEMY_TRACK_MODIFICATIONS = True 
     LANGUAGES = ['en', 'fr', 'arb', 'por']
     GOOGLE_ID = "945224984879-lpaj6i3p37432uavn683bbf4m9i0kj0j.apps.googleusercontent.com"
