@@ -7,7 +7,7 @@ from functools import wraps
 from tqdm import tqdm
 from flask import current_app as app
 from datetime import datetime, timedelta
-from app import db, limiter, cache, bycrypt, createapp
+from app import db, limiter, cache, bycrypt, createapp,compress
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import redirect
@@ -424,6 +424,7 @@ class email_verification(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @home.route('/home')
+@compress.compressed()
 class Home(Resource):
     def get(self):
         # user getting data for their home screen
