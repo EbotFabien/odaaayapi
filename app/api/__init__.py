@@ -7,7 +7,7 @@ from functools import wraps
 from tqdm import tqdm
 from flask import current_app as app
 from datetime import datetime, timedelta
-from app import db, limiter, cache, bycrypt, createapp
+from app import db, limiter, cache, bycrypt, createapp  
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import redirect
@@ -820,7 +820,7 @@ class homeArticle(Resource):
                             "shouts": count_claps,
                             "saves": saves,
                             "report": report,
-                            'translated_feed': marshal(trans, schema.lang_post)
+                            'translated_feed': marshal(posts_feed, schema.postdata)
                         }
                     }, 200
 
