@@ -500,6 +500,9 @@ class Home(Resource):
                             limit), count=int(count)) if posts_feed.has_prev else None
                         feed=posts_feed.items
                         all=[]
+                        all.append(cat)
+                        all.append(recent)
+                        all.append(tag)
                         for i in feed:
                             all.append(i.post_id)
 
