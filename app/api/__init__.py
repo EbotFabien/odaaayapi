@@ -540,7 +540,7 @@ class Home(Resource):
                                 "lang": lang,
                                 "1":cat,
                                 "2":recent,
-                                "3":tag,
+                                "3":'null5',
                                 "previous": previous,
                                 "totalPages": total,
                                 "results": {
