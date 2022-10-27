@@ -498,6 +498,10 @@ class Home(Resource):
                             limit), count=int(count)) if posts_feed.has_next else None
                         previous = url_for('api./api/home_home', start=posts_feed.prev_num, limit=int(
                             limit), count=int(count)) if posts_feed.has_prev else None
+                        feed=posts_feed.items
+                        all=[]
+                        for i in feed:
+                            all.append(i.post_id)
 
                         if user is not None:
                             user_saves = Save.query.filter_by(
@@ -536,7 +540,8 @@ class Home(Resource):
                                 "previous": previous,
                                 "totalPages": total,
                                 "results": {
-                                    'feed': marshal(posts_feed.items, schema.lang_post)
+                                    'feed': marshal(posts_feed.items, schema.lang_post),
+                                    'all':all,
                                 }
                             }, 200
                     if pay == 'paid':#Posts.paid == True
