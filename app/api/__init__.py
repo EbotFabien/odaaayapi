@@ -452,44 +452,44 @@ class Home(Resource):
                     current_lang = Language.query.filter_by(code=i).first()
                     if pay == None:
                         if recent == 'recent':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None))
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id)#.join(
+                                #Posts).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None))
 
                         if recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None))
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id)#.join(
+                                #Posts).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None))
 
                         if cat == None and tag == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts).filter(and_(Posts.paid == False,Posts.thumb_url != None)).order_by(func.random())
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id)#.join(
+                                #Posts).filter(and_(Posts.paid == False,Posts.thumb_url != None)).order_by(func.random())
                         
                         if cat == None and tag == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts).order_by(func.random()).filter(and_(Posts.paid == False,Posts.thumb_url == None))
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id)#.join(
+                               # Posts).order_by(func.random()).filter(and_(Posts.paid == False,Posts.thumb_url == None))
 
                         if cat != None and tag == None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
-                                Posts).order_by(func.random()).filter(and_(Posts.paid == False,Posts.thumb_url != None))
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat))#.join(
+                               # Posts).order_by(func.random()).filter(and_(Posts.paid == False,Posts.thumb_url != None))
                         
                         if cat != None and tag == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
-                                Posts).order_by(func.random()).filter(and_(Posts.paid == False,Posts.thumb_url == None))
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat))#.join(
+                                ##Posts).order_by(func.random()).filter(and_(Posts.paid == False,Posts.thumb_url == None))
 
                         if tag != None and cat == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
-                                Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url != None))
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id)#.join(Posts).join(
+                                #Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url != None))
                         
                         if tag != None and cat == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
-                                Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url == None))
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id)#.join(Posts).join(
+                               # Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url == None))
 
                         if tag != None and cat != None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
-                                Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url != None))
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat))#.join(
+                               # Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url != None))
                         
                         if tag != None and cat != None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
-                                Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None))
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat))#.join(
+                               # Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(func.random()).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None))
                                 
                         posts_feed = posts_feeds.paginate(    
                             int(start), int(count), False)
