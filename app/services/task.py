@@ -93,9 +93,14 @@ def translate_posts(post_id, user_id):
                 if post is not None:
                     new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
                     if new_check is None:
-                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
-                        db.session.add(new_row)
-                        db.session.commit()
+                        if post.summarize == True:
+                            new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                            db.session.add(new_row)
+                            db.session.commit()
+                        else:
+                            new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content="",language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                            db.session.add(new_row)
+                            db.session.commit()
         
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)

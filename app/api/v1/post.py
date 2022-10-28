@@ -614,7 +614,7 @@ class Post(Resource):
                                        tags=tag, category=category)
                         db.session.add(new_tag)
                         db.session.commit()
-                if summarized and translated == True:
+                if summarized == True and translated == True:
                     newPost.launch_translation_task(
                         'translate_posts', user.id, 'Translating  post ...')
 

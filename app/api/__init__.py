@@ -538,9 +538,6 @@ class Home(Resource):
                                 "count": count,
                                 "next": next_url,
                                 "lang": lang,
-                                "1":cat,
-                                "2":recent,
-                                "3":'null5',
                                 "previous": previous,
                                 "totalPages": total,
                                 "results": {
