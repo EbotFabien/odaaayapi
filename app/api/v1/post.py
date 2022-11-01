@@ -299,8 +299,8 @@ class ptag(Resource):
                 for tag in results:
                     results1=[]
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total > 4:
-                        results1.append(tag)
+                    #if total > 4:
+                    results1.append(tag)
             return {
                 "start": start,
                 "limit": limit,
