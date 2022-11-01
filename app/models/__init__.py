@@ -357,7 +357,7 @@ class Posts(db.Model):
     description = db.Column(db.String(10000))
     post_url = db.Column(db.String(10000))
     thumb_url = db.Column(db.String(10000))
-    text_content = db.Column(db.Text)
+    text_content = db.Column(db.String())
     picture_url = db.Column(db.String(10000))
     audio_url = db.Column(db.String(10000))
     video_url = db.Column(db.String(10000))
