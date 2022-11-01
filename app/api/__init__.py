@@ -461,7 +461,7 @@ class Home(Resource):
 
                         if cat == None and tag == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts,(Posts.id == Translated.post_id)).filter(and_(Posts.paid == False,Posts.thumb_url != None))#.order_by(func.random())
+                                Posts,(Posts.id == Translated.post_id).filter(and_(Posts.paid == False,Posts.thumb_url != None)))#.order_by(func.random())
                         
                         if cat == None and tag == None and recent == 'thumb':
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
