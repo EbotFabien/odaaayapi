@@ -292,7 +292,7 @@ class ptag(Resource):
                 results1=[]
                 for tag in results:
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total > 4:
+                    if total > 2:
                         results1.append(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
@@ -301,7 +301,7 @@ class ptag(Resource):
                 results1=[]
                 for tag in results:
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total > 4:
+                    if total > 2:
                         results1.append(tag)
             return {
                 "start": start,
