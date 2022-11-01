@@ -288,32 +288,27 @@ class ptag(Resource):
             if category == None:
                 results = Tags.query.distinct(Tags.tags).paginate(    #order_by(func.random())
                     int(start), int(count), False).items
-                i=1
+                
+                results1=[]
                 for tag in results:
-                    results1=[]
-                    i+=1
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    #if total > 1:
-                    print(tag)
-                    results1.append(tag)
+                    if total > 4:
+                        results1.append(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
                     Posts.category_id == category).paginate(int(start), int(count), False).items
-                i=1
+                
+                results1=[]
                 for tag in results:
-                    results1=[]
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    i+=1
-                    #if total > 4:
-                    print(tag)
-                    results1.append(tag)
+                    if total > 4:
+                        results1.append(tag)
             return {
                 "start": start,
                 "limit": limit,
                 "count": count,
                 "next": next,
                 "previous": previous,
-                "result1":str(i),
                 "results": marshal(results1, tegs)
             }, 200
 
