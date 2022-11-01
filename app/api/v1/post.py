@@ -291,8 +291,8 @@ class ptag(Resource):
                 for tag in results:
                     results1=[]
                     total=Tags.query.filter_by(tags=tag.tags).count()
-                    if total > 4:
-                        results1.append(tag)
+                    #if total > 1:
+                    results1.append(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
                     Posts.category_id == category).paginate(int(start), int(count), False).items
@@ -501,6 +501,11 @@ class Post(Resource):
         args = uploader.parse_args()
         title = req_data['title']
         content = req_data['content']
+        if content == None :
+            return {
+                'status': 0,
+                'res': 'Please insert content'
+            }, 400
         post_auto_lang = translator.detect(title)
         lang = str(post_auto_lang.lang)
         ptype = req_data['type']
