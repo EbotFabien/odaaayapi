@@ -307,6 +307,7 @@ class ptag(Resource):
                 "count": count,
                 "next": next,
                 "previous": previous,
+                "results":results,
                 "results": marshal(results1, tegs)
             }, 200
 
