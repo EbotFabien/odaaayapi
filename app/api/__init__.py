@@ -513,11 +513,13 @@ class Home(Resource):
                                     if i.post_id == j.post_id:
                                         saved.append(j.post_id)
                             feed = posts_feed.items
+                            inte=[]
                             for i in feed:
                                 post = Posts.query.filter_by(
                                     id=i.post_id).first()
                                 if post.not_interested(user):
                                     feed.remove(i)
+                                    inte.append(i.post_id)
                             return {
                                 "start": start,
                                 "limit": limit,
@@ -528,6 +530,7 @@ class Home(Resource):
                                 "totalPages": total,
                                 "results": {
                                     'post_saved': saved,
+                                    "not_interest":inte,
                                     "feed": marshal(feed, schema.lang_post)
                                 }
                             }, 200
