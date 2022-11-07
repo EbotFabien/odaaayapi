@@ -404,7 +404,7 @@ class Posts(db.Model):
     not_Interested = db.relationship(
         'Posts', secondary=Not_Interested,
         primaryjoin=(Not_Interested.c.post_id == id),
-        secondaryjoin=(Not_Interested.c.user_id == Users.id),
+        #secondaryjoin=(Not_Interested.c.user_id == Users.id),
         backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')
 
     uploader_data = db.relationship("Users",
