@@ -401,7 +401,7 @@ class Posts(db.Model):
     
     clap =db.relationship("Clap", backref='clap')
 
-    Not_Interested = db.relationship(
+    not_Interested = db.relationship(
         'Users', secondary=Not_Interested,
         primaryjoin=(Not_Interested.c.post_id == id),
         secondaryjoin=(Not_Interested.c.user_id == Users.id),
@@ -439,11 +439,11 @@ class Posts(db.Model):
 
     def is_not_interested(self, user):
         if not self.not_interested(user):
-            self.Not_Interested.append(user)
+            self.not_Interested.append(user)
 
     def remove_not_interested(self, user):
         if self.not_interested(user):
-            self.Not_Interested.remove(user)
+            self.not_Interested.remove(user)
 
     def No__claps(self):
         return Clap.query.filter_by(post_id = self.id).count()
