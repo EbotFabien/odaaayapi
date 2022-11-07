@@ -415,11 +415,11 @@ class Posts(db.Model):
 
     
 
-    """not_Interested = db.relationship(
-        'Posts', secondary=Not_Interested,
+    not_Interested = db.relationship(
+        'Users', secondary=Not_Interested,
         primaryjoin=(Not_Interested.c.post_id == id),
         secondaryjoin=(Not_Interested.c.user_id == Users.id),
-        backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')"""
+        backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')
 
     uploader_data = db.relationship("Users",
                                     primaryjoin=(author == Users.id),
@@ -453,7 +453,7 @@ class Posts(db.Model):
 
     def is_not_interested(self, user):
         if not self.not_interested(user):
-            noT=Not(post_id=self.id,user_id=user)
+            noT=Not(post_id=self.id,user_id=user.id)
             db.session.add(noT)
             db.session.commit()
 
