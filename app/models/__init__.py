@@ -402,7 +402,7 @@ class Posts(db.Model):
     clap =db.relationship("Clap", backref='clap')
 
     not_Interested = db.relationship(
-        'Users', secondary=Not_Interested,
+        'Posts', secondary=Not_Interested,
         primaryjoin=(Not_Interested.c.post_id == id),
         secondaryjoin=(Not_Interested.c.user_id == Users.id),
         backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')
