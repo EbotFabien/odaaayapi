@@ -71,6 +71,18 @@ class Clap(db.Model):
     def __repr__(self):
         return '<Clap>%r' % self.name
 
+class Not(db.Model):
+    __table_args__ = {'extend_existing': True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(
+        db.Integer, db.ForeignKey('posts.id'))
+
+    def __repr__(self):
+        return '<Not>%r' % self.name
+
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     #settings = db.relationship('Setting', backref='setting', lazy=True)
@@ -401,10 +413,12 @@ class Posts(db.Model):
     
     clap =db.relationship("Clap", backref='clap')
 
+    
+
     not_Interested = db.relationship(
         'Posts', secondary=Not_Interested,
         primaryjoin=(Not_Interested.c.post_id == id),
-        #secondaryjoin=(Not_Interested.c.user_id == Users.id),
+        secondaryjoin=(Not_Interested.c.user_id == Users.id),
         backref=db.backref('no_interest', lazy='dynamic'), lazy='dynamic')
 
     uploader_data = db.relationship("Users",
@@ -434,16 +448,19 @@ class Posts(db.Model):
 
     def not_interested(self, user):
         return self.query.join(
-            Not_Interested, (Not_Interested.c.post_id == self.id)).filter(
-            Not_Interested.c.user_id == user.id).first()
+            Not, (Not.post_id == self.id)).filter(
+            Not.user_id == user.id).first()
 
     def is_not_interested(self, user):
         if not self.not_interested(user):
-            self.not_Interested.append(user)
+            noT=Not(post_id=self.id,user_id=user)
+            db.session.add(noT)
+            db.session.commit()
 
     def remove_not_interested(self, user):
         if self.not_interested(user):
-            self.not_Interested.remove(user)
+            Not.query.filter(and_(Not.post_id==self.id,Not.user_id==user.id)).delete()
+            db.session.commit()
 
     def No__claps(self):
         return Clap.query.filter_by(post_id = self.id).count()
