@@ -457,7 +457,7 @@ class Home(Resource):
 
                         if recent == 'thumb':
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None))
+                                Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None))
 
                         if cat == None and tag == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
@@ -551,7 +551,7 @@ class Home(Resource):
                     if pay == 'paid':#Posts.paid == True
                         if recent == 'recent':
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(Posts.thumb_url != None)
+                                Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(Posts.thumb_url != None)
                         if cat == None and tag == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(Posts.thumb_url != None)
