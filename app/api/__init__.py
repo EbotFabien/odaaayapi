@@ -1365,7 +1365,7 @@ class save_post(Resource):
             db.session.commit()
             return{
                 "status": 1,
-                "res": "saved"
+                "res": "deleted"
             }
         else:
             return{
