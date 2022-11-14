@@ -1323,7 +1323,7 @@ class save_post(Resource):
             user = Users.query.filter_by(uuid=data['uuid']).first()
             if user:
                 user_saves = Save.query.filter_by(user_id=user.id).order_by(
-                    Save.id.desc()).paginate(int(start), int(count), False).items
+                    desc(Save.id)).paginate(int(start), int(count), False).items
                 if user_saves:
                     return {
                         "start": start,
