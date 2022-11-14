@@ -1360,7 +1360,7 @@ class save_post(Resource):
         Saves = Save.query.filter(
             and_(Save.user_id == user.id, Save.post_id == post.id)).first()
 
-        if Saves == 1:
+        if Saves:
             db.session.delete(Saves)
             db.session.commit()
             return{
