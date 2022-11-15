@@ -459,7 +459,7 @@ class Home(Resource):
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None))
 
-                        if cat == None and tag == None:
+                        if cat == None and tag == None and recent == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None))#.order_by(func.random())
                         
@@ -1363,6 +1363,10 @@ class save_post(Resource):
         if Saves:
             db.session.delete(Saves)
             db.session.commit()
+            return{
+                "status": 1,
+                "res": "deleted"
+            }
         else:
             return{
                 "status": 0,
