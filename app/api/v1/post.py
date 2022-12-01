@@ -1591,7 +1591,6 @@ class ModifyPost(Resource):
             }, 400
         post_auto_lang = translator.detect(title)
         lang = str(post_auto_lang.lang)
-        ptype = req_data['type']
         translated = req_data['translate']
         summarized = req_data['summarize']
         category = req_data['category']
@@ -1618,7 +1617,7 @@ class ModifyPost(Resource):
         else:
             lang =1
         followers_ = user.is_followers()
-        newPost=Posts.query.filter_by(id=int(post)).first()
+        newPost=Posts.query.filter_by(uuid=post).first()
 
         if post:
             sum_content=''
