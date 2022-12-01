@@ -132,6 +132,27 @@ postcreationdata = post.model('postcreationdata', {
     'summarize': fields.Boolean(required=False, default=False),
 })
 
+postcreationdata2 = post.model('postcreationdata2', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'type': fields.Integer(required=True),
+    'post_url': fields.String(required=False, default=None),
+    'thumb': fields.String(required=False, default=None),
+    'content': fields.String(required=True),
+    'lang': fields.String(required=True),
+    'translate': fields.Boolean(required=False, default=False),
+    'donation': fields.Boolean(required=False, default=False),
+    'min': fields.Integer(required=False),
+    'category': fields.Integer(required=True),
+    'max': fields.Integer(required=False),
+    'payment': fields.Boolean(required=False, default=False),
+    'price': fields.Integer(required=False),
+    'Tags': fields.List(fields.String(required=True)),
+    'subscribers': fields.Boolean(required=False, default=False),
+    'nsfw': fields.Boolean(required=False, default=False),
+    'summarize': fields.Boolean(required=False, default=False),
+})
+
 Updatedata = post.model('Updatedata', {
     'id':  fields.String(required=True),
     'title': fields.String(required=True),
@@ -1533,3 +1554,188 @@ class Post(Resource):
                 'status': 0,
                 'res': 'request failed'
             }, 400
+
+
+@post.doc(
+    security='KEY',
+    params={'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+             'lang': 'Language'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/modify/post')
+class ModifyPost(Resource):
+    @post.expect(postcreationdata2)
+    @token_required
+    def post(self):
+        req_data = request.get_json()
+        title = req_data['title']
+        post = req_data['id']
+        content = req_data['content']
+        if content == None :
+            return {
+                'status': 0,
+                'res': 'Please insert content'
+            }, 400
+        post_auto_lang = translator.detect(title)
+        lang = str(post_auto_lang.lang)
+        ptype = req_data['type']
+        translated = req_data['translate']
+        summarized = req_data['summarize']
+        category = req_data['category']
+        subs = req_data['subscribers']
+        donation = req_data['donation']
+        payment = req_data['payment']
+        thumb_url_ = req_data['thumb'] or None
+        nsf = req_data['nsfw']
+        tags = req_data['Tags']
+        s = str(tags)
+        got_language = req_data['lang']
+        if lang == got_language:
+            pass
+        else:
+            if lang != None:
+                got_language=lang
+        
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        language = Language.query.filter_by(code=got_language).first()
+        if language != None:
+            lang = language.id
+        else:
+            lang =1
+        followers_ = user.is_followers()
+        newPost=Posts.query.filter_by(id=int(post)).first()
+
+        if post:
+            sum_content=''
+            newPost.summarize = title
+            newPost.text_content = content
+            newPost.orig_lang = lang
+            newPost.summarize = summarized
+            newPost.translate = translated
+            newPost.subs_only = subs
+            newPost.category_id = category
+            newPost.thumb_url = thumb_url_
+            newPost.nsfw = nsf
+            newPost.tags = s[1:-1]
+            db.session.commit()
+
+            dele=Translated.__table__.delete().where(Translated.post_id == newPost.id)
+            db.session.execute(dele)
+            db.session.commit()
+            dele=Tags.__table__.delete().where(Tags.post == newPost.id)
+            db.session.execute(dele)
+            db.session.commit()
+
+            if tags != []:
+                    for tag in tags:
+                        new_tag = Tags(post=newPost.id,
+                                       tags=tag, category=category)
+                        db.session.add(new_tag)
+                        db.session.commit()
+
+            if summarized == True and translated == True:
+                    newPost.launch_translation_task(
+                        'translate_posts', user.id, 'Translating  post ...')
+
+            if translated == True and summarized == False:
+                newPost.launch_translation_task(
+                    'translate_posts', user.id, 'Translating  post ...')
+            if summarized == True and translated == False:
+                newPost.launch_summary_task(
+                    'summarize_posts', user.id, 'summarizing  post ...')
+            if summarized == False and translated == False:
+                parser = HtmlParser.from_string(
+                    newPost.text_content, '', Tokenizer(language.name))
+                stemmer = Stemmer(language.name)
+                summarizer = Summarizer(stemmer)
+                summarizer.stop_words = get_stop_words(language.name)
+
+                for sentence in summarizer(parser.document, 2):
+                    sum_content += '\n'+str(sentence)
+
+                new_check = Translated.query.filter(
+                    and_(Translated.title == newPost.title, Translated.language_id == lang)).first()
+                if new_check is None:
+                    new_row = Translated(post_id=newPost.id, title=newPost.title, content=sum_content,
+                                            language_id=lang, fullcontent=newPost.text_content, tags=newPost.tags)
+                    db.session.add(new_row)
+                    db.session.commit()
+            db.session.commit()
+            return {
+                'status': 1,
+                'res': 'Post was modified',
+                'post_id': newPost.id,
+                'post_uuid': newPost.uuid,
+            }, 200
+
+        else:
+            return {
+                'status': 0,
+                'res': 'Post does not exist'
+            }, 400
+
+
+
+@post.doc(
+    security='KEY',
+    params={'lang': 'Language'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report '
+    })
+@post.route('/modifyarticle/<id>')
+class homeArticle(Resource):
+    def get(self, id):
+        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+       
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        saved = []
+        
+        if request.args:
+            if id:
+                lang = request.args.get('lang', None)
+                posts_feed = Posts.query.filter_by(uuid=id).first()
+                user1 = Users.query.filter_by(id=posts_feed.author).first()
+                saves = Save.query.filter_by(post_id=posts_feed.id).count()
+                report = Report.query.filter_by(post_id=posts_feed.id).count()
+                count_claps = posts_feed.No__claps()
+                if user1 == user:
+                    return {
+                        "results": {
+                            "lang": lang,
+                            "shouts": count_claps,
+                            "saves": saves,
+                            "report": report,
+                            'translated_feed': marshal(posts_feed, schema.postdata)
+                        }
+                    }, 200
+                else:
+                    return {
+                        'status':0,
+                        'res':"you are not the author"
+                        }, 200
