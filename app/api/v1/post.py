@@ -1577,12 +1577,11 @@ class Post(Resource):
     })
 @post.route('/modify/post')
 class ModifyPost(Resource):
-    @post.expect(postcreationdata2)
+    @post.expect(postcreationdata)
     @token_required
     def post(self):
         req_data = request.get_json()
         title = req_data['title']
-        post = req_data['id']
         content = req_data['content']
         if content == None :
             return {
