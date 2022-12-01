@@ -133,7 +133,7 @@ postcreationdata = post.model('postcreationdata', {
 })
 
 postcreationdata2 = post.model('postcreationdata2', {
-    'id': fields.Integer(required=True),
+    'uuid': fields.Integer(required=True),
     'title': fields.String(required=True),
     'type': fields.Integer(required=True),
     'post_url': fields.String(required=False, default=None),
@@ -1582,7 +1582,7 @@ class ModifyPost(Resource):
     def post(self):
         req_data = request.get_json()
         title = req_data['title']
-        post = req_data['id']
+        post = req_data['uuid']
         content = req_data['content']
         if content == None :
             return {
