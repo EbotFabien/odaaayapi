@@ -1746,7 +1746,10 @@ class homeArticle(Resource):
         
         
         if id:
+            
             posts_feed = Posts.query.filter_by(uuid=id).first()
+            post_auto_lang = translator.detect(posts_feed.title)
+            lang = str(post_auto_lang.lang)
             user1 = Users.query.filter_by(id=posts_feed.author).first()
             saves = Save.query.filter_by(post_id=posts_feed.id).count()
             report = Report.query.filter_by(post_id=posts_feed.id).count()
@@ -1754,6 +1757,7 @@ class homeArticle(Resource):
             if user1 == user:
                 return {
                     "results": {
+                        "lang": lang,
                         "shouts": count_claps,
                         "saves": saves,
                         "report": report,
