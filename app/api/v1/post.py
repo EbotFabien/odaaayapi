@@ -1744,26 +1744,25 @@ class homeArticle(Resource):
         user = Users.query.filter_by(uuid=data['uuid']).first()
         saved = []
         
-        if request.args:
-            if id:
-                lang = request.args.get('lang', None)
-                posts_feed = Posts.query.filter_by(uuid=id).first()
-                user1 = Users.query.filter_by(id=posts_feed.author).first()
-                saves = Save.query.filter_by(post_id=posts_feed.id).count()
-                report = Report.query.filter_by(post_id=posts_feed.id).count()
-                count_claps = posts_feed.No__claps()
-                if user1 == user:
-                    return {
-                        "results": {
-                            "lang": lang,
-                            "shouts": count_claps,
-                            "saves": saves,
-                            "report": report,
-                            'translated_feed': marshal(posts_feed,postdata)
-                        }
+        
+        if id:
+            posts_feed = Posts.query.filter_by(uuid=id).first()
+            user1 = Users.query.filter_by(id=posts_feed.author).first()
+            saves = Save.query.filter_by(post_id=posts_feed.id).count()
+            report = Report.query.filter_by(post_id=posts_feed.id).count()
+            count_claps = posts_feed.No__claps()
+            if user1 == user:
+                return {
+                    "results": {
+                        "lang": lang,
+                        "shouts": count_claps,
+                        "saves": saves,
+                        "report": report,
+                        'translated_feed': marshal(posts_feed,postdata)
+                    }
+                }, 200
+            else:
+                return {
+                    'status':0,
+                    'res':"you are not the author"
                     }, 200
-                else:
-                    return {
-                        'status':0,
-                        'res':"you are not the author"
-                        }, 200
