@@ -132,7 +132,7 @@ postcreationdata = post.model('postcreationdata', {
     'summarize': fields.Boolean(required=False, default=False),
 })
 
-users_dat = apisec.model('users_dat', {
+users_dat = post.model('users_dat', {
     'id': fields.Integer(required=True),
     'username': fields.String(required=True),
     'uuid': fields.String(required=True),
@@ -140,7 +140,7 @@ users_dat = apisec.model('users_dat', {
     'picture': fields.String(required=True),
 })
 
-postdata = apisec.model('postdata', {
+postdata = post.model('postdata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'uuid': fields.String(required=True),
