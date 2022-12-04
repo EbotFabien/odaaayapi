@@ -132,6 +132,35 @@ postcreationdata = post.model('postcreationdata', {
     'summarize': fields.Boolean(required=False, default=False),
 })
 
+users_dat = apisec.model('users_dat', {
+    'id': fields.Integer(required=True),
+    'username': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'bio': fields.String(required=True),
+    'picture': fields.String(required=True),
+})
+
+postdata = apisec.model('postdata', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'author': fields.Integer(required=True),
+    'user_name': fields.String(required=True),
+    'post_type': fields.Integer(required=True),
+    'text_content': fields.String(required=True),
+    'post_url': fields.String(required=True),
+    'audio_url': fields.String(required=True),
+    'video_url': fields.String(required=True),
+    'created_on': fields.DateTime(required=True),
+    'thumb_url': fields.String(required=False),
+    'tags': fields.String(required=True),
+    'price': fields.Float(required=True),
+    'mini': fields.Float(required=True),
+    'maxi': fields.Float(required=True),
+    'paid': fields.Boolean(required=True),
+    'uploader_data': fields.List(fields.Nested(users_dat)),
+})
+
 postcreationdata2 = post.model('postcreationdata2', {
     'uuid': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -1730,7 +1759,7 @@ class homeArticle(Resource):
                             "shouts": count_claps,
                             "saves": saves,
                             "report": report,
-                            'translated_feed': marshal(posts_feed, schema.postdata)
+                            'translated_feed': marshal(posts_feed,postdata)
                         }
                     }, 200
                 else:
