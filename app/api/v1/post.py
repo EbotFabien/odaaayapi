@@ -1754,7 +1754,6 @@ class homeArticle(Resource):
             if user1 == user:
                 return {
                     "results": {
-                        "lang": lang,
                         "shouts": count_claps,
                         "saves": saves,
                         "report": report,
