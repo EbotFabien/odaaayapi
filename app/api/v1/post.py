@@ -153,7 +153,7 @@ postdata1 = post.model('postdata1', {
     'video_url': fields.String(required=True),
     'created_on': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
-    'category': fields.Integer(required=True),
+    'category_id': fields.Integer(required=True),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
     'uploader_data': fields.List(fields.Nested(users_dat))
