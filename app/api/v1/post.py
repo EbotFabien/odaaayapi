@@ -140,7 +140,7 @@ users_dat = post.model('users_dat', {
     'picture': fields.String(required=True),
 })
 
-postdata = post.model('postdata', {
+postdata1 = post.model('postdata1', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'uuid': fields.String(required=True),
@@ -156,10 +156,7 @@ postdata = post.model('postdata', {
     'category': fields.Integer(required=True),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
-    'mini': fields.Float(required=True),
-    'maxi': fields.Float(required=True),
-    'paid': fields.Boolean(required=True),
-    'uploader_data': fields.List(fields.Nested(users_dat)),
+    'uploader_data': fields.List(fields.Nested(users_dat))
 })
 
 postcreationdata2 = post.model('postcreationdata2', {
@@ -1762,7 +1759,7 @@ class homeArticle(Resource):
                         "shouts": count_claps,
                         "saves": saves,
                         "report": report,
-                        'translated_feed': marshal(posts_feed,postdata)
+                        'translated_feed': marshal(posts_feed,postdata1)
                     }
                 }, 200
             else:
