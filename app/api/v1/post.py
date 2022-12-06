@@ -156,6 +156,10 @@ postdata1 = post.model('postdata1', {
     'category_id': fields.Integer(required=True),
     'tags': fields.String(required=True),
     'price': fields.Float(required=True),
+    'summarize':fields.Boolean(required=False),
+    'translate':fields.Boolean(required=False),
+    'subs_only':fields.Boolean(required=False),
+    'nsfw':fields.Boolean(required=False),
     'uploader_data': fields.List(fields.Nested(users_dat))
 })
 
