@@ -164,7 +164,7 @@ postdata1 = post.model('postdata1', {
 })
 
 postcreationdata2 = post.model('postcreationdata2', {
-    'uuid': fields.Integer(required=True),
+    'uuid':fields.String(required=True),
     'title': fields.String(required=True),
     'type': fields.Integer(required=True),
     'post_url': fields.String(required=False, default=None),
