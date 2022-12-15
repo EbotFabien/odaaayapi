@@ -162,6 +162,15 @@ postdata1 = post.model('postdata1', {
     'nsfw':fields.Boolean(required=False),
     'uploader_data': fields.List(fields.Nested(users_dat))
 })
+lang_post = apisec.model('lang_post', {
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True),
+    'fullcontent': fields.String(required=True),
+    'language_id': fields.Integer(required=True),
+    'tags': fields.String(required=True),
+    'posts': fields.List(fields.Nested(postdata1)),
+})
 
 postcreationdata2 = post.model('postcreationdata2', {
     'uuid':fields.String(required=True),
@@ -1744,30 +1753,68 @@ class homeArticle(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        saved = []
+
         
         
         if id:
-            
+            lang = request.args.get('lang', None)
+            current_lang = Language.query.filter_by(code=lang).first()
             posts_feed = Posts.query.filter_by(uuid=id).first()
-            post_auto_lang = translator.detect(posts_feed.title)
-            lang = str(post_auto_lang.lang)
             user1 = Users.query.filter_by(id=posts_feed.author).first()
-            saves = Save.query.filter_by(post_id=posts_feed.id).count()
-            report = Report.query.filter_by(post_id=posts_feed.id).count()
-            count_claps = posts_feed.No__claps()
+            translation=Translated.query.filter(and_(
+                    Translated.post_id == posts_feed.id, Translated.language_id == current_lang.id)).first()
+            
             if user1 == user:
                 return {
                     "results": {
                         "lang": lang,
-                        "shouts": count_claps,
-                        "saves": saves,
-                        "report": report,
-                        'translated_feed': marshal(posts_feed,postdata1)
+                        'translated_feed': marshal(translation,lang_post)
                     }
                 }, 200
             else:
                 return {
                     'status':0,
                     'res':"you are not the author"
+                    }, 200
+
+                
+
+@post.doc(
+    security='KEY',
+    params={'lang': 'Language'},
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report '
+    })
+@post.route('/langarticle/<id>')
+class homeArticle(Resource):
+    def get(self, id):
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        if id:
+            posts_feed = Posts.query.filter_by(uuid=id).first()
+            user1 = Users.query.filter_by(id=posts_feed.author).first()
+            translation=Translated.query.filter(and_(
+                    Translated.post_id == posts_feed.id)).count()
+            
+            if user1 == user:
+                if translation > 1:
+                    return {
+                        'status':1,
+                        'res':"All translations available"
+                    }, 200
+                else:
+                    current_lang = Language.query.filter_by(id=language_id).first()
+                    return {
+                        'status':0,
+                        'res':current_lang.code
                     }, 200
