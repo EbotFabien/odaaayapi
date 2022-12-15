@@ -162,7 +162,7 @@ postdata1 = post.model('postdata1', {
     'nsfw':fields.Boolean(required=False),
     'uploader_data': fields.List(fields.Nested(users_dat))
 })
-lang_post = apisec.model('lang_post', {
+lang_post = post.model('lang_post', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
     'content': fields.String(required=True),
