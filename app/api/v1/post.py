@@ -1813,7 +1813,7 @@ class homeArticle(Resource):
                         'res':"All translations available"
                     }, 200
                 else:
-                    current_lang = Language.query.filter_by(id=language_id).first()
+                    current_lang = Language.query.filter_by(id=translation.language_id).first()
                     return {
                         'status':0,
                         'res':current_lang.code
