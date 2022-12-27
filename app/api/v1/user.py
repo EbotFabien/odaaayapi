@@ -26,7 +26,8 @@ from os import path
 from werkzeug.utils import redirect
 import cloudinary
 import cloudinary.uploader
-from sqlalchemy import or_, and_, desc, asc
+from sqlalchemy import func,or_, and_, desc, asc
+
 
 
 
@@ -1315,6 +1316,7 @@ class  No_claps_(Resource):
              'limit': 'Total limit of the query',
              'count': 'Number results per page',
              'lang': 'i18n',
+             'fil':'type',
              'type':'savings or posts',
               },
     responses={
@@ -1351,7 +1353,12 @@ class  Posts_(Resource):
                     posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                         Posts,(Posts.id == Translated.post_id)).filter(
                                             Posts.author==user.id)
-                    posts_feed =posts_feeds.order_by(asc(Posts.created_on)).paginate(int(start), int(count), False)
+                    if fil == 'new':
+                        posts_feed =posts_feeds.order_by(asc(Posts.created_on)).paginate(int(start), int(count), False)
+                    if fil == 'old':
+                        posts_feed =posts_feeds.order_by(desc(Posts.created_on)).paginate(int(start), int(count), False)
+                    if fil == 'random':
+                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
