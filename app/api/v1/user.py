@@ -1338,6 +1338,7 @@ class  Posts_(Resource):
         if request.args:
             token = request.headers['API-KEY']
             start = request.args.get('start',None)
+            fil = request.args.get('fil',None)
             limit = request.args.get('limit',None)
             count = request.args.get('count',None)
             lang = request.args.get('lang', None)
