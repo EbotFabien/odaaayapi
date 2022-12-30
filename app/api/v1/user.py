@@ -1360,6 +1360,8 @@ class  Posts_(Resource):
                         posts_feed =posts_feeds.order_by(desc(Posts.created_on)).paginate(int(start), int(count), False)
                     if fil == 'random':
                         posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                    else:
+                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
