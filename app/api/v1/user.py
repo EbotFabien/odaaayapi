@@ -1359,9 +1359,9 @@ class  Posts_(Resource):
                     if fil == 'old':
                         posts_feed =posts_feeds.order_by(asc(Translated.timestamp)).paginate(int(start), int(count), False)
                     if fil == 'random':
-                        posts_feed =posts_feeds.order_by(func.random()).distinct(Translated.id).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.order_by(func.random()).distinct(Posts.id).paginate(int(start), int(count), False)
                     else:
-                        posts_feed =posts_feeds.order_by(func.random()).distinct(Translated.id).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.order_by(func.random()).distinct(Posts.id).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
