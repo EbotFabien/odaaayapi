@@ -1355,13 +1355,13 @@ class  Posts_(Resource):
                                         Posts,(Posts.id == Translated.post_id)).filter(
                                             Posts.author==user.id)
                     if fil == 'new':
-                        posts_feed =posts_feeds.order_by(desc(Posts.created_on)).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.order_by(desc(Translated.timestamp)).paginate(int(start), int(count), False)
                     if fil == 'old':
-                        posts_feed =posts_feeds.order_by(asc(Posts.created_on)).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.order_by(asc(Translated.timestamp)).paginate(int(start), int(count), False)
                     if fil == 'random':
-                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.order_by(func.random()).distinct(Translated.id).paginate(int(start), int(count), False)
                     else:
-                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.order_by(func.random()).distinct(Translated.id).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
