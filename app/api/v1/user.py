@@ -27,7 +27,7 @@ from werkzeug.utils import redirect
 import cloudinary
 import cloudinary.uploader
 from sqlalchemy import func,or_, and_, desc, asc
-
+import random
 
 
 
@@ -1359,9 +1359,11 @@ class  Posts_(Resource):
                     if fil == 'old':
                         posts_feed =posts_feeds.order_by(asc(Translated.timestamp)).paginate(int(start), int(count), False)
                     if fil == 'random':
-                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                        random.shuffle(posts_feed.items)
                     else:
-                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                        random.shuffle(posts_feed.items)
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
