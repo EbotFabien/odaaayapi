@@ -1355,9 +1355,13 @@ class  Posts_(Resource):
                                         Posts,(Posts.id == Translated.post_id)).filter(
                                             Posts.author==user.id)
                     if fil == 'new':
-                        posts_feed =posts_feeds.order_by(desc(Translated.timestamp)).paginate(int(start), int(count), False)
+                        posts_feed =Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(
+                                            Posts.author==user.id).paginate(int(start), int(count), False)
                     if fil == 'old':
-                        posts_feed =posts_feeds.order_by(asc(Translated.timestamp)).paginate(int(start), int(count), False)
+                        posts_feed =Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(
+                                            Posts.author==user.id).paginate(int(start), int(count), False)
                     if fil == 'random':
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         random.shuffle(posts_feed.items)
