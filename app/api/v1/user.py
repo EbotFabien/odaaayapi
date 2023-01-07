@@ -1365,9 +1365,7 @@ class  Posts_(Resource):
                     if fil == 'random':
                         posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         random.shuffle(posts_feed.items)
-                    else:
-                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
-                        random.shuffle(posts_feed.items)
+                    
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
