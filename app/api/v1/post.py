@@ -569,7 +569,7 @@ class Post(Resource):
                 'status': 0,
                 'res': 'Please insert content'
             }, 400
-        post_auto_lang = translator.detect(title)
+        post_auto_lang = translator.detect(content)
         lang = str(post_auto_lang.lang)
         ptype = req_data['type']
         translated = req_data['translate']
@@ -583,11 +583,11 @@ class Post(Resource):
         tags = req_data['Tags']
         s = str(tags)
         got_language = req_data['lang']
-        if lang == got_language:
+        '''if lang == got_language:
             print('language good')
         else:
             if lang != None:
-                got_language=lang
+                got_language=lang'''
         
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
