@@ -582,7 +582,7 @@ class Post(Resource):
         nsf = req_data['nsfw']
         tags = req_data['Tags']
         s = str(tags)
-        got_language = req_data['lang']
+        got_language = lang#req_data['lang']
         '''if lang == got_language:
             print('language good')
         else:
