@@ -582,7 +582,10 @@ class Post(Resource):
         nsf = req_data['nsfw']
         tags = req_data['Tags']
         s = str(tags)
-        got_language = lang#req_data['lang']
+        if lang != None: 
+            got_language = lang#req_data['lang']
+        else:
+            got_language='o'
         '''if lang == got_language:
             print('language good')
         else:
@@ -682,17 +685,34 @@ class Post(Resource):
                                        tags=tag, category=category)
                         db.session.add(new_tag)
                         db.session.commit()
-                if summarized == True and translated == True:
+                if got_language == 'o':
+                    parser = HtmlParser.from_string(
+                        newPost.text_content, '', Tokenizer(language.name))
+                    stemmer = Stemmer(language.name)
+                    summarizer = Summarizer(stemmer)
+                    summarizer.stop_words = get_stop_words(language.name)
+
+                    for sentence in summarizer(parser.document, 2):
+                        sum_content += '\n'+str(sentence)
+
+                    new_check = Translated.query.filter(
+                        and_(Translated.title == newPost.title, Translated.language_id == lang)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=newPost.id, title=newPost.title, content=sum_content,
+                                             language_id=lang, fullcontent=newPost.text_content, tags=newPost.tags)
+                        db.session.add(new_row)
+                        db.session.commit()
+                if summarized == True and translated == True and got_language != 'o':
                     newPost.launch_translation_task(
                         'translate_posts', user.id, 'Translating  post ...')
 
-                if translated == True and summarized == False:
+                if translated == True and summarized == False and got_language != 'o':
                     newPost.launch_translation_task(
                         'translate_posts', user.id, 'Translating  post ...')
-                if summarized == True and translated == False:
+                if summarized == True and translated == False and got_language != 'o':
                     newPost.launch_summary_task(
                         'summarize_posts', user.id, 'summarizing  post ...')
-                if summarized == False and translated == False:
+                if summarized == False and translated == False and got_language != 'o':
                     parser = HtmlParser.from_string(
                         newPost.text_content, '', Tokenizer(language.name))
                     stemmer = Stemmer(language.name)
@@ -800,17 +820,34 @@ class Post(Resource):
                                        tags=tag, category=category)
                         db.session.add(new_tag)
                         db.session.commit()
-                if summarized and translated == True:
+                if got_language == 'o':
+                    parser = HtmlParser.from_string(
+                        newPost.text_content, '', Tokenizer(language.name))
+                    stemmer = Stemmer(language.name)
+                    summarizer = Summarizer(stemmer)
+                    summarizer.stop_words = get_stop_words(language.name)
+
+                    for sentence in summarizer(parser.document, 2):
+                        sum_content += '\n'+str(sentence)
+
+                    new_check = Translated.query.filter(
+                        and_(Translated.title == newPost.title, Translated.language_id == lang)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=newPost.id, title=newPost.title, content=sum_content,
+                                             language_id=lang, fullcontent=newPost.text_content, tags=newPost.tags)
+                        db.session.add(new_row)
+                        db.session.commit()
+                if summarized and translated == True and got_language != 'o':
                     newPost.launch_translation_task(
                         'translate_posts', user.id, 'Translating  post ...')
 
-                if translated == True and summarized == False:
+                if translated == True and summarized == False and got_language != 'o':
                     newPost.launch_translation_task(
                         'translate_posts', user.id, 'Translating  post ...')
-                if summarized == True and translated == False:
+                if summarized == True and translated == False and got_language != 'o':
                     newPost.launch_summary_task(
                         'summarize_posts', user.id, 'summarizing  post ...')
-                if summarized == False and translated == False:
+                if summarized == False and translated == False and got_language != 'o':
                     parser = HtmlParser.from_string(
                         newPost.text_content, '', Tokenizer(language.name))
                     stemmer = Stemmer(language.name)
