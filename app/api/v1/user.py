@@ -1464,7 +1464,7 @@ class  Posts_(Resource):
     })
 @user.route('/profile')
 class Data(Resource):
-    @token_required
+    #@token_required
     #@user.marshal_with(userinfo)
     def get(self):
         user_id = request.args.get('uuid')
@@ -1473,13 +1473,13 @@ class Data(Resource):
         limit = request.args.get('limit',None)
         count = request.args.get('count',None)
         language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
+        #token = request.headers['API-KEY']
+        #data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        #user = Users.query.filter_by(uuid=data['uuid']).first()
         next = "/api/v1/profile?"+start+"&limit="+limit+"&count="+count
         previous = "api/v1/profile?start="+start+"&limit"+limit+"&count="+count
         user2 = Users.query.filter_by(uuid=user_id).first()
-        if user:
+        if user2:
             for i in language_dict:
                     if i == lang:
                         current_lang = Language.query.filter_by(code=i).first()
@@ -1488,13 +1488,13 @@ class Data(Resource):
                                             Posts.author==user2.id)
                         posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
-                        if user != user2:
+                        '''if user != user2:
                             if user.is_following(user2) > 0:
                                 follow=True
                             else:
                                 follow=False
                         else:
-                            follow=False
+                            follow=False'''
                         if posts_feed:
                                 return{
                                     "start":start,
@@ -1503,7 +1503,7 @@ class Data(Resource):
                                     "next":next,
                                     "total":total,
                                     "previous":previous,
-                                    "follow":follow,
+                                    "follow":False,
                                     "user_data":marshal(user2,userdata),
                                     "results":marshal(posts_feed.items,lang_post)
                                 },200
