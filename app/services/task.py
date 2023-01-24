@@ -69,7 +69,7 @@ def translate_posts(post_id, user_id):
     category=Category.query.get(post.category_id)
     if post:
         user = Users.query.get(user_id)
-        post_auto_lang = translator.detect(post.content)
+        post_auto_lang = translator.detect(post.text_content)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
@@ -129,7 +129,7 @@ def summarize_posts(post_id, user_id):
     post = Posts.query.get(post_id)
     category=Category.query.get(post.category_id)
     user = Users.query.get(user_id)
-    post_auto_lang = translator.detect(post.content)
+    post_auto_lang = translator.detect(post.text_content)
     user_default_lang = str(post_auto_lang.lang)
     post_language = Language.query.filter_by(code=user_default_lang).first()
     sum_content = ''
