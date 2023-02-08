@@ -457,7 +457,7 @@ class Upl(Resource):
         500: 'internal server error, please contact admin and report issue'
     })
 @post.route('/bot/post')
-class Post(Resource):
+class botPost(Resource):
     def post(self):
         if request.method == 'POST':
             jso=request.data
