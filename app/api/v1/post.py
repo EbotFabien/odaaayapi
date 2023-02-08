@@ -501,7 +501,7 @@ class botPost(Resource):
                     if user.user_name == 'BBC News - World':
                         newPost.category_id = 6
                         newPost.tags = 'BBC,World'
-                    if user.user_name == 'BBC Africa':
+                    if user.user_name == 'BBC News - Africa':
                         newPost.category_id = 6
                         newPost.tags = 'BBC,Africa'
                     newPost.user_name = user.username
