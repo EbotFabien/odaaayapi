@@ -458,61 +458,62 @@ class Upl(Resource):
     })
 @post.route('/bot/post')
 class Post(Resource):
-    if request.method == 'POST':
-        jso=request.data
-        j=json.loads(jso)
-        sum_content = ''
-        user = Users.query.filter_by(username=j["feed"]["title"]).first()
-        if user:
-            for i in j["new_entries"]:
-                title=j["new_entries"][i]["title"]
-                url=j["new_entries"][i]["link"]
-                image=j["new_entries"][i]["image"]["url"]
-                x = requests.get(url)
-                if image == None:
-                    soup = BeautifulSoup(x.content, 'html.parser')
-                    metas = soup.findAll('meta')
-                    for i in metas:
-                        if i.get('property') == "og:image":
-                            image = i.get('content')
-                document = Article(x.content, url)
-                parser = HtmlParser.from_string(
-                document.readable, '', Tokenizer(LANGUAGE))
-                stemmer = Stemmer(LANGUAGE)
-                summarizer = Summarizer(stemmer)
-                summarizer.stop_words = get_stop_words(LANGUAGE)
+    def post(self):
+        if request.method == 'POST':
+            jso=request.data
+            j=json.loads(jso)
+            sum_content = ''
+            user = Users.query.filter_by(username=j["feed"]["title"]).first()
+            if user:
+                for i in j["new_entries"]:
+                    title=j["new_entries"][i]["title"]
+                    url=j["new_entries"][i]["link"]
+                    image=j["new_entries"][i]["image"]["url"]
+                    x = requests.get(url)
+                    if image == None:
+                        soup = BeautifulSoup(x.content, 'html.parser')
+                        metas = soup.findAll('meta')
+                        for i in metas:
+                            if i.get('property') == "og:image":
+                                image = i.get('content')
+                    document = Article(x.content, url)
+                    parser = HtmlParser.from_string(
+                    document.readable, '', Tokenizer(LANGUAGE))
+                    stemmer = Stemmer(LANGUAGE)
+                    summarizer = Summarizer(stemmer)
+                    summarizer.stop_words = get_stop_words(LANGUAGE)
 
-                for sentence in summarizer(parser.document, 20):
-                    sum_content += '\n'+str(sentence)
-                newPost = Posts(user.id, title,2,sum_content,1)
-                db.session.add(newPost)
-                db.session.commit()
-                newPost.summarize = True
-                newPost.translate = True
-                
-                newPost.thumb_url = image
-                newPost.nsfw = True
-                if user.user_name == 'BBC Sport':
-                    newPost.category_id = 1
-                    newPost.tags = 'BBC,Sports'
-                if user.user_name == 'BBC News - World':
-                    newPost.category_id = 6
-                    newPost.tags = 'BBC,World'
-                if user.user_name == 'BBC Africa':
-                    newPost.category_id = 6
-                    newPost.tags = 'BBC,Africa'
-                newPost.user_name = user.username
-                db.session.commit()
-                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-        return {
-                    'status': 1,
-                    'res': 'Post were made',
-                }, 200
-        
-    return {
-                    'status': 1,
-                    'res': 'Post were made',
-                }, 201
+                    for sentence in summarizer(parser.document, 20):
+                        sum_content += '\n'+str(sentence)
+                    newPost = Posts(user.id, title,2,sum_content,1)
+                    db.session.add(newPost)
+                    db.session.commit()
+                    newPost.summarize = True
+                    newPost.translate = True
+                    
+                    newPost.thumb_url = image
+                    newPost.nsfw = True
+                    if user.user_name == 'BBC Sport':
+                        newPost.category_id = 1
+                        newPost.tags = 'BBC,Sports'
+                    if user.user_name == 'BBC News - World':
+                        newPost.category_id = 6
+                        newPost.tags = 'BBC,World'
+                    if user.user_name == 'BBC Africa':
+                        newPost.category_id = 6
+                        newPost.tags = 'BBC,Africa'
+                    newPost.user_name = user.username
+                    db.session.commit()
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                return {
+                            'status': 1,
+                            'res': 'Post were made',
+                        }, 200
+            return {
+                        'status': 0,
+                        'res': 'Post was not made',
+                    }, 201
+    
 @post.doc(
     security='KEY',
     params={'start': 'Value to start from ',
