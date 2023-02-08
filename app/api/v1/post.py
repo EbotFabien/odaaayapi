@@ -503,8 +503,7 @@ class Post(Resource):
                     newPost.tags = 'BBC,Africa'
                 newPost.user_name = user.username
                 db.session.commit()
-                newPost.launch_translation_task(
-                        'translate_posts', user.id, 'Translating  post ...')
+                newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                 return {
                     'status': 1,
                     'res': 'Post was made',
