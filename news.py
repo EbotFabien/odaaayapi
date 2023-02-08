@@ -64,8 +64,7 @@ def languages():
 def users():
     print('users')
     with app.app_context():
-        users_dict = {'one@odaaay.co': "The Herald", 'two@odaaay.co': "West African News", 'three@odaaay.co': "Media Online",
-                         'four@odaaay.co': "le Momehein", 'five@odaaay.co': "Zoom"}
+        users_dict = {'seven@odaaay.co': "BBC Sport", 'eight@odaaay.co': "BBC News - World", 'nine@odaaay.co': "BBC Africa"}
         for i in users_dict:
             lang = 'en'
             language= Language.query.filter_by(code=lang).first()
@@ -130,7 +129,7 @@ if __name__ == "__main__":
     #recreate_db()
     #languages()
     #category()
-    #users()
+    users()
     manager.run()
     
     
