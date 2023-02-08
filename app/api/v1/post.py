@@ -41,6 +41,7 @@ from datetime import timedelta, datetime, timezone
 import cloudinary
 import cloudinary.uploader
 import numpy as np
+import ssl
 
 
 
@@ -459,6 +460,7 @@ class Upl(Resource):
 @post.route('/bot/post')
 class botPost(Resource):
     def post(self):
+        ssl._create_default_https_context = ssl._create_unverified_context
         if request.method == 'POST':
             jso=request.data
             j=json.loads(jso)
