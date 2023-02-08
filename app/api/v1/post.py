@@ -504,12 +504,10 @@ class Post(Resource):
                 newPost.user_name = user.username
                 db.session.commit()
                 newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
-                return {
-                    'status': 1,
-                    'res': 'Post was made',
-                    'post_id': newPost.id,
-                    'post_uuid': newPost.uuid,
-                }, 200
+            return {
+                'status': 1,
+                'res': 'all Post were  made',
+            }, 200
         
         return {
                     'status': 1,
