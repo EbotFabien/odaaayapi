@@ -458,6 +458,7 @@ class Upl(Resource):
     })
 @post.route('/bot/post')
 class botPost(Resource):
+    print(request.method)
     def post(self):
         if request.method == 'POST':
             jso=request.data
