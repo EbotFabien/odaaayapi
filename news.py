@@ -19,9 +19,8 @@ import uuid
 import certifi
 
 
-context = ('/home/odaaaynuxt/odaaayapi/server/lib/python3.6/site-packages/certifi/cacert.pem', 'odaaay.key')
-'''ssl.SSLContext()
-context.load_cert_chain'''
+context = ssl.SSLContext()
+context.load_cert_chain('odaaay.crt', 'odaaay.key')
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
