@@ -19,7 +19,7 @@ import uuid
 
 
 context = ssl.SSLContext()
-context.load_cert_chain('odaaay.crt', 'odaaay.key')
+context.load_cert_chain('folcly.crt', 'odaaay.key')
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
