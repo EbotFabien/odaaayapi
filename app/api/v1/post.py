@@ -460,7 +460,7 @@ class Upl(Resource):
 @post.route('/bot/post')
 class botPost(Resource):
     def post(self):
-        ssl._create_default_https_context = ssl._create_unverified_context
+        
         if request.method == 'POST':
             jso=request.data
             j=json.loads(jso)

@@ -17,6 +17,7 @@ from flask import current_app
 import ssl
 import uuid
 import certifi
+import ssl
 
 
 context = ssl.SSLContext()
@@ -106,7 +107,7 @@ def run():
     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
     # file_handler.setLevel(logging.INFO)
     # app.logger.addHandler(file_handler)
-    
+    ssl._create_default_https_context = ssl._create_unverified_context
     app.run(
         threaded=True,
         host=app.config.get('HOST'),
