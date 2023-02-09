@@ -19,7 +19,7 @@ import uuid
 import certifi
 
 
-context = ('odaaay.crt', 'odaaay.key')
+context = ('/home/odaaaynuxt/odaaayapi/server/lib/python3.6/site-packages/certifi/cacert.pem', 'odaaay.key')
 '''ssl.SSLContext()
 context.load_cert_chain'''
 
