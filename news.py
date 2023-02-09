@@ -112,7 +112,7 @@ def run():
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        ssl_context=context
+        verify='/home/odaaaynuxt/odaaayapi/server/lib/python3.6/site-packages/certifi'
     )
 
 
