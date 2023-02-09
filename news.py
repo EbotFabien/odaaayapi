@@ -19,8 +19,9 @@ import uuid
 import certifi
 
 
-context = ssl.SSLContext()
-context.load_cert_chain('odaaay.crt', 'odaaay.key')
+context = ('odaaay.crt', 'odaaay.key')
+'''ssl.SSLContext()
+context.load_cert_chain'''
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
@@ -112,7 +113,7 @@ def run():
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        verify='/home/odaaaynuxt/odaaayapi/server/lib/python3.6/site-packages/certifi'
+        ssl_context=context
     )
 
 
