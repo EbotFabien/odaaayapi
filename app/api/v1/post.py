@@ -468,10 +468,10 @@ class botPost(Resource):
             user = Users.query.filter_by(username=j["feed"]["title"]).first()
             if user:
                 print(j)
-                for i in j["new_entries"]:
-                    title=j["new_entries"][i][i]["title"]
-                    url=j["new_entries"][i][i]["link"]
-                    image=j["new_entries"][i][i]["image"]["url"]
+                for i in range(len(j["new_entries"])+1):
+                    title=j["new_entries"][i]["title"]
+                    url=j["new_entries"][i]["link"]
+                    image=j["new_entries"][i]["image"]["url"]
                     x = requests.get(url)
                     if image == None:
                         soup = BeautifulSoup(x.content, 'html.parser')
