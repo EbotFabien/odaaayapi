@@ -509,6 +509,7 @@ class botPost(Resource):
                     newPost.user_name = user.username
                     db.session.commit()
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                    sum_content = ''
                 return {
                             'status': 1,
                             'res': 'Post were made',
