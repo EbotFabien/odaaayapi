@@ -469,9 +469,9 @@ class botPost(Resource):
             if user:
                 print(j)
                 for i in j["new_entries"]:
-                    title=j["new_entries"][i]["title"]
-                    url=j["new_entries"][i]["link"]
-                    image=j["new_entries"][i]["image"]["url"]
+                    title=j["new_entries"][i][i]["title"]
+                    url=j["new_entries"][i][i]["link"]
+                    image=j["new_entries"][i][i]["image"]["url"]
                     x = requests.get(url)
                     if image == None:
                         soup = BeautifulSoup(x.content, 'html.parser')
