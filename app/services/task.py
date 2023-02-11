@@ -86,7 +86,7 @@ def translate_posts(post_id, user_id):
         sum_content += '\n'+str(sentence)
     try:
         for j in languages:
-            if j == post_language.name:
+            if j == post_language.code:
                 current_lang = Language.query.filter_by(id=post.orig_lang).first()
                 #table = language_dict.get(user_default_lang)
                 #keywords = rake.apply(sum_content)
