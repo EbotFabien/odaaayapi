@@ -103,7 +103,7 @@ def createapp(configname):
     #app.register_blueprint(errors)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-    @app.route('/V8')
+    @app.route('/')
     def index():
         return "Hello from Odaaay-app"
     @app.route('/google')

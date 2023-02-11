@@ -467,6 +467,7 @@ class botPost(Resource):
             sum_content = ''
             user = Users.query.filter_by(username=j["feed"]["title"]).first()
             if user:
+                print(j)
                 for i in j["new_entries"]:
                     title=j["new_entries"][i]["title"]
                     url=j["new_entries"][i]["link"]
