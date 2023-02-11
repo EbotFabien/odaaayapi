@@ -497,13 +497,13 @@ class botPost(Resource):
                     
                     newPost.thumb_url = image
                     newPost.nsfw = True
-                    if user.user_name == 'BBC Sport':
+                    if user.username == 'BBC Sport':
                         newPost.category_id = 1
                         newPost.tags = 'BBC,Sports'
-                    if user.user_name == 'BBC News - World':
+                    if user.username == 'BBC News - World':
                         newPost.category_id = 6
                         newPost.tags = 'BBC,World'
-                    if user.user_name == 'BBC News - Africa':
+                    if user.username == 'BBC News - Africa':
                         newPost.category_id = 6
                         newPost.tags = 'BBC,Africa'
                     newPost.user_name = user.username
