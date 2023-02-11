@@ -465,6 +465,7 @@ class botPost(Resource):
             jso=request.data
             j=json.loads(jso)
             sum_content = ''
+            LANGUAGE = "english"
             user = Users.query.filter_by(username=j["feed"]["title"]).first()
             if user:
                 print(j)
