@@ -503,15 +503,15 @@ class botPost(Resource):
                     newPost.nsfw = True
                     if user.username == 'BBC Sport':
                         newPost.category_id = 1
-                        s=str(['BBC,Sports'])
+                        s=str([' BBC,Sports '])
                         newPost.tags = s[1:-1]
                     if user.username == 'BBC News - World':
                         newPost.category_id = 6
-                        s=str(['BBC,World'])
+                        s=str([' BBC,World '])
                         newPost.tags = s[1:-1]
                     if user.username == 'BBC News - Africa':
                         newPost.category_id = 6
-                        s=str(['BBC,Africa'])
+                        s=str([' BBC,Africa '])
                         newPost.tags =s[1:-1]
                     newPost.user_name = user.username
                     db.session.commit()
