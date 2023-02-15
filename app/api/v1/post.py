@@ -484,8 +484,8 @@ class botPost(Resource):
                 stemmer = Stemmer(LANGUAGE)
                 summarizer = Summarizer(stemmer)
                 summarizer.stop_words = get_stop_words(LANGUAGE)
-                title = Posts.query.filter_by(title=title).first()
-                if title:
+                title1 = Posts.query.filter_by(title=title).first()
+                if title1:
                     return {
                             'status': 1,
                             'res': 'Post already exists',
