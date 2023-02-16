@@ -501,6 +501,7 @@ class botPost(Resource):
                     
                     newPost.thumb_url = image
                     newPost.nsfw = True
+                    newPost.post_url = title
                     if user.username == 'BBC Sport':
                         newPost.category_id = 1
                         s=str(['BBC','Sports'])
