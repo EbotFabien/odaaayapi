@@ -519,11 +519,17 @@ class botPost(Resource):
                         newPost.tags =s[1:-1]
                     newPost.user_name = user.username
                     db.session.commit()
+                    steps = np.random.randint(25,550)
+                    if user.special == True:
+                        for i in range(steps):
+                            newPost.add_clap(user.id)
+                            db.session.commit()
                     for tag in tags:
                         new_tag = Tags(post=newPost.id,
                                        tags=tag, category=category)
                         db.session.add(new_tag)
                         db.session.commit()
+                    
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                     return {
                                 'status': 1,
