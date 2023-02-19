@@ -128,12 +128,10 @@ def test():
 
 
 if __name__ == "__main__":
-    print(certifi.where())
-    print('certifi.where()')
-    #recreate_db()
-    #languages()
-    #category()
-    #users()
+    recreate_db()
+    languages()
+    category()
+    users()
     manager.run()
     
     
