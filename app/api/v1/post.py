@@ -526,7 +526,7 @@ class botPost(Resource):
                             db.session.commit()
                     for tag in tags:
                         new_tag = Tags(post=newPost.id,
-                                       tags=tag, category=category)
+                                       tags=tag, category=newPost.category_id)
                         db.session.add(new_tag)
                         db.session.commit()
                     
