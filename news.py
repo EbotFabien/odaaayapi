@@ -52,15 +52,15 @@ def languages():
     with app.app_context():
         language_dict = {'en': "english", 'es': "espagnol", 'ar': "arab",
                          'pt': "portugese", 'sw': "swahili", 'fr': "french", 'ha': "hausa"}
-        for i in language_dict:
+        '''for i in language_dict:
             lan = Language(lang_type="N", code=i, name=language_dict[i])
             db.session.add(lan)
-            db.session.commit()
-        '''lan1 = Posttype(content="Text")
+            db.session.commit()'''
+        lan1 = Posttype(content="Text")
         lan2 = Posttype(content="Video")
         db.session.add(lan1)
         db.session.add(lan2)
-        db.session.commit()'''
+        db.session.commit()
 
 @manager.command
 def users():
