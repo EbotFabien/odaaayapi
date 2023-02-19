@@ -504,18 +504,26 @@ class botPost(Resource):
                     newPost.post_url = url
                     if user.username == 'BBC Sport':
                         newPost.category_id = 1
+                        tags=['BBC','Sports']
                         s=str(['BBC','Sports'])
                         newPost.tags = s[1:-1]
                     if user.username == 'BBC News - World':
                         newPost.category_id = 6
+                        tags=['BBC','World']
                         s=str(['BBC','World'])
                         newPost.tags = s[1:-1]
                     if user.username == 'BBC News - Africa':
                         newPost.category_id = 6
+                        tags=['BBC','Africa']
                         s=str(['BBC','Africa'])
                         newPost.tags =s[1:-1]
                     newPost.user_name = user.username
                     db.session.commit()
+                    for tag in tags:
+                        new_tag = Tags(post=newPost.id,
+                                       tags=tag, category=category)
+                        db.session.add(new_tag)
+                        db.session.commit()
                     newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
                     return {
                                 'status': 1,
