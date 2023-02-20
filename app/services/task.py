@@ -12,7 +12,7 @@ import sys
 import time
 from flask import render_template
 from rq import get_current_job
-from app.models import Users, Posts, Task,Translated, Language,Category#,Postsummary
+from app.models import Users, Posts, Task,Translated, Language,Category,Tags#,Postsummary
 from app.services.mail import send_email
 import os
 import requests
