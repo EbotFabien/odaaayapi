@@ -15,6 +15,7 @@ from rq import get_current_job
 from app.models import Users, Posts, Task,Translated, Language,Category#,Postsummary
 from app.services.mail import send_email
 import os
+import requests
 from tqdm import tqdm
 from googletrans import Translator
 from flask import current_app as app
@@ -22,6 +23,8 @@ from app import db, cache, logging ,createapp
 from sqlalchemy import or_, and_, distinct, func
 #from rake_nltk import Rake
 #from multi_rake import Rake
+from bs4 import BeautifulSoup
+from breadability.readable import Article
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
