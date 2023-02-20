@@ -463,7 +463,7 @@ class botPost(Resource):
         
         if request.method == 'POST':
             user = Users.query.filter_by(id=1).first()
-            user.launch_task('bot_post','Creating  post ...',request.data)
+            user.launch_bot_task('bot_post','Creating  post ...',request.data)
             return {
                         'status': 1,
                         'res': 'Post were made',
