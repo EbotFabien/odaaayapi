@@ -25,6 +25,7 @@ from sqlalchemy import or_, and_, distinct, func
 #from multi_rake import Rake
 from bs4 import BeautifulSoup
 from breadability.readable import Article
+import numpy as np
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
