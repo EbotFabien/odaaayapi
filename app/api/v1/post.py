@@ -462,7 +462,7 @@ class botPost(Resource):
     def post(self):
         
         if request.method == 'POST':
-            user = Users.query.filter_by(username='BBC News - Africa').first()
+            user = Users.query.filter_by(id=1).first()
             user.launch_task('bot_post','Creating  post ...',request.data)
             return {
                         'status': 1,
