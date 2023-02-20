@@ -41,6 +41,78 @@ def _set_task_progress(progress):
             task.complete = True
         db.session.commit()
 
+def bot_post(data):
+            jso=data
+            j=json.loads(jso)
+            sum_content = ''
+            LANGUAGE = "english"
+            user = Users.query.filter_by(username=j["feed"]["title"]).first()
+            if user:
+                title=j["new_entries"][0]["title"]
+                url=j["new_entries"][0]["link"]
+                image=j["new_entries"][0]["image"]["url"]
+                x = requests.get(url)
+                if image == None:
+                    soup = BeautifulSoup(x.content, 'html.parser')
+                    metas = soup.findAll('meta')
+                    for i in metas:
+                        if i.get('property') == "og:image":
+                            image = i.get('content')
+                document = Article(x.content, url)
+                parser = HtmlParser.from_string(
+                document.readable, '', Tokenizer(LANGUAGE))
+                stemmer = Stemmer(LANGUAGE)
+                summarizer = Summarizer(stemmer)
+                summarizer.stop_words = get_stop_words(LANGUAGE)
+                title1 = Posts.query.filter_by(title=title).first()
+                if title1:
+                    return {
+                            'status': 1,
+                            'res': 'Post already exists',
+                        }, 200
+                else:
+                    for sentence in summarizer(parser.document, 20):
+                        sum_content += '\n'+str(sentence)
+                    newPost = Posts(user.id, title,2,sum_content,1)
+                    db.session.add(newPost)
+                    db.session.commit()
+                    newPost.summarize = True
+                    newPost.translate = True
+                    
+                    newPost.thumb_url = image
+                    newPost.nsfw = True
+                    newPost.post_url = url
+                    if user.username == 'BBC Sport':
+                        newPost.category_id = 1
+                        tags=['BBC','Sports']
+                        s=str(['BBC','Sports'])
+                        newPost.tags = s[1:-1]
+                    if user.username == 'BBC News - World':
+                        newPost.category_id = 6
+                        tags=['BBC','World']
+                        s=str(['BBC','World'])
+                        newPost.tags = s[1:-1]
+                    if user.username == 'BBC News - Africa':
+                        newPost.category_id = 6
+                        tags=['BBC','Africa']
+                        s=str(['BBC','Africa'])
+                        newPost.tags =s[1:-1]
+                    newPost.user_name = user.username
+                    db.session.commit()
+                    steps = np.random.randint(25,550)
+                    if user.special == True:
+                        for i in range(steps):
+                            newPost.add_clap(user.id)
+                            db.session.commit()
+                    for tag in tags:
+                        new_tag = Tags(post=newPost.id,
+                                       tags=tag, category=newPost.category_id)
+                        db.session.add(new_tag)
+                        db.session.commit()
+                    
+                    newPost.launch_translation_task('translate_posts', user.id, 'Translating  post ...')
+                    
+            
 def export_posts(user_id):
     try:
         user = Users.query.get(user_id)
