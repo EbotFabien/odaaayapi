@@ -186,7 +186,6 @@ def translate_posts(post_id, user_id):
             # _set_task_progress(p/len(languages) * 100)
             for j in languages:
                 if i == j and i != user_default_lang:
-                    v='&'+5
                    current_lang = Language.query.filter_by(code=i).first()
                    # table = language_dict.get(i)
                    #keywords = rake.apply(content_translation[i])
@@ -195,7 +194,7 @@ def translate_posts(post_id, user_id):
                         new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,fullcontent=full_content[i],user=post.user_name,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
-                        p += 1         
+                            p += 1         
                         v='&'+7
     except:
         _set_task_progress(100)
