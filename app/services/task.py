@@ -160,47 +160,47 @@ def translate_posts(post_id, user_id):
 
     for sentence in summarizer(parser.document, 2):
         sum_content += '\n'+str(sentence)
-    try:
-        for j in languages:
-            if j == post_language.code:
-                current_lang = Language.query.filter_by(id=post.orig_lang).first()
-                #table = language_dict.get(user_default_lang)
-                #keywords = rake.apply(sum_content)
-                if post is not None:
-                    new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
-                    if new_check is None:
-                        if post.summarize == True:
-                            new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
-                            db.session.add(new_row)
-                            db.session.commit()
-                        else:
-                            new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content="",language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
-                            db.session.add(new_row)
-                            db.session.commit()
-        
-        title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
-        content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
-        full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
-        v='&'+len(title_translation)
-        print(v)
-        p = 1
-        for i in tqdm(languages):
-            # _set_task_progress(p/len(languages) * 100)
-            for j in languages:
-                if i == j and i != user_default_lang:
-                   current_lang = Language.query.filter_by(code=i).first()
-                   # table = language_dict.get(i)
-                   #keywords = rake.apply(content_translation[i])
-                   new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
-                   if new_check is None:
-                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,fullcontent=full_content[i],user=post.user_name,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
+    #try:
+    for j in languages:
+        if j == post_language.code:
+            current_lang = Language.query.filter_by(id=post.orig_lang).first()
+            #table = language_dict.get(user_default_lang)
+            #keywords = rake.apply(sum_content)
+            if post is not None:
+                new_check =Translated.query.filter(and_(Translated.title==post.title,Translated.language_id==current_lang.id)).first()
+                if new_check is None:
+                    if post.summarize == True:
+                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content=sum_content,language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
                         db.session.add(new_row)
                         db.session.commit()
-                        p += 1         
+                    else:
+                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,title=post.title,user=post.user_name,content="",language_id=current_lang.id,fullcontent=post.text_content, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                        db.session.add(new_row)
+                        db.session.commit()
+    
+    title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
+    content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
+    full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
+    #v='&'+len(title_translation)
+    #print(v)
+    p = 1
+    for i in tqdm(languages):
+        # _set_task_progress(p/len(languages) * 100)
+        for j in languages:
+            if i == j and i != user_default_lang:
+                current_lang = Language.query.filter_by(code=i).first()
+                # table = language_dict.get(i)
+                #keywords = rake.apply(content_translation[i])
+                new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
+                if new_check is None:
+                    new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,fullcontent=full_content[i],user=post.user_name,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                    db.session.add(new_row)
+                    db.session.commit()
+                    p += 1         
                         
-    except:
+    '''except:
         _set_task_progress(100)
-        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        app.logger.error('Unhandled exception', exc_info=sys.exc_info())'''
 
 
 def summarize_posts(post_id, user_id):
