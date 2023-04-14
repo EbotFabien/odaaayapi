@@ -181,6 +181,8 @@ def translate_posts(post_id, user_id):
         title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
         content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
         full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
+        v='&'+len(title_translation)
+        print(v)
         p = 1
         for i in tqdm(languages):
             # _set_task_progress(p/len(languages) * 100)
@@ -195,7 +197,7 @@ def translate_posts(post_id, user_id):
                         db.session.add(new_row)
                         db.session.commit()
                         p += 1         
-                        v='&'+7
+                        
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
