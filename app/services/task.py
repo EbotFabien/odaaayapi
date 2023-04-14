@@ -140,7 +140,7 @@ def export_posts(user_id):
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 def translate_posts(post_id, user_id):
-    languages = ['en', 'pt', 'es', 'sw', 'ha', 'ar', 'fr']
+    languages = ['en', 'es','pt', 'sw', 'ha', 'ar', 'fr']
     post = Posts.query.get(post_id)
     category=Category.query.get(post.category_id)
     if post:
@@ -181,8 +181,8 @@ def translate_posts(post_id, user_id):
     title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
     content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
     full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
-    v='&'+len(title_translation)
-    print(v)
+    #v='&'+len(title_translation)
+    #print(v)
     p = 1
     for i in tqdm(languages):
         # _set_task_progress(p/len(languages) * 100)
