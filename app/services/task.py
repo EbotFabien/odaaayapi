@@ -26,6 +26,8 @@ from sqlalchemy import or_, and_, distinct, func
 from bs4 import BeautifulSoup
 from breadability.readable import Article
 import numpy as np
+import six
+from google.cloud import translate_v2 as translate
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
@@ -178,11 +180,25 @@ def translate_posts(post_id, user_id):
                         db.session.add(new_row)
                         db.session.commit()
     
+    translate_client = translate.Client()
+
+    if isinstance(text, six.binary_type):
+        text = text.decode("utf-8")
+
+    # Text can also be a sequence of strings, in which case this method
+    # will return a sequence of results for each text.
+    result = translate_client.translate(text, target_language=target)
+
+    print(u"Text: {}".format(result["input"]))
+    print(u"Translation: {}".format(result["translatedText"]))
+    print(u"Detected source language: {}".format(result["detectedSourceLanguage"]))
+    
     title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
     content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
     full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
-    #v='&'+len(title_translation)
-    #print(v)
+    v='&'+len(title_translation)
+    print(v)
+    
     p = 1
     for i in tqdm(languages):
         # _set_task_progress(p/len(languages) * 100)
