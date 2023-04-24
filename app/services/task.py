@@ -26,8 +26,7 @@ from sqlalchemy import or_, and_, distinct, func
 from bs4 import BeautifulSoup
 from breadability.readable import Article
 import numpy as np
-import six
-from google.cloud import translate_v2 as translate
+
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
@@ -180,43 +179,31 @@ def translate_posts(post_id, user_id):
                         db.session.add(new_row)
                         db.session.commit()
     
-    translate_client = translate.Client()
-
-    if isinstance(text, six.binary_type):
-        text = text.decode("utf-8")
-
-    # Text can also be a sequence of strings, in which case this method
-    # will return a sequence of results for each text.
-    result = translate_client.translate(text, target_language=target)
-
-    print(u"Text: {}".format(result["input"]))
-    print(u"Translation: {}".format(result["translatedText"]))
-    print(u"Detected source language: {}".format(result["detectedSourceLanguage"]))
     
-    title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
-    content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
-    full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
-    v='&'+len(title_translation)
-    print(v)
-    
-    p = 1
-    for i in tqdm(languages):
-        # _set_task_progress(p/len(languages) * 100)
-        for j in languages:
-            if i == j and i != user_default_lang:
-                current_lang = Language.query.filter_by(code=i).first()
-                # table = language_dict.get(i)
-                #keywords = rake.apply(content_translation[i])
-                new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
-                if new_check is None:
-                    new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,fullcontent=full_content[i],user=post.user_name,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
-                    db.session.add(new_row)
-                    db.session.commit()
-                    p += 1         
+    try:
+        title_translation = app.ts.translate(text=post.title, src=user_default_lang, dest=languages)
+        content_translation = app.ts.translate(text=sum_content, src=user_default_lang, dest=languages)
+        full_content = app.ts.translate(text=post.text_content, src=user_default_lang, dest=languages)
+        
+        
+        p = 1
+        for i in tqdm(languages):
+            # _set_task_progress(p/len(languages) * 100)
+            for j in languages:
+                if i == j and i != user_default_lang:
+                    current_lang = Language.query.filter_by(code=i).first()
+                    # table = language_dict.get(i)
+                    #keywords = rake.apply(content_translation[i])
+                    new_check =Translated.query.filter(and_(Translated.title==title_translation[i],Translated.language_id==current_lang.id)).first()
+                    if new_check is None:
+                        new_row = Translated(post_id=post_id,category=category.name,category_id=category.id,fullcontent=full_content[i],user=post.user_name,title=title_translation[i],content=content_translation[i],language_id=current_lang.id, tags=post.tags)#[x[0] for x in keywords[:5]]))
+                        db.session.add(new_row)
+                        db.session.commit()
+                        p += 1         
                         
-    '''except:
+    except:
         _set_task_progress(100)
-        app.logger.error('Unhandled exception', exc_info=sys.exc_info())'''
+        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 
 def summarize_posts(post_id, user_id):

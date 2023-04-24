@@ -902,7 +902,7 @@ class Article(Resource):
                                 Translated.post_id == posts_feed.id, Translated.language_id == current_lang.id)).first()
                             return {
                                 "results": {
-                                    "status": 4,
+                                    "status": 5,
                                     "lang": lang,
                                     "original_lang": current_lang.code,
                                     "shouts": count_claps,
