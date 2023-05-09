@@ -141,7 +141,7 @@ def export_posts(user_id):
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
 
 def translate_posts(post_id, user_id):
-    languages = ['en', 'es','pt', 'sw', 'ha', 'ar', 'fr']
+    languages = ['en', 'es','pt', 'sw', 'ar', 'fr'] #, 'ha'
     post = Posts.query.get(post_id)
     category=Category.query.get(post.category_id)
     if post:
