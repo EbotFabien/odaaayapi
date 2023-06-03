@@ -71,7 +71,7 @@ def token_required(f):
     return decorated
 
 
-v = 0
+v = 1
 if v == 1:
     @property
     def specs_url(self):

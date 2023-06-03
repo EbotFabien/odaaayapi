@@ -131,3 +131,25 @@ if __name__ == "__main__":
     
 
     # run()
+
+
+loc="/work/www/cmd/Flask_app/project/app/static/appointment_comments.xls"
+wb = xlrd.open_workbook(loc)
+sheet = wb.sheet_by_index(0)
+
+sheet.cell_value(0,0)
+for i in range(0,4805):
+    name=sheet.row_values(i+1)
+    json={
+        'rdv':int(name[1]),
+        'comment':name[3],
+        'user':int(name[2]),
+    }
+    user=json['user']
+    #check=requests.get("http://195.15.218.172/manager_app/user/"+str(user), headers={"Authorization":request.headers["Authorization"]})
+    #if #check.json()['id']:
+    rdv=json['rdv']
+    comme=json['comment']
+    commen=comment(user_id=user,rdv_id=rdv,contenu=comme)
+    db.session.add(commen)
+    db.session.commit()
