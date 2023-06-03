@@ -26,6 +26,8 @@ from os import path
 from werkzeug.utils import redirect
 import cloudinary
 import cloudinary.uploader
+from sqlalchemy import func,or_, and_, desc, asc
+import random
 
 
 
@@ -863,6 +865,37 @@ class User_confirm_delete(Resource):
             mail.account_deleted(user.email)
             return redirect (link)
 
+
+
+@user.doc(
+    security='KEY',
+    params={ 'user_id': 'Specify the user_id associated with the person',
+             'start': 'Value to start from ',
+             'limit': 'Total limit of the query',
+             'count': 'Number results per page',
+              },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',    
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/confirm_user/<use>')
+class  User_ident(Resource):
+
+    def get(self,use):
+        user = Users.query.filter_by(username=use).first()
+        if user:
+            return {
+                    'user':user.uuid
+                },200
+
 #test
 @user.doc(
     security='KEY',
@@ -1314,6 +1347,7 @@ class  No_claps_(Resource):
              'limit': 'Total limit of the query',
              'count': 'Number results per page',
              'lang': 'i18n',
+             'fil':'type',
              'type':'savings or posts',
               },
     responses={
@@ -1335,6 +1369,7 @@ class  Posts_(Resource):
         if request.args:
             token = request.headers['API-KEY']
             start = request.args.get('start',None)
+            fil = request.args.get('fil',None)
             limit = request.args.get('limit',None)
             count = request.args.get('count',None)
             lang = request.args.get('lang', None)
@@ -1350,7 +1385,18 @@ class  Posts_(Resource):
                     posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                         Posts,(Posts.id == Translated.post_id)).filter(
                                             Posts.author==user.id)
-                    posts_feed =posts_feeds.order_by(Posts.id.desc()).paginate(int(start), int(count), False)
+                    if fil == 'new':
+                        posts_feed =Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(
+                                            Posts.author==user.id).paginate(int(start), int(count), False)
+                    if fil == 'old':
+                        posts_feed =Translated.query.filter_by(language_id=current_lang.id).join(
+                                        Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(
+                                            Posts.author==user.id).paginate(int(start), int(count), False)
+                    if fil == 'random':
+                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                        random.shuffle(posts_feed.items)
+                    
                     total = (posts_feed.total/int(count))
                     if Type == "savings":
                         if posts_feed:
@@ -1418,7 +1464,7 @@ class  Posts_(Resource):
     })
 @user.route('/profile')
 class Data(Resource):
-    @token_required
+    #@token_required
     #@user.marshal_with(userinfo)
     def get(self):
         user_id = request.args.get('uuid')
@@ -1427,13 +1473,13 @@ class Data(Resource):
         limit = request.args.get('limit',None)
         count = request.args.get('count',None)
         language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
-        token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
+        #token = request.headers['API-KEY']
+        #data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        #user = Users.query.filter_by(uuid=data['uuid']).first()
         next = "/api/v1/profile?"+start+"&limit="+limit+"&count="+count
         previous = "api/v1/profile?start="+start+"&limit"+limit+"&count="+count
         user2 = Users.query.filter_by(uuid=user_id).first()
-        if user:
+        if user2:
             for i in language_dict:
                     if i == lang:
                         current_lang = Language.query.filter_by(code=i).first()
@@ -1442,13 +1488,13 @@ class Data(Resource):
                                             Posts.author==user2.id)
                         posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
-                        if user != user2:
+                        '''if user != user2:
                             if user.is_following(user2) > 0:
                                 follow=True
                             else:
                                 follow=False
                         else:
-                            follow=False
+                            follow=False'''
                         if posts_feed:
                                 return{
                                     "start":start,
@@ -1457,7 +1503,7 @@ class Data(Resource):
                                     "next":next,
                                     "total":total,
                                     "previous":previous,
-                                    "follow":follow,
+                                    "follow":False,
                                     "user_data":marshal(user2,userdata),
                                     "results":marshal(posts_feed.items,lang_post)
                                 },200

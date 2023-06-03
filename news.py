@@ -14,12 +14,14 @@ import unittest
 import os
 #from app.services import mail
 from flask import current_app
-#import ssl
+import ssl
 import uuid
+import certifi
+import ssl
 
 
-#context = ssl.SSLContext()
-#context.load_cert_chain('odaaay.crt', 'odaaay.key')
+context = ssl.SSLContext()
+context.load_cert_chain('odaaay.crt', 'odaaay.key')
 
 
 app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
@@ -50,10 +52,10 @@ def languages():
     with app.app_context():
         language_dict = {'en': "english", 'es': "espagnol", 'ar': "arab",
                          'pt': "portugese", 'sw': "swahili", 'fr': "french", 'ha': "hausa"}
-        for i in language_dict:
+        '''for i in language_dict:
             lan = Language(lang_type="N", code=i, name=language_dict[i])
             db.session.add(lan)
-            db.session.commit()
+            db.session.commit()'''
         lan1 = Posttype(content="Text")
         lan2 = Posttype(content="Video")
         db.session.add(lan1)
@@ -64,8 +66,7 @@ def languages():
 def users():
     print('users')
     with app.app_context():
-        users_dict = {'one@odaaay.co': "The Herald", 'two@odaaay.co': "West African News", 'three@odaaay.co': "Media Online",
-                         'four@odaaay.co': "le Momehein", 'five@odaaay.co': "Zoom"}
+        users_dict = {'seven@odaaay.co': "BBC Sport", 'eight@odaaay.co': "BBC News - World", 'nine@odaaay.co': "BBC Africa"}
         for i in users_dict:
             lang = 'en'
             language= Language.query.filter_by(code=lang).first()
@@ -95,19 +96,24 @@ def category():
 def run():
     #logo()
     # Error tracking and logging with sentry
+    sentry_sdk.init(
+        dsn="https://076148b85ca74c93b2c9ab0e07c2bd24@o1249285.ingest.sentry.io/6409744",
+        integrations=[FlaskIntegration()]
+    )
+
     
     # Initializing log
     # file_handler = RotatingFileHandler('app/logs/'+str(datetime.utcnow())+'-news-app.log', 'a', 1 * 1024 * 1024, 10)
     # file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
     # file_handler.setLevel(logging.INFO)
     # app.logger.addHandler(file_handler)
-    
+    ssl._create_default_https_context = ssl._create_unverified_context
     app.run(
         threaded=True,
         host=app.config.get('HOST'),
         port=app.config.get('PORT'),
         debug=app.config.get('DEBUG'),
-        # ssl_context=context
+        ssl_context=context
     )
 
 
@@ -122,10 +128,10 @@ def test():
 
 
 if __name__ == "__main__":
-    recreate_db()
+    #recreate_db()
     languages()
-    category()
-    users()
+    #category()
+    #users()
     manager.run()
     
     

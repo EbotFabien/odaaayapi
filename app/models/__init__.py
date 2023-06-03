@@ -254,6 +254,15 @@ class Users(db.Model):
                     description=description, user=self)
         db.session.add(task)
         return task
+    def launch_bot_task(self,name,descr,data):
+        with app.app_context():
+            rq_job = app.task_queue.enqueue(
+                'app.services.task.' + name,data)
+        task = Task(id=rq_job.get_id(), name=name,
+                    user_id=self.id, description=descr)
+        db.session.add(task)
+        db.session.commit()
+        return task
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(user=self, complete=False).all()
