@@ -109,6 +109,87 @@ def createapp(configname):
     @app.route('/google')
     def login():
         return google.authorize(callback=url_for('authorized', _external=True))
+    
+    @app.route('/google/last')
+    def login_last():
+        return google.authorize(callback=url_for('authorized_L', _external=True))
+
+    @app.route('/google/authorized/last')
+    def authorized_L():
+        ssl._create_default_https_context = ssl._create_unverified_context
+        resp = google.authorized_response()
+        if resp is None:
+            return 'Access denied: reason=%s error=%s' % (
+                request.args['error_reason'],
+                request.args['error_description']
+            )
+        session['google_token'] = (resp['access_token'], '')
+        me = google.get('userinfo')
+        user=Users.query.filter_by(email=me.data['email']).first()
+        link='https://odaaay.com/'+me.data['locale'][0:2]+'/login'
+        
+        if user:
+            token = jwt.encode({
+                'user': user.username,
+                'uuid': user.uuid,
+                'exp': datetime.utcnow() + timedelta(days=30),
+                'iat': datetime.utcnow()
+            },
+            app.config.get('SECRET_KEY'),
+            algorithm='HS256')
+            session['google'] = token
+            if user.customer_id == None:
+                customer = stripe.Customer.create(
+                    email=user.email,#see if phone number can be used
+                    payment_method='pm_card_visa',
+                    invoice_settings={
+                        'default_payment_method': 'pm_card_visa',
+                    },
+                )
+                user.customer_id=customer['id']
+                user.verified_email = True
+                user.user_visibility = True
+                db.session.commit()
+            #return jsonify({"data": me.data,"token":session['google_token']})
+            return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
+        else:
+            user=Users(me.data['given_name'],str(uuid.uuid4()),True,email=me.data['email'])
+            db.session.add(user)
+            user.picture=me.data['picture']
+            db.session.commit()
+            if user.customer_id == None:
+                customer = stripe.Customer.create(
+                    email=user.email,#see if phone number can be used
+                    payment_method='pm_card_visa',
+                    invoice_settings={
+                        'default_payment_method': 'pm_card_visa',
+                    },
+                )
+                user.customer_id=customer['id']
+                user.verified_email = True
+                user.user_visibility = True
+                db.session.commit()
+            token = jwt.encode({
+                'user': user.username,
+                'uuid': user.uuid,
+                'exp': datetime.utcnow() + timedelta(days=30),
+                'iat': datetime.utcnow()
+            },
+            app.config.get('SECRET_KEY'),
+            algorithm='HS256')
+            session['google'] = token
+            data={
+                'token':token,
+                'uuid':user.uuid,
+                'id':user.id,
+                'name':user.username,
+                'profile_picture':user.picture ,
+                'email':user.email,
+                'background':user.background,
+                'handle':user.handle,
+            }
+            return {'results':data},200
+            #return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
         
     @app.route('/google/authorized')
     def authorized():
@@ -174,6 +255,7 @@ def createapp(configname):
             app.config.get('SECRET_KEY'),
             algorithm='HS256')
             session['google'] = token
+            
             return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
 
     @google.tokengetter
