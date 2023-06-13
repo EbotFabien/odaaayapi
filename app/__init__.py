@@ -151,7 +151,18 @@ def createapp(configname):
                 user.user_visibility = True
                 db.session.commit()
             #return jsonify({"data": me.data,"token":session['google_token']})
-            return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
+            data={
+                'token':token,
+                'uuid':user.uuid,
+                'id':user.id,
+                'name':user.username,
+                'profile_picture':user.picture ,
+                'email':user.email,
+                'background':user.background,
+                'handle':user.handle,
+            }
+            return {'results':data},200
+            #return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
         else:
             user=Users(me.data['given_name'],str(uuid.uuid4()),True,email=me.data['email'])
             db.session.add(user)
