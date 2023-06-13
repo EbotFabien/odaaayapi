@@ -179,11 +179,21 @@ class Login_email(Resource):
                     },
                         app.config.get('SECRET_KEY'),
                         algorithm='HS256')
+                    data={
+                        'uuid':user1.uuid,
+                        'id':user1.id,
+                        'name':user1.username,
+                        'profile_picture':user1.picture ,
+                        'email':user1.email,
+                        'background':user1.background,
+                        'handle':user1.handle,
+                    }
                     return {
                         'status': 1,
                         'res': 'success',
                         'uuid': user1.uuid,
-                        'token': str(token)
+                        'token': str(token),
+                        'data':data
                     }, 200
 
                 else:
