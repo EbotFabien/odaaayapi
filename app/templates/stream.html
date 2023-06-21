@@ -1,0 +1,84 @@
+<!--DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://vjs.zencdn.net/7.14.3/video-js.css" rel="stylesheet">
+  <script src="https://vjs.zencdn.net/7.14.3/video.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/8.0.0-beta.3/hls.js"></script>
+</head>
+<body>
+
+  <video id="stream" preload="auto" autoplay playsinline webkit-playsinline>ok</video>
+  
+<script></script>
+
+<script>
+  var hls = new Hls();
+  var video = document.getElementById("stream");
+  var stream_key = "7895";
+
+  hls.loadSource("https://live-par-1-abr-cdn.livepush.io/live_abr_cdn/emaIqCGoZw-6/index.m3u8");
+
+  hls.attachMedia(video); 
+  hls.on(Hls.Events.MANIFEST_PARSED, function () {
+    video.play();
+  });
+</script>
+</body>
+
+</html https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8-->
+
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+    <link rel="canonical" href="https://livepush.io/hls-player/index.html">
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <video id="video" controls></video>
+    <script>
+    if(Hls.isSupported())
+    {
+        var video = document.getElementById('video');
+        var hls = new Hls();
+        hls.loadSource('http://104.238.191.159:8088/hls/test.m3u8');
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED,function()
+        {
+          var playpromise=video.play();
+          if (playPromise !== undefined) {
+            playPromise.then(_ => {
+              // Automatic playback started!
+              // Show playing UI.
+              video.pause();
+            })
+            .catch(error => {
+              // Auto-play was prevented
+              // Show paused UI.
+            });
+          }
+        });
+    }
+    else if (video.canPlayType('application/vnd.apple.mpegurl'))
+    {
+        video.src = 'http://104.238.191.159:8088/hls/test.m3u8';
+        video.addEventListener('canplay',function()
+        {
+          var playpromise=video.play();
+          if (playPromise !== undefined) {
+            playPromise.then(_ => {
+              // Automatic playback started!
+              // Show playing UI.
+              video.pause();
+            })
+            .catch(error => {
+              // Auto-play was prevented
+              // Show paused UI.
+            });
+          }
+        });
+    }
+    </script>
+  </body>
+</html>
