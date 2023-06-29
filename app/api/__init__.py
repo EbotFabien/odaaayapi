@@ -257,10 +257,29 @@ class Signup_email(Resource):
                         user.user_visibility = True
                         db.session.commit()
                         mail.welcome_email(user.email,user.username)
-                        return {
-                        'status': 10,
-                        'res': 'Code sent clean'
-                        }, 200
+                        token = jwt.encode({
+                            'user': user.username,
+                            'uuid': user.uuid,
+                            'exp': datetime.utcnow() + timedelta(days=30),
+                            'iat': datetime.utcnow()
+                        },
+                            app.config.get('SECRET_KEY'),
+                            algorithm='HS256')
+                        data={
+                            'uuid':user.uuid,
+                            'id':user.id,
+                            'name':user.username,
+                            'profile_picture':user.picture ,
+                            'email':user.email,
+                            'background':user.background,
+                            'handle':user.handle,
+                        }
+                        return {'status': 1,
+                                    'res': 'success',
+                                    'uuid': user.uuid,
+                                    'token': str(token),
+                                    'data':data
+                                },200
                     else:
                         return {
                         'status': 0,

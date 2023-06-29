@@ -241,7 +241,6 @@ def createapp(configname):
             #return jsonify({"data": me.data,"token":session['google_token']})
             #return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
             data={
-                'token':token,
                 'uuid':user.uuid,
                 'id':user.id,
                 'name':user.username,
@@ -250,7 +249,13 @@ def createapp(configname):
                 'background':user.background,
                 'handle':user.handle,
             }
-            return {'results':data},200
+            return {'status': 1,
+                        'res': 'success',
+                        'uuid': user.uuid,
+                        'token': str(token),
+                        'data':data
+                    },200
+        
         else:
             user=Users(me.data['given_name'],str(uuid.uuid4()),True,email=me.data['email'])
             db.session.add(user)
@@ -279,7 +284,6 @@ def createapp(configname):
             session['google'] = token
             
             data={
-                'token':token,
                 'uuid':user.uuid,
                 'id':user.id,
                 'name':user.username,
@@ -288,7 +292,12 @@ def createapp(configname):
                 'background':user.background,
                 'handle':user.handle,
             }
-            return {'results':data},200
+            return {'status': 1,
+                        'res': 'success',
+                        'uuid': user.uuid,
+                        'token': str(token),
+                        'data':data
+                    },200
             #return redirect(link+str('?token=')+str(token)+str('&uuid=')+str(user.uuid))
 
     @google.tokengetter
