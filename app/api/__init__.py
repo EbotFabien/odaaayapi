@@ -1413,9 +1413,11 @@ class save_post(Resource):
         Saves = Save.query.filter(
             and_(Save.user_id == user.id, Save.post_id == post.id)).first()
         if Saves:
+            db.session.delete(Saves)
+            db.session.commit()
             return{
                 "status": 0,
-                "res": "Post has already been saved"
+                "res": "Post has  been unsaved"
             }
         if post:
             save = Save(user.id, post.id)
