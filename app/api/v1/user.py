@@ -1343,9 +1343,7 @@ class  No_claps_(Resource):
 @user.doc(
     security='KEY',
     params={ 
-             'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
+             'start': 'Page number',
              'lang': 'i18n',
              'fil':'type',
              'type':'savings or posts',
@@ -1368,16 +1366,13 @@ class  Posts_(Resource):
     def get(self):
         if request.args:
             token = request.headers['API-KEY']
-            start = request.args.get('start',None)
+            page = request.args.get('page',None)
             fil = request.args.get('fil',None)
-            limit = request.args.get('limit',None)
-            count = request.args.get('count',None)
             lang = request.args.get('lang', None)
             Type = request.args.get('type', None)
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
             data = jwt.decode(token, app.config.get('SECRET_KEY'))
-            next = "/api/v1/posts?"+start+"&limit="+limit+"&count="+count
-            previous = "api/v1/posts?start="+start+"&limit"+limit+"&count="+count
+            
             user = Users.query.filter_by(uuid=data['uuid']).first()
             for i in language_dict:
                 if i == lang:
@@ -1388,30 +1383,27 @@ class  Posts_(Resource):
                     if fil == 'new':
                         posts_feed =Translated.query.filter_by(language_id=current_lang.id).join(
                                         Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(
-                                            Posts.author==user.id).paginate(int(start), int(count), False)
+                                            Posts.author==user.id).paginate(page=page,per_page=10)
                     if fil == 'old':
                         posts_feed =Translated.query.filter_by(language_id=current_lang.id).join(
                                         Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(
-                                            Posts.author==user.id).paginate(int(start), int(count), False)
+                                            Posts.author==user.id).paginate(page=page,per_page=10)
                     if fil == 'random':
-                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.paginate(page=page,per_page=10)
                         random.shuffle(posts_feed.items)
                     
-                    total = (posts_feed.total/int(count))
+                    total = (posts_feed.total)
                     if Type == "savings":
                         if posts_feed:
                             savess=[]
                             user_saves=Save.query.filter_by(user_id=user.id).order_by(Save.id.desc()).all()
                             user_posts= Translated.query.filter_by(language_id=current_lang.id).join(
                                         Save,(Save.post_id == Translated.post_id)).filter(
-                                            Save.user_id==user.id).paginate(int(start), int(count), False).items 
+                                            Save.user_id==user.id).paginate(page=page,per_page=10)
                             return{
-                                "start":start,
-                                "limit":limit,
-                                "count":count,
-                                "next":next,
-                                "previous":previous,
-                                "results":marshal(user_posts,lang_post)
+                                "page":page,
+                                "total":user_posts.total,
+                                "results":marshal(user_posts.items,lang_post)
                                         
                             },200
 
@@ -1425,12 +1417,8 @@ class  Posts_(Resource):
 
                         if posts_feed:
                             return{
-                                "start":start,
-                                "limit":limit,
-                                "count":count,
-                                "next":next,
+                                "page":page,
                                 "total":total,
-                                "previous":previous,
                                 "results":marshal(posts_feed.items,lang_post)
                                         
                             },200
