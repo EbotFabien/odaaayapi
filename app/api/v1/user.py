@@ -1366,7 +1366,7 @@ class  Posts_(Resource):
     def get(self):
         if request.args:
             token = request.headers['API-KEY']
-            page = request.args.get('page',None)
+            page = int(request.args.get('page',None))
             fil = request.args.get('fil',None)
             lang = request.args.get('lang', None)
             Type = request.args.get('type', None)
