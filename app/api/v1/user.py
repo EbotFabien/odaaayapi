@@ -688,26 +688,29 @@ class Userprefs(Resource):
         req_data = request.get_json()
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user = Users.query.filter_by(uuid=data['uuid']).first()
+        
 
         
         if req_data['type'] =='settings':
             lang=req_data['language_id'] or None
-            language= Language.query.filter_by(code=lang).first()
+            user = Users.query.filter_by(uuid=data['uuid']).first()
             user.username=req_data['username'] or None
             user.email=req_data['email'] or None
             user.country=req_data['country'] or None
-            user.language_id=language.id
             user.handle=req_data['handle'] or None
             user.bio =req_data['bio'] or None
-            
-            #backgroundpicture
             db.session.commit()
+            language= Language.query.filter_by(code=lang).first()
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            user.language_id=language.id
+            db.session.commit()
+
             return {
                     "status":1,
                     "res":"User_data updated"
                 }, 200 
         if req_data['type'] =='security':
+            user = Users.query.filter_by(uuid=data['uuid']).first()
             ph =req_data['phone'] or None
             ph = "".join(ph.split())
             NP=req_data['newphone'] or None
@@ -730,6 +733,7 @@ class Userprefs(Resource):
                     "res":"This phone number doesn't belong to this user"
                 }, 400 
         if req_data['type'] =='deactivate':
+            user = Users.query.filter_by(uuid=data['uuid']).first()
             #visi=req_data['user_visibility'] or None
             link='https://odaaay.com/api/v1/user/confirm_delete/'+str(user.uuid)
             mail.delete_account(user.email,link)
@@ -741,6 +745,7 @@ class Userprefs(Resource):
 
 
         if req_data['type'] =='code':
+            user = Users.query.filter_by(uuid=data['uuid']).first()
             code=req_data['code'] or None
             NP=req_data['newphone'] or None
             NP = "".join(NP.split())
@@ -767,6 +772,7 @@ class Userprefs(Resource):
                 "res":"No code"
             }, 400
         if req_data['type'] =='rescue':
+            user = Users.query.filter_by(uuid=data['uuid']).first()
             uu=str(uuid.uuid4())
             user.rescue=uu
             db.session.commit()
