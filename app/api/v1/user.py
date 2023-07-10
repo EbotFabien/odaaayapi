@@ -282,16 +282,18 @@ class backdrop(Resource):
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
             File.save(fil)
-            upload_result = cloudinary.uploader.upload(args)
+            upload_result = cloudinary.uploader.upload("https://odaaay.com/api/static/files/"+str(data['uuid'])+"/backdrop/"+Name)
             user.background=upload_result["secure_url"]#str(data['uuid'])+"/backdrop/"+Name
             db.session.commit()
+            if path.exists(fil) == True:
+                    os.remove(fil)
             return {
                     "status":1,
                     "res":"back drop was uploaded",
                     }, 200
                     
         if File.mimetype == "image/jpg" :
-            fila=os.path.join(destination,str(data['uuid']),'post')#,Name)
+            fila=os.path.join(destination,str(data['uuid']),'backdrop')#,Name)
             if os.path.isdir(fila) == False:
                 os.makedirs(fila)
             fil=os.path.join(fila,Name)#,Name)
@@ -299,6 +301,8 @@ class backdrop(Resource):
             upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/'+str(data['uuid'])+"/backdrop/"+Name)
             user.background=upload_result["secure_url"]#str(data['uuid'])+"/backdrop/"+Name
             db.session.commit()
+            if path.exists(fil) == True:
+                    os.remove(fil)
             return {
                     "status":1,
                     "res":"back drop was uploaded",
@@ -333,44 +337,61 @@ class backdrop(Resource):
 
 class Uplu(Resource):
     @token_required
-    @user.expect(uploaderdata)
+    @user.expect(uploader)
     def post(self):
-        args = request.get_json()
+        args = uploader.parse_args()
         destination = Config.UPLOAD_FOLDER_MEDIA
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
-        user= Users.query.filter_by(uuid=data['uuid']).first()
         File=args['file']
         Name=args['name']
 
         
         if File:
-            if Name.lower() =="jpeg":
-                ex=user.username+".jpeg"
-            if Name.lower() =="jpg":
-                ex=user.username+".jpg"
-            if Name.lower() =="png":
-                ex=user.username+".png"
-            pa=str(data['uuid'])+"/"+'profile'
-            fila=os.path.join(destination,pa)
-            if path.exists(fila) == False:
-                os.makedirs(fila)
-            fil=os.path.join(fila,ex)
-            if path.exists(fil) == True:
-                os.remove(fil)
-            with open(fil, 'wb') as image_file:
-                image_file.write(base64.b64decode(File))
-                upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/'+str(data['uuid'])+"/profile/"+ex)
-            user.picture=upload_result["secure_url"]#str(data['uuid'])+"/profile/"+ex
-            db.session.commit()
-            return {
-                    "status":1,
-                    "res":"profile pic uploaded",
-                    }, 200
+            if File.mimetype == 'image/jpeg':
+                
+                fila = os.path.join(destination, str(
+                data['uuid']), 'profile')  # ,Name)
+                if os.path.isdir(fila) == False:
+                    os.makedirs(fila)
+                fil = os.path.join(fila, Name)  # ,Name)
+                File.save(fil)
+                upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/'+str(data['uuid'])+"/profile/"+Name)
+                user= Users.query.filter_by(uuid=data['uuid']).first()
+                user.picture =upload_result["secure_url"]
+                db.session.commit()
+                if path.exists(fil) == True:
+                    os.remove(fil)
+                
+                return {
+                    'status':1,
+                    'res':'picture uploaded'
+                }
+            
+            if File.mimetype == 'image/png':
+                
+                fila = os.path.join(destination, str(
+                data['uuid']), 'profile')  # ,Name)
+                if os.path.isdir(fila) == False:
+                    os.makedirs(fila)
+                fil = os.path.join(fila, Name)  # ,Name)
+                File.save(fil)
+                upload_result = cloudinary.uploader.upload('https://odaaay.com/api/static/files/'+str(data['uuid'])+"/profile/"+Name)
+                user= Users.query.filter_by(uuid=data['uuid']).first()
+                user.picture =upload_result["secure_url"]
+                db.session.commit()
+                if path.exists(fil) == True:
+                    os.remove(fil)
+                
+                return {
+                    'status':1,
+                    'res':'picture uploaded'
+                }
+            
         else:
             return {
                     "status":0,
-                    "res":"Put a Jpeg file",
+                    "res":"Put a Jpeg file or png",
                     }, 200
 
 
