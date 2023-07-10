@@ -1349,7 +1349,7 @@ class  No_claps_(Resource):
 @user.doc(
     security='KEY',
     params={ 
-             'start': 'Page number',
+             'page': 'Page number',
              'lang': 'i18n',
              'fil':'type',
              'type':'savings or posts',
