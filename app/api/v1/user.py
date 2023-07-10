@@ -692,13 +692,13 @@ class Userprefs(Resource):
 
         
         if req_data['type'] =='settings':
-            lang=req_data['language_id'] or None
+            lang=req_data['language_id'] 
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            user.username=req_data['username'] or None
-            user.email=req_data['email'] or None
-            user.country=req_data['country'] or None
-            user.handle=req_data['handle'] or None
-            user.bio =req_data['bio'] or None
+            user.username=req_data['username'] 
+            user.email=req_data['email'] 
+            user.country=req_data['country'] 
+            user.handle=req_data['handle'] 
+            user.bio =req_data['bio'] 
             db.session.commit()
             language= Language.query.filter_by(code=lang).first()
             user = Users.query.filter_by(uuid=data['uuid']).first()
@@ -711,9 +711,9 @@ class Userprefs(Resource):
                 }, 200 
         if req_data['type'] =='security':
             user = Users.query.filter_by(uuid=data['uuid']).first()
-            ph =req_data['phone'] or None
+            ph =req_data['phone'] 
             ph = "".join(ph.split())
-            NP=req_data['newphone'] or None
+            NP=req_data['newphone'] 
             if user.phone == ph :
                 try:
                     phone.sendverification(NP)
