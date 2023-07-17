@@ -160,8 +160,9 @@ postdata = apisec.model('postreturndata', {
     'mini': fields.Float(required=True),
     'maxi': fields.Float(required=True),
     'paid': fields.Boolean(required=True),
-    'clap': fields.List(fields.Nested(element)),
     'transl': fields.List(fields.Nested(element)),
+    'done': fields.Boolean(required=True),
+    'clap': fields.List(fields.Nested(element)),
     'uploader_data': fields.List(fields.Nested(users_dat)),
 })
 
