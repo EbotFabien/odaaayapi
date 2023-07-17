@@ -122,6 +122,13 @@ userdata = user.model('userdata', {
     'user_visibility': fields.Boolean(required=True)
 })
 
+trans = user.model('trans', {
+    'id': fields.Integer(required=True),
+    'language_id': fields.Integer(required=True),
+    'post_id': fields.Integer(required=True),
+
+})
+
 postsdata = user.model('postsdata', {
     'id': fields.Integer(required=True),
     'title': fields.String(required=True),
@@ -136,7 +143,7 @@ postsdata = user.model('postsdata', {
     'created_on': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
-    #'transl': fields.String(required=True),
+    'transl': fields.List(fields.Nested(trans)),
 })
 
 saved = user.model('saved', {

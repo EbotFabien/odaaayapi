@@ -121,6 +121,12 @@ element = apisec.model('element', {
     'post_id': fields.Integer(required=True),
 
 })
+trans = apisec.model('trans', {
+    'id': fields.Integer(required=True),
+    'language_id': fields.Integer(required=True),
+    'post_id': fields.Integer(required=True),
+
+})
 
 user_saved_datas = apisec.model('user_saved_datas', {
     'id': fields.Integer(required=True),
@@ -160,8 +166,7 @@ postdata = apisec.model('postreturndata', {
     'mini': fields.Float(required=True),
     'maxi': fields.Float(required=True),
     'paid': fields.Boolean(required=True),
-    'transl': fields.List(fields.Nested(element)),
-    'done': fields.Boolean(required=True),
+    'transl': fields.List(fields.Nested(trans)),
     'clap': fields.List(fields.Nested(element)),
     'uploader_data': fields.List(fields.Nested(users_dat)),
 })
