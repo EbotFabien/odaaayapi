@@ -136,6 +136,7 @@ postsdata = user.model('postsdata', {
     'created_on': fields.DateTime(required=True),
     'thumb_url': fields.String(required=False),
     'tags': fields.String(required=True),
+    #'transl': fields.String(required=True),
 })
 
 saved = user.model('saved', {

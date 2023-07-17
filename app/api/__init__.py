@@ -477,7 +477,7 @@ class Home(Resource):
             language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
 
             for i in language_dict:
-                if i == lang:
+                if i == lang: 
                     current_lang = Language.query.filter_by(code=i).first()
                     if pay == None:
                         if recent == 'recent':

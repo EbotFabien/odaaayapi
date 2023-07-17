@@ -422,6 +422,8 @@ class Posts(db.Model):
     
     clap =db.relationship("Clap", backref='clap')
 
+    transl =db.relationship("Translated", backref='translated')
+
     
 
     not_Interested = db.relationship(
