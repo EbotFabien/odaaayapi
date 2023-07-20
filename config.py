@@ -35,15 +35,15 @@ class Config(object):
     stripe_publishable_key= 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings 'smtp.googlemail.com'
-    MAIL_SERVER ='smtp.infomaniak.com'
-    MAIL_PORT = 465 #587
+    MAIL_SERVER ='sandbox.smtp.mailtrap.io'
+    MAIL_PORT = 2525 #587
     MAIL_USE_TLS = True#False
-    #MAIL_USE_SSL = True
+    MAIL_USE_SSL = False
     # gmail authentication
-    MAIL_USERNAME ='info@resilion.eu'#'touchone0001@gmail.com' 'admin@odaaay.com'
-    MAIL_PASSWORD ='Vincent123$'#'onetouch000100''Tas76-fdt88M'
+    MAIL_USERNAME ='ff1e226e9827f7'#'touchone0001@gmail.com' 'admin@odaaay.com'
+    MAIL_PASSWORD ='b8fc57a840d159'#'onetouch000100''Tas76-fdt88M'
     # mail accounts
-    MAIL_DEFAULT_SENDER ='info@resilion.eu'#'touchone0001@gmail.com' 'admin@odaaay.com'
+    #MAIL_DEFAULT_SENDER ='info@resilion.eu'#'touchone0001@gmail.com' 'admin@odaaay.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
     UPLOAD_TEMP = os.getcwd()+'/app/app/services/templates'
     UPLOAD_FOLDER_MEDIA = os.getcwd()+'/app/static/files'
