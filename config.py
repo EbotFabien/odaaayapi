@@ -35,8 +35,8 @@ class Config(object):
     stripe_publishable_key= 'pk_test_NFegWC0KCmYbYcdODYzmf7pJ00TGEsHHbh'
     SECURITY_PASSWORD_SALT = 'my_precious_two'
     # mail settings 'smtp.googlemail.com'
-    MAIL_SERVER ='sandbox.smtp.mailtrap.io'
-    MAIL_PORT = 2525 #587
+    MAIL_SERVER ='live.smtp.mailtrap.io'
+    MAIL_PORT = 587
     MAIL_USE_TLS = True#False
     MAIL_USE_SSL = False
     # gmail authentication
