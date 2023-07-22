@@ -40,8 +40,8 @@ class Config(object):
     MAIL_USE_TLS = True#False
     MAIL_USE_SSL = False
     # gmail authentication
-    MAIL_USERNAME ='ff1e226e9827f7'#'touchone0001@gmail.com' 'admin@odaaay.com'
-    MAIL_PASSWORD ='b8fc57a840d159'#'onetouch000100''Tas76-fdt88M'
+    MAIL_USERNAME ='api'#'touchone0001@gmail.com' 'admin@odaaay.com'
+    MAIL_PASSWORD ='135e0572f1c4c4c5fcd55e0585731efd'#'onetouch000100''Tas76-fdt88M'
     # mail accounts
     #MAIL_DEFAULT_SENDER ='info@resilion.eu'#'touchone0001@gmail.com' 'admin@odaaay.com'
     UPLOAD_FOLDER = os.getcwd()+'/static'
