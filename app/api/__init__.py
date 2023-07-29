@@ -307,6 +307,7 @@ class Signup_email(Resource):
             new.passwordhash(password)
             new.language_id=language.id
             new.code=int(random.randrange(100000, 999999))
+            new.rescue=uuid.uuid4()
             new.code_expires_in=datetime.utcnow() + timedelta(days=1)
             db.session.commit()
             link = 'https://odaaay.co/api/v1/auth/email_verification/' + \
