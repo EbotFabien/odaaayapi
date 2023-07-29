@@ -316,9 +316,7 @@ Report_post = post.model('Report_post', {
 
 @post.doc(
     security='KEY',
-    params={'start': 'Value to start from ',
-             'limit': 'Total limit of the query',
-             'count': 'Number results per page',
+    params={
             'category': 'category'
             },
     responses={
@@ -337,15 +335,9 @@ Report_post = post.model('Report_post', {
 class ptag(Resource):
     def get(self):
         if request.args:
-            start = request.args.get('start', None)
-            limit = request.args.get('limit', None)
-            count = request.args.get('count', None)
             category = request.args.get('category', None)
             # Still to fix the next and previous WRT Sqlalchemy
-            next = "/api/v1/post/tags?start=" + \
-                str(int(start)+1)+"&limit="+limit+"&count="+count
-            previous = "/api/v1/post/tags?start=" + \
-                str(int(start)-1)+"&limit="+limit+"&count="+count
+           
             
             if category == None:
                 results = Tags.query.distinct(Tags.tags).all()#paginate(    #order_by(func.random())
@@ -366,11 +358,7 @@ class ptag(Resource):
                     if total > 4:
                         results1.append(tag)
             return {
-                "start": start,
-                "limit": limit,
-                "count": count,
-                "next": next,
-                "previous": previous,
+                
                 "results": marshal(results1, tegs)
             }, 200
 
@@ -1699,7 +1687,7 @@ class ModifyPost(Resource):
 
         if post:
             sum_content=''
-            newPost.summarize = title
+            newPost.title = title
             newPost.text_content = content
             newPost.orig_lang = lang
             newPost.summarize = summarized
