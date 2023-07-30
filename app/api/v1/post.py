@@ -1216,12 +1216,20 @@ class ShoutPost(Resource):
             #        "res": "You have already clapped on this post"
             #    }, 200
             if user:
-                post.add_clap(user.id)
-                db.session.commit()
-                return{
-                    "status": 1,
-                    "res": "You have clapped on this post"
-                }, 200
+                if post.has_clapped(user):
+                    post.remove_clap(user)
+                    db.session.commit()
+                    return{
+                        "status": 1,
+                        "res": "You have deleted the clap"
+                    }, 200
+                else:
+                    post.add_clap(user.id)
+                    db.session.commit()
+                    return{
+                        "status": 1,
+                        "res": "You have clapped on this post"
+                    }, 200
             else:
                 return{
                     "status": 0,

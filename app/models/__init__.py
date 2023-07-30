@@ -452,7 +452,11 @@ class Posts(db.Model):
             tags=allowed_tags, strip=True))
 
     def has_clapped(self, user):
-        return True
+        clap=Clap.query.filter_by(user_id=user.id).first()
+        if clap :
+            return True
+        else:
+            return False
         '''self.query.join(
             clap, (clap.c.post_id == self.id)).filter(
             clap.c.user_id == user.id).first()'''
