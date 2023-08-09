@@ -28,12 +28,15 @@ from config import Config
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from flask_compress import Compress
-
+from flask_socketio import SocketIO
 
 bycrypt = Bcrypt()
 compress = Compress()
 db = SQLAlchemy()
+
 search = Search(db=db)
+socketio = SocketIO()
+
 mail = Mail()
 basedir= os.path.abspath(os.path.dirname(__file__))
 cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -55,10 +58,13 @@ def createapp(configname):
     CORS(app, resources=r'/api/*')
     bycrypt.init_app(app)
     db.init_app(app)
+    socketio.init_app(app)
     compress.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
+    
     oauth = OAuth(app)
+    
     #dashboard.bind(app)
     limiter.init_app(app)
     app.ts = translator(app)

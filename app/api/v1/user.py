@@ -6,7 +6,9 @@ import requests as rqs
 from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated,Subs,Account
 from flask import current_app as app
-from app import db, cache, logging, createapp
+from app import db, cache, logging, createapp,socketio
+
+from flask_socketio import SocketIO, emit
 from sqlalchemy import or_, and_, distinct, func
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
@@ -500,7 +502,32 @@ class Data(Resource):
             return {'res':'success'}, 200
         else:
               return {'res':'fail'}, 404
-    
+
+
+@socketio.event
+def follow_event(message):
+    token = message['API-KEY']
+    data = jwt.decode(token,app.config.get('SECRET_KEY'))
+    user = Users.query.filter_by(uuid=data['uuid']).first()
+    user_to_follow =Users.query.filter_by(uuid=message['uuid']).first()
+    user.follow(user_to_follow)# here   
+    db.session.commit()
+    followed={"picture":user_to_follow.picture,"name":user_to_follow.username,"uuid":message['uuid']}
+    emit('my_response',
+         {'data':followed})
+
+@socketio.event
+def unfollow_event(message):
+    token = message['API-KEY']
+    data = jwt.decode(token,app.config.get('SECRET_KEY'))
+    user = Users.query.filter_by(uuid=data['uuid']).first()
+    user_to_unfollow =Users.query.filter_by(uuid=message['uuid']).first()
+    user.unfollow(user_to_unfollow)   
+    db.session.commit()
+    emit('my_response',
+         {'data':"unfollowed"})
+
+
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',

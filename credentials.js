@@ -85,7 +85,7 @@
        "git clone ssh://odaaaynuxt@104.238.191.159/~/odaaayapp/odaaay.git\n",
        "\n",
        "\n",
-       "\n",
+       "\n", 
        "# There are two services that run the api and redis\n",
        "sudo nano /etc/systemd/system/odaaayapi.service\n",
        "sudo nano /etc/systemd/system/redisrq.service\n",
@@ -128,7 +128,7 @@
        "\n",
        "# To reload/restart nginx\n",
        "sudo sytemctl reload nginx\n",
-       "\n",
+       "\n",/home/odaaaynuxt/ssl/odaaay_com.crt;
        "sudo systemctl status odaaayapi\n",
        "sudo nano /etc/nginx/sites-available/odaaay.com"
       ]

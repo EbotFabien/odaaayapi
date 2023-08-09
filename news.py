@@ -1,7 +1,7 @@
 from faker import Faker
 from app.models import Users, Language, Save, Setting, \
     Posts, Translated, Posttype, Rating, Ratingtype, Category
-from app import db, createapp
+from app import db, createapp,socketio
 import random
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -18,6 +18,7 @@ import ssl
 import uuid
 import certifi
 import ssl
+
 
 
 context = ssl.SSLContext()
@@ -51,7 +52,7 @@ def languages():
     print('lang')
     with app.app_context():
         language_dict = {'en': "english", 'es': "espagnol", 'ar': "arab",
-                         'pt': "portugese", 'sw': "swahili", 'fr': "french", 'ha': "hausa"}
+                         'pt': "portugese", 'sw': "swahili", 'fr': "french", 'ha': "hausa","yo":"yoruba","om":"oromo"}
         '''for i in language_dict:
             lan = Language(lang_type="N", code=i, name=language_dict[i])
             db.session.add(lan)
@@ -129,10 +130,11 @@ def test():
 
 if __name__ == "__main__":
     #recreate_db()
-    languages()
+    #languages()
     #category()
     #users()
-    manager.run()
+    #manager.run()
+    socketio.run(app)
     
     
 
