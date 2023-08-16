@@ -71,7 +71,7 @@ def createapp(configname):
     search.init_app(app)
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
-    app.redis = Redis.from_url('redis://:odaaaynuxt@104.238.191.159:6379/0')
+    app.redis = Redis.from_url('redis://odaaaynuxt:9|!e!R.{S4^8ttt@104.238.191.159:6379')
     stripe.api_key = Config.stripe_secret_key
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
 
