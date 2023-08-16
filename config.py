@@ -40,7 +40,7 @@ class Config(object):
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
     # gmail authentication
-    MAIL_USERNAME ='admin'#'touchone0001@gmail.com' #'admin@odaaay.com'
+    MAIL_USERNAME ='api'#'touchone0001@gmail.com' #'admin@odaaay.com'
     MAIL_PASSWORD ='135e0572f1c4c4c5fcd55e0585731efd'#'jdzgojermumwzmyd'#'onetouch000100''Tas76-fdt88M'
     # mail accounts
     #MAIL_DEFAULT_SENDER ='info@resilion.eu'#'touchone0001@gmail.com' 'admin@odaaay.com'
