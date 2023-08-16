@@ -54,7 +54,7 @@ class Config(object):
     PAGINATE_PAGE_PARAM = "pagenumber"
     PAGINATE_SIZE_PARAM = "pagesize"   
     PAGINATE_RESOURCE_LINKS_ENABLED = True
-    REDIS_URL = '127.0.0.1:6379'#os.environ.get('REDIS_URL') or 'redis://'
+    REDIS_URL = 'redis://127.0.0.1:6379'#os.environ.get('REDIS_URL') or 'redis://'
     RQ_DASHBOARD_USERNAME='rqadmin'
     RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
@@ -65,7 +65,7 @@ class Config(object):
     #TWILIO_NUMBER = '+19798032477'#'MG6cc4fd3b321ad1b75c7f66f39e4cea06'
     RQ_DASHBOARD_USERNAME = 'rq'
     RQ_DASHBOARD_PASSWORD =  'password'
-    RQ_DASHBOARD_REDIS_URL = '127.0.0.1:6379'#os.environ.get('REDIS_URL') or 'redis://'
+    RQ_DASHBOARD_REDIS_URL = 'redis://127.0.0.1:6379'#os.environ.get('REDIS_URL') or 'redis://'
     MSEARCH_INDEX_NAME = 'msearch'
     MSEARCH_BACKEND = 'elasticsearch'
     MSEARCH_PRIMARY_KEY = 'id'
