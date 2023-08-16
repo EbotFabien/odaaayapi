@@ -54,7 +54,7 @@ class Config(object):
     PAGINATE_PAGE_PARAM = "pagenumber"
     PAGINATE_SIZE_PARAM = "pagesize"   
     PAGINATE_RESOURCE_LINKS_ENABLED = True
-    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
+    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379'#'redis://'
     RQ_DASHBOARD_USERNAME='rqadmin'
     RQ_DASHBOARD_PASSWORD='adminnews'
     QUEUES = ['default']
