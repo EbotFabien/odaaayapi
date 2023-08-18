@@ -1196,6 +1196,7 @@ class ShoutPost(Resource):
         data = jwt.decode(token, app.config.get('SECRET_KEY'))
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(uuid=req_data['Post_id']).first()
+        author = Users.query.filter_by(id=post.author).first()
 
         if user:
             #if post.has_clapped(user):
@@ -1214,6 +1215,10 @@ class ShoutPost(Resource):
                 else:
                     post.add_clap(user.id)
                     db.session.commit()
+                    socketio.emit(author.uuid, {
+                            'message': user.username+' has just liked your post',
+                            'post_uuid':req_data['Post_id'],
+                            })
                     return{
                         "status": 1,
                         "res": "You have clapped on this post"

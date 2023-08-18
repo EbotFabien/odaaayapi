@@ -598,6 +598,9 @@ class User_following(Resource):
             else:
                 user.follow(user_to_follow)# here   
                 db.session.commit()
+                socketio.emit(user.uuid, {
+                            'message': user_to_follow.username+' has just followed you',
+                            })
                 mail.subscription_message(user_to_follow.picture,user_to_follow.username)
                 return{'status': 1, 'res':'success'},200
         else:
