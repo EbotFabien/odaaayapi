@@ -523,6 +523,16 @@ class Posts(db.Model):
         db.session.add(task)
         db.session.commit()
         return task
+    
+    def launch_notif_task(self, name,userid,notif,owner,descr):
+        with app.app_context():
+            rq_job = app.task_queue.enqueue(
+                'app.services.task.' + name, self.id,userid,notif,owner)
+        task = Task(id=rq_job.get_id(), name=name,
+                    user_id=userid, description=descr)
+        db.session.add(task)
+        db.session.commit()
+        return task
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(user=self, complete=False).all()

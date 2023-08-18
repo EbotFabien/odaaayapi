@@ -16,7 +16,10 @@ from flask import abort, request, session, Blueprint
 from flask import current_app as app
 import numpy as np
 from app.models import Save, Users, Posts, Language, Translated, Report, Notification, Posttype, Account, Category, Tags
-from app import db, cache, logging
+from app import db, cache, logging,socketio
+
+
+from flask_socketio import SocketIO, emit
 import json
 from tqdm import tqdm
 from werkzeug.datastructures import FileStorage
@@ -577,9 +580,10 @@ class Post(Resource):
             return {'res': 'success'}, 200
         else:
             return {'res': 'fail'}, 404
-
+    
     @post.expect(postcreationdata)
     @token_required
+    #@socketio.on('my event')
     def post(self):
         req_data = request.get_json()
         args = uploader.parse_args()
@@ -734,24 +738,16 @@ class Post(Resource):
                                              language_id=lang, fullcontent=newPost.text_content, tags=newPost.tags)
                         db.session.add(new_row)
                         db.session.commit()
-
-                for i in followers_:
-                    notif_add = Notification(
+                notif_add = Notification(
                         "user" + user.username + "has made a post Titled"+title, i, newPost.id)
-                    db.session.add(notif_add)
-                    db.session.commit()
-                    push = Users.query.filter_by(id=i).first()
-                    pusher_client.trigger(push.username, 'usernotification', {
-                        'message': {
-                            'id': notif_add.id,
-                            'user': user.username,
-                            'title': title,
-                            'post_id': newPost.uuid,
-                            'profilepic': user.picture,
-                            'time': str(notif_add.created_on),
-                            'seen': notif_add.seen,
-                        }
-                    })
+                db.session.add(notif_add)
+                db.session.commit()
+                
+                for i in followers_:
+                    
+                    newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
+                    
+                    
                 return {
                     'status': 1,
                     'res': 'Post was made',
@@ -854,23 +850,15 @@ class Post(Resource):
                         db.session.add(new_row)
                         db.session.commit()
 
+                notif_add = Notification(
+                        "user" + user.username + "has made a post Titled"+title, i, newPost.id)
+                db.session.add(notif_add)
+                db.session.commit()
+                
                 for i in followers_:
-                    notif_add = Notification(
-                        "user " + user.username + " has made a post Titled "+title, i, newPost.id)
-                    db.session.add(notif_add)
-                    db.session.commit()
-                    push = Users.query.filter_by(id=i).first()
-                    pusher_client.trigger(push.username, 'usernotification', {
-                        'message': {
-                            'id': notif_add.id,
-                            'user': user.username,
-                            'title': title,
-                            'post_id': newPost.uuid,
-                            'profilepic': user.picture,
-                            'time': str(notif_add.created_on),
-                            'seen': notif_add.seen,
-                        }
-                    })
+                    
+                    newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
+
                 db.session.commit()
                 return {
                     'status': 1,
