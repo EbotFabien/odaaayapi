@@ -50,7 +50,7 @@ def token_required(f):
         if 'API-KEY' in request.headers:
             token = request.headers['API-KEY']
             try:
-                data = jwt.decode(token, app.config.get('SECRET_KEY'))
+                data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             except:
                 return {'message': 'Token is invalid.'}, 403
         if not token:
@@ -120,7 +120,7 @@ class Payment(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         Type= req_data['type'] 
         lan=req_data['lang']
@@ -246,7 +246,7 @@ class buy(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         now=datetime.now()
         ts = int(data['iat'])
         old= datetime.utcfromtimestamp(ts)
@@ -385,7 +385,7 @@ class Portal(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         now=datetime.now()
         ts = int(data['iat'])
         old= datetime.utcfromtimestamp(ts)

@@ -12,7 +12,7 @@ def token_required(f):
         if 'API-KEY' in request.headers:
             token = request.headers['API-KEY']
             try:
-                data = jwt.decode(token, app.config.get('SECRET_KEY'))
+                data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             except:
                 return {'message': 'Token is invalid.'}, 403
         if not token:

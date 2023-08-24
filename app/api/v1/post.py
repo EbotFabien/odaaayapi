@@ -88,7 +88,7 @@ def token_required(f):
         if 'API-KEY' in request.headers:
             token = request.headers['API-KEY']
             try:
-                data = jwt.decode(token, app.config.get('SECRET_KEY'))
+                data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             except:
                 return {'message': 'Token is invalid.'}, 403
         if not token:
@@ -393,7 +393,7 @@ class Upl(Resource):
         args = uploader.parse_args()
         destination = Config.UPLOAD_FOLDER_MEDIA
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         File = args['file']
         Name = args['name']
@@ -483,7 +483,7 @@ class botPost(Resource):
 @post.route('/post')
 class Post(Resource):
     @token_required
-    # @cache.cached(300, key_prefix='all_posts')
+    #@cache.cached(300, key_prefix='all_posts')
     def get(self):
         if request.args:
             start = request.args.get('start', None)
@@ -530,7 +530,7 @@ class Post(Resource):
     def put(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post_id = Posts.query.get(req_data['id'])
         if req_data['content'] is None:
@@ -548,7 +548,7 @@ class Post(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post_id = Posts.query.get(req_data['id'])
         trans = Translated.query.filter_by(post_id=post_id.id).all()
@@ -570,7 +570,7 @@ class Post(Resource):
     def patch(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post_id = Posts.query.get(req_data['id'])
         if user and post_id:
@@ -583,7 +583,6 @@ class Post(Resource):
     
     @post.expect(postcreationdata)
     @token_required
-    #@socketio.on('my event')
     def post(self):
         req_data = request.get_json()
         args = uploader.parse_args()
@@ -618,7 +617,7 @@ class Post(Resource):
                 got_language=lang'''
         
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language = Language.query.filter_by(code=got_language).first()
         followers_ = user.is_followers()
@@ -908,7 +907,7 @@ class receive_check(Resource):
             count = request.args.get('count', None)
             user_id = request.args.get('user_id', None)
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             now_utc = datetime.now(timezone.utc)
             start_ = datetime.combine(now_utc, datetime.min.time())
@@ -939,7 +938,7 @@ class receive_check(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         ID = req_data["id"]
         user = req_data["user"]
         notif = Notification.query.filter_by(id=ID).first()
@@ -982,7 +981,7 @@ class Article_check(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         LANGUAGE = "english"
         SENTENCES_COUNT = 10
@@ -1066,7 +1065,7 @@ class UsersPost(Resource):
             previous = "/api/v1/post/users?start=" + \
                 str(int(start)-1)+"&limit="+limit+"&count="+count
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             posts1 = Posts.query.filter_by(uploader_id=user.id).first()
             if posts1 is not None:
@@ -1130,7 +1129,7 @@ class ShoutPost(Resource):
                 str(int(start)-1)+"&limit="+limit+"&count="+count
             post_id = request.args.get('post_id', None)
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             posts = Posts.query.filter_by(uuid=post_id).first()
             if user:
@@ -1169,7 +1168,7 @@ class ShoutPost(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(uuid=req_data['Post_id']).first()
 
@@ -1193,7 +1192,7 @@ class ShoutPost(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(uuid=req_data['Post_id']).first()
         author = Users.query.filter_by(id=post.author).first()
@@ -1268,7 +1267,7 @@ class save_post(Resource):
             previous = "/api/v1/post?start=" + \
                 str(int(start)-1)+"&limit="+limit+"&count="+count
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             if user:
                 user_saves = Save.query.filter_by(user_id=user.id).order_by(
@@ -1303,7 +1302,7 @@ class save_post(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(id=req_data['Post_id']).first()
         Saves = Save.query.filter(
@@ -1323,7 +1322,7 @@ class save_post(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(id=req_data['Post_id']).first()
         Saves = Save.query.filter(
@@ -1379,7 +1378,7 @@ class user_save_post(Resource):
             posts_id = request.args.get('posts_id')
             req_data = request.get_json()
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             posts_saved = Posts.query.filter_by(id=posts_id).first()
             user_post_saved = Posts.query.join(
@@ -1436,7 +1435,7 @@ class views_post(Resource):
                 str(int(start)-1)+"&limit="+limit+"&count="+count
             req_data = request.get_json()
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             user_actual = Users.query.filter_by(
                 username=req_data['User_name']).first()
@@ -1496,7 +1495,7 @@ class Report_post_(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(id=req_data['post_id']).first()
 
@@ -1601,7 +1600,7 @@ class Post(Resource):
         if request.args:
             post_id = request.args.get('post_id')
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
 
             if post_id and user:
@@ -1676,7 +1675,7 @@ class ModifyPost(Resource):
                 got_language=lang
         
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language = Language.query.filter_by(code=got_language).first()
         if language != None:
@@ -1778,7 +1777,7 @@ class homeArticle(Resource):
         language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
        
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
 
         
@@ -1825,7 +1824,7 @@ class homeArticle(Resource):
 class homeArticle(Resource):
     def get(self, id):
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if id:
             posts_feed = Posts.query.filter_by(uuid=id).first()

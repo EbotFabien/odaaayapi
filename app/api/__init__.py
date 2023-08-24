@@ -60,7 +60,7 @@ def token_required(f):
         if 'API-KEY' in request.headers:
             token = request.headers['API-KEY']
             try:
-                data = jwt.decode(token, app.config.get('SECRET_KEY'))
+                data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             except:
                 return {'message': 'Token is invalid.'}, 403
         if not token:
@@ -459,7 +459,7 @@ class Home(Resource):
         # user getting data for their home screen
         try:
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
         except:
             user = None
@@ -832,7 +832,7 @@ class homeArticle(Resource):
         language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
         try:
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             saved = []
         except:
@@ -886,7 +886,7 @@ class Article(Resource):
         language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
         try:
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
         except:
             user = None
@@ -1238,7 +1238,7 @@ class Report_post_(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(uuid=req_data['post_id']).first()
         lan = Reporttype(content="Fake news")
@@ -1349,7 +1349,7 @@ class save_post(Resource):
             previous = "/api/v1/post?start=" + \
                 str(int(start)-1)+"&limit="+limit+"&count="+count
             token = request.headers['API-KEY']
-            data = jwt.decode(token, app.config.get('SECRET_KEY'))
+            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             if user:
                 user_saves = Save.query.filter_by(user_id=user.id).order_by(
@@ -1384,7 +1384,7 @@ class save_post(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(id=req_data['Post_id']).first()
         Saves = Save.query.filter(
@@ -1408,7 +1408,7 @@ class save_post(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(uuid=req_data['Post_id']).first()
         Saves = Save.query.filter(
@@ -1545,7 +1545,7 @@ class notinterested(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         post = Posts.query.filter_by(uuid=req_data['uuid']).first()
         if post.not_interested(user) is None:
