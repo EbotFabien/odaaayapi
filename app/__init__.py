@@ -35,7 +35,7 @@ compress = Compress()
 db = SQLAlchemy()
 
 search = Search(db=db)
-socketio = SocketIO()
+socketio = SocketIO(cors_allowed_origins='*')
 
 mail = Mail()
 basedir= os.path.abspath(os.path.dirname(__file__))
@@ -114,8 +114,7 @@ def createapp(configname):
     #app.register_blueprint(errors)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     CORS(app)
-    CORS(app, resources={r"/socket.io/*": {"origins": "*"}})
-    CORS(app, resources={r"/socket.io/": {"origins": "*"}})
+    
 
     @app.route('/')
     def index():
