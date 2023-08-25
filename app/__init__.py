@@ -1,5 +1,5 @@
 import os
-from flask import Flask, Response, send_file, request, jsonify, url_for, session
+from flask import Flask, Response, send_file, request, jsonify, url_for, session,make_response
 from werkzeug.utils import redirect
 from config import config
 from flask_sqlalchemy import SQLAlchemy
@@ -54,6 +54,11 @@ class localFlask(Flask):
 
 def createapp(configname):
     app = localFlask(__name__)
+    with app.app_context():
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "*")
+        response.headers.add("Access-Control-Allow-Methods", "*")
     app.config.from_object(config[configname])
     CORS(app, resources=r'/api/*')
     bycrypt.init_app(app)
