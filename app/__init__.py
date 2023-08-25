@@ -56,7 +56,7 @@ def createapp(configname):
     app = localFlask(__name__)
     with app.app_context():
         response = make_response()
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5000")
         response.headers.add("Access-Control-Allow-Headers", "*")
         response.headers.add("Access-Control-Allow-Methods", "*")
     app.config.from_object(config[configname])
