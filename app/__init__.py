@@ -113,6 +113,9 @@ def createapp(configname):
     app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     #app.register_blueprint(errors)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app)
+    CORS(app, resources={r"/socket.io/*": {"origins": "*"}})
+    CORS(app, resources={r"/socket.io/": {"origins": "*"}})
 
     @app.route('/')
     def index():
