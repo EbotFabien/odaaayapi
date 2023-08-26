@@ -849,13 +849,13 @@ class Post(Resource):
                         db.session.add(new_row)
                         db.session.commit()
 
-                notif_add = Notification(
-                        "user" + user.username + "has made a post Titled"+title, i, newPost.id)
-                db.session.add(notif_add)
-                db.session.commit()
+                
                 
                 for i in followers_:
-                    
+                    notif_add = Notification(
+                        "user" + user.username + "has made a post Titled"+title, i, newPost.id)
+                    db.session.add(notif_add)
+                    db.session.commit()
                     newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
 
                 db.session.commit()
