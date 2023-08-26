@@ -16,10 +16,10 @@ from flask import abort, request, session, Blueprint
 from flask import current_app as app
 import numpy as np
 from app.models import Save, Users, Posts, Language, Translated, Report, Notification, Posttype, Account, Category, Tags
-from app import db, cache, logging,socketio
+from app import db, cache, logging#,socketio
 
 
-from flask_socketio import SocketIO, emit
+#from flask_socketio import SocketIO, emit
 import json
 from tqdm import tqdm
 from werkzeug.datastructures import FileStorage
@@ -88,7 +88,7 @@ def token_required(f):
         if 'API-KEY' in request.headers:
             token = request.headers['API-KEY']
             try:
-                data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+                data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             except:
                 return {'message': 'Token is invalid.'}, 403
         if not token:
@@ -617,7 +617,7 @@ class Post(Resource):
                 got_language=lang'''
         
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language = Language.query.filter_by(code=got_language).first()
         followers_ = user.is_followers()
@@ -1214,10 +1214,10 @@ class ShoutPost(Resource):
                 else:
                     post.add_clap(user.id)
                     db.session.commit()
-                    socketio.emit(author.uuid, {
+                    '''socketio.emit(author.uuid, {
                             'message': user.username+' has just liked your post',
                             'post_uuid':req_data['Post_id'],
-                            })
+                            })'''
                     return{
                         "status": 1,
                         "res": "You have clapped on this post"

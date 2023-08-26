@@ -1,7 +1,7 @@
 from faker import Faker
 from app.models import Users, Language, Save, Setting, \
     Posts, Translated, Posttype, Rating, Ratingtype, Category
-from app import db, createapp,socketio
+from app import db, createapp #,socketio
 import random
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -131,11 +131,11 @@ def test():
 
 if __name__ == "__main__":
     #recreate_db()
-    languages()
+    #languages()
     #category()
     #users()
-    #manager.run()
-    socketio.run(app)
+    manager.run()
+    #socketio.run(app)
     
     
 
