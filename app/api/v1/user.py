@@ -6,7 +6,7 @@ import requests as rqs
 from flask import abort, request, session,Blueprint
 from app.models import Users, followers, Setting,Notification,clap,Save,Posts,Language,Translated,Subs,Account
 from flask import current_app as app
-from app import db, cache, logging, createapp#,socketio
+from app import db, cache, logging, createapp,sio
 
 #from flask_socketio import SocketIO, emit
 from sqlalchemy import or_, and_, distinct, func
@@ -598,9 +598,10 @@ class User_following(Resource):
             else:
                 user.follow(user_to_follow)# here   
                 db.session.commit()
-                '''socketio.emit(user.uuid, {
+                sio.emit('follow', {
+                            'user':user.uuid,
                             'message': user_to_follow.username+' has just followed you',
-                            })'''
+                            })
                 mail.subscription_message(user_to_follow.picture,user_to_follow.username)
                 return{'status': 1, 'res':'success'},200
         else:

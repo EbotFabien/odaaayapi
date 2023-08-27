@@ -19,7 +19,7 @@ import requests
 from tqdm import tqdm
 from googletrans import Translator
 from flask import current_app as app
-from app import db, cache, logging ,createapp#,socketio
+from app import db, cache, logging ,createapp,sio
 from sqlalchemy import or_, and_, distinct, func
 #from rake_nltk import Rake
 #from multi_rake import Rake
@@ -49,13 +49,14 @@ def _set_task_progress(progress):
 
 def post_notify_users(newPost,push,notif_add,user):
     push = Users.query.filter_by(id=push).first()
-    '''socketio.emit(push.uuid, {'id': notif_add.id,
+    sio.emit('post', {'id': notif_add.id,
+                            'follower':push.uuid,
                             'user': user.username,
                             'title': newPost.title,
                             'post_id': newPost.uuid,
                             'profilepic': user.picture,
                             'time': str(notif_add.created_on),
-                            'seen': notif_add.seen,})'''
+                            'seen': notif_add.seen,})
 def bot_post(data):
             jso=data
             j=json.loads(jso)

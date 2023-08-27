@@ -16,7 +16,7 @@ from flask import abort, request, session, Blueprint
 from flask import current_app as app
 import numpy as np
 from app.models import Save, Users, Posts, Language, Translated, Report, Notification, Posttype, Account, Category, Tags
-from app import db, cache, logging#,socketio
+from app import db, cache, logging,sio
 
 
 #from flask_socketio import SocketIO, emit
@@ -737,13 +737,13 @@ class Post(Resource):
                                              language_id=lang, fullcontent=newPost.text_content, tags=newPost.tags)
                         db.session.add(new_row)
                         db.session.commit()
-                notif_add = Notification(
-                        "user" + user.username + "has made a post Titled"+title, i, newPost.id)
-                db.session.add(notif_add)
-                db.session.commit()
+                
                 
                 for i in followers_:
-                    
+                    notif_add = Notification(
+                        "user" + user.username + "has made a post Titled"+title, i, newPost.id)
+                    db.session.add(notif_add)
+                    db.session.commit()
                     newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
                     
                     
@@ -1214,10 +1214,11 @@ class ShoutPost(Resource):
                 else:
                     post.add_clap(user.id)
                     db.session.commit()
-                    '''socketio.emit(author.uuid, {
+                    sio.emit('clap', {
+                            'user':author.uuid,
                             'message': user.username+' has just liked your post',
                             'post_uuid':req_data['Post_id'],
-                            })'''
+                            })
                     return{
                         "status": 1,
                         "res": "You have clapped on this post"
