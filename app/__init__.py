@@ -81,7 +81,7 @@ def createapp(configname):
     #matomo = Matomo(app, matomo_url="http://192.168.43.40/matomo",
     #            id_site=1, token_auth="1c3e081497f195c446f8c430236a507b")
     app.redis = Redis.from_url(app.config.get('REDIS_URL'))
-    sio.connect(app.config.get('Socket_URL'))
+    sio.connect('http://104.238.191.159:5000')
     stripe.api_key = Config.stripe_secret_key
     app.task_queue = rq.Queue('newsapp-tasks', connection=app.redis)
 
