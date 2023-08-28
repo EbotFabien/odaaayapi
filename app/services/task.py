@@ -49,6 +49,7 @@ def _set_task_progress(progress):
 
 def post_notify_users(newPost,push,notif_add,user):
     push = Users.query.filter_by(id=push).first()
+    newPost = Posts.query.get(newPost)
     sio.emit('post', {'id': notif_add.id,
                             'follower':push.uuid,
                             'user': user.username,
