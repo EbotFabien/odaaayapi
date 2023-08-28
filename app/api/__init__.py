@@ -352,8 +352,11 @@ class Reset(Resource):
             if check:
                 verification_code = phone.generate_code()
                 token = check.get_reset_token()
-                link = 'https://odaaay.com/'+lang + \
-                    '/resetpassword?token='+str(token)
+                if lang=='en':
+                    link='https://odaaay.com/app/resetpassword'
+                else:
+                    link='https://odaaay.com/'+lang+'/app/resetpassword'
+                
                 mail.reset_password(email, link)
                 return {
                     'status': 1,
