@@ -54,7 +54,8 @@ def post_notify_users(newPost,push,notif_add,user):
                             'follower':push.uuid,
                             'user': user.username,
                             'title': newPost.title,
-                            'post_id': newPost.uuid,
+                            'key':'post',
+                            'post_uuid': newPost.uuid,
                             'profilepic': user.picture,
                             'time': str(notif_add.created_on),
                             'seen': notif_add.seen,})

@@ -350,14 +350,14 @@ else:
             },   
 
 
-            '''pusher_client.trigger(push.username, 'usernotification', {
-                'message': {
-                    'id': notif_add.id,
-                    'user': user.username,
-                    'title': title,
-                    'post_id': newPost.uuid,
-                    'profilepic': user.picture,
-                    'time': str(notif_add.created_on),
-                    'seen': notif_add.seen,
-                }
-            })'''
+'''pusher_client.trigger(push.username, 'usernotification', {
+                        'message': {
+                            'id': notif_add.id,
+                            'user': user.username,
+                            'title': title,
+                            'post_id': newPost.uuid,
+                            'profilepic': user.picture,
+                            'time': str(notif_add.created_on),
+                            'seen': notif_add.seen,
+                        }
+                    })'''

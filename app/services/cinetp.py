@@ -16,3 +16,11 @@ data = {
     'customer_surname' : "Fabien",       
 }  
 print(client.PaymentInitialization(data))
+
+
+"""
+1.post cmd  creation de un edl
+2.put = un edl ajouter a cette commande,'http://195.15.218.172/rdv_app/rdv/<id>',json={edl: "1"}
+where id = json of creation de edl with key = id_cmd_id
+
+"""

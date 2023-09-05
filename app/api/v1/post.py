@@ -1216,6 +1216,9 @@ class ShoutPost(Resource):
                     db.session.commit()
                     sio.emit('clap', {
                             'user':author.uuid,
+                            'follower_name':user.username,
+                            'follower_uuid':user.uuid,
+                            'key':'post',
                             'message': user.username+' has just liked your post',
                             'post_uuid':req_data['Post_id'],
                             })

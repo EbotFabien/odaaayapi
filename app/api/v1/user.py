@@ -600,6 +600,10 @@ class User_following(Resource):
                 db.session.commit()
                 sio.emit('follow', {
                             'user':user.uuid,
+                            'follower_name':user_to_follow.username,
+                            'follower_uuid':user_to_follow.uuid,
+                            'key':'follow',
+                            'follower_profile':user_to_follow.picture,
                             'message': user_to_follow.username+' has just followed you',
                             })
                 mail.subscription_message(user_to_follow.picture,user_to_follow.username)
