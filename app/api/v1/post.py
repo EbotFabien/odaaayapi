@@ -751,6 +751,7 @@ class Post(Resource):
                     'status': 1,
                     'res': 'Post was made',
                     'post_id': newPost.id,
+                    'content':newPost.text_content,
                     'post_uuid': newPost.uuid,
                 }, 200
             if ptype == 2:
@@ -863,6 +864,7 @@ class Post(Resource):
                     'status': 1,
                     'res': 'Post was made',
                     'post_id': newPost.id,
+                    'content': newPost.text_content,
                     'post_uuid': newPost.uuid,
                 }, 200
             else:
