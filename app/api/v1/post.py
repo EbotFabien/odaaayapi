@@ -1200,39 +1200,27 @@ class ShoutPost(Resource):
         author = Users.query.filter_by(id=post.author).first()
 
         if user:
-            #if post.has_clapped(user):
-            #    return{
-            #        "status": 0,
-            #        "res": "You have already clapped on this post"
-            #    }, 200
-            if user:
-                if post.has_clapped(user):
-                    post.remove_clap(user)
-                    db.session.commit()
-                    return{
-                        "status": 1,
-                        "res": "You have deleted the clap"
-                    }, 200
-                else:
-                    post.add_clap(user.id)
-                    db.session.commit()
-                    sio.emit('clap', {
-                            'user':author.uuid,
-                            'follower_name':user.username,
-                            'follower_uuid':user.uuid,
-                            'key':'post',
-                            'message': user.username+' has just liked your post',
-                            'post_uuid':req_data['Post_id'],
-                            })
-                    return{
-                        "status": 1,
-                        "res": "You have clapped on this post"
-                    }, 200
-            else:
+            if post.has_clapped(user):
+                post.remove_clap(user)
                 return{
-                    "status": 0,
-                    "res": "Insert token"
+                    "status": 1,
+                    "res": "You have deleted the clap"
                 }, 200
+            else:
+                post.add_clap(user.id)
+                sio.emit('clap', {
+                        'user':author.uuid,
+                        'follower_name':user.username,
+                        'follower_uuid':user.uuid,
+                        'key':'post',
+                        'message': user.username+' has just liked your post',
+                        'post_uuid':req_data['Post_id'],
+                        })
+                return{
+                    "status": 1,
+                    "res": "You have clapped on this post"
+                }, 200
+            
         else:
             return{
                 "status": 0,
