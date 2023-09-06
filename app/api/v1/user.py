@@ -605,7 +605,7 @@ class User_following(Resource):
                 "results":marshal(following,following_followers)
             }, 200
         if fan_base == 'followers':
-            followers=user.is_followersd()
+            followers=user.is_followers()
             return {
                 "results":marshal(followers,following_followers)
             }, 200
