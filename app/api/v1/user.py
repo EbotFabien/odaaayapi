@@ -58,7 +58,7 @@ def token_required(f):
         if 'API-KEY' in request.headers:
             token = request.headers['API-KEY']
             try:
-                data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+                data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             except:
                 return {'message': 'Token is invalid.'}, 403
         if not token:
@@ -282,7 +282,7 @@ class backdrop(Resource):
         args = uploader.parse_args()
         destination = Config.UPLOAD_FOLDER_MEDIA
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user= Users.query.filter_by(uuid=data['uuid']).first()
         File=args['file']
         Name=args['name']
@@ -352,7 +352,7 @@ class Uplu(Resource):
         args = uploader.parse_args()
         destination = Config.UPLOAD_FOLDER_MEDIA
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         File=args['file']
         Name=args['name']
 
@@ -431,7 +431,7 @@ class Data(Resource):
     def get(self):
         user_id = request.args.get('user_id', None)
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if user.id: 
             return{
@@ -457,7 +457,7 @@ class Data(Resource):
     def put(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if req_data['username']  is None:
             return {'res':'fail'}, 404  
@@ -476,7 +476,7 @@ class Data(Resource):
     def patch(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if req_data['username']  is None:
             return {'res':'fail'}, 404  
@@ -494,7 +494,7 @@ class Data(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if req_data['user_id'] == user.id:
             db.session.delete(user)
@@ -507,7 +507,7 @@ class Data(Resource):
 '''@socketio.event
 def follow_event(message):
     token = message['API-KEY']
-    data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+    data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
     user = Users.query.filter_by(uuid=data['uuid']).first()
     user_to_follow =Users.query.filter_by(uuid=message['uuid']).first()
     user.follow(user_to_follow)# here   
@@ -519,7 +519,7 @@ def follow_event(message):
 @socketio.event
 def unfollow_event(message):
     token = message['API-KEY']
-    data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+    data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
     user = Users.query.filter_by(uuid=data['uuid']).first()
     user_to_unfollow =Users.query.filter_by(uuid=message['uuid']).first()
     user.unfollow(user_to_unfollow)   
@@ -551,7 +551,7 @@ class get_following(Resource):
         
         author=request.args.get('author')
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user= Users.query.filter_by(uuid=data['uuid']).first() 
         author=Users.query.filter_by(uuid=author).first()
         if user.is_following(author): 
@@ -591,7 +591,7 @@ class User_following(Resource):
         if request.args:
             fan_base =  request.args.get('fan_base')
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user= Users.query.filter_by(uuid=data['uuid']).first() 
         if fan_base == 'post':
             posts=user.followed_posts() 
@@ -615,7 +615,7 @@ class User_following(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_follow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_follow is None :
@@ -650,7 +650,7 @@ class User_following(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_unfollow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unfollow is None :
@@ -684,7 +684,7 @@ class User_Block(Resource):
             limit = request.args.get('limit',None)
             count = request.args.get('count',None)
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
         previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
         user= Users.query.filter_by(uuid=data['uuid']).first()
@@ -706,7 +706,7 @@ class User_Block(Resource):
     def post(self, username):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_block =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_block is None:
@@ -720,7 +720,7 @@ class User_Block(Resource):
     def delete(self, username):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_unblock = Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unblock is None:
@@ -753,7 +753,7 @@ class Userprefs(Resource):
     def get(self):
         token = request.headers['API-KEY']
         if token:
-            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+            data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             user_settings = Setting.query.filter_by(users_id=user.id).first()
             acc_=Account.query.filter_by(user=user.id).first()
@@ -786,7 +786,7 @@ class Userprefs(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         
 
         
@@ -914,7 +914,7 @@ class User_ip_address(Resource):
     def post(self):
         req_data = request.get_json()
        # token = request.headers['API-KEY']
-        #data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        #data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         ip_address = req_data['address']
         if ip_address == None:
             return{
@@ -1027,7 +1027,7 @@ class User_upload_profile_pic(Resource):
     @user.expect(uploader)
     def post(self):
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         args = uploader.parse_args()
         if user and  args['file'] is not None: 
@@ -1114,7 +1114,7 @@ class User_Random(Resource):
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
             token = request.headers['API-KEY']
             req_data = request.get_json()
-            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+            data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
             channel = Users.query.filter_by(user_visibility=True).order_by(func.random()).paginate(int(start),int(count), False).items
             followed =[]
@@ -1174,7 +1174,7 @@ class Seen_Notification(Resource):
             start = request.args.get('start',None)
             limit = request.args.get('limit',None)
             count = request.args.get('count',None)
-            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+            data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             next = "/api/v1/comment?"+start+"&limit="+limit+"&count="+count
             previous = "api/v1/comment?start="+start+"&limit"+limit+"&count="+count
             user = Users.query.filter_by(uuid=data['uuid']).first()
@@ -1199,7 +1199,7 @@ class Seen_Notification(Resource):
         token = request.headers['API-KEY']
         req_data = request.get_json()
         notification=req_data['notification_id']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         notification= Notification.query.filter_by(id=notification).first()
 
@@ -1238,7 +1238,7 @@ class  Invitation(Resource):
     @token_required
     def get(self):
         token =  request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         if data is None:
             return{
                 'status':'0',
@@ -1258,7 +1258,7 @@ class  Invitation(Resource):
     def post(self):
         token = request.headers['API-KEY']
         req_data = request.get_json()
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         email= req_data['email']
         
@@ -1426,7 +1426,7 @@ class  No_claps_(Resource):
     @token_required
     def get(self):
         token = request.headers['API-KEY']
-        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
 
         if user:
@@ -1476,7 +1476,7 @@ class  Posts_(Resource):
             lang = request.args.get('lang', None)
             Type = request.args.get('type', None)
             language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
-            data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+            data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             
             user = Users.query.filter_by(uuid=data['uuid']).first()
             for i in language_dict:
@@ -1567,7 +1567,7 @@ class Data(Resource):
         count = request.args.get('count',None)
         language_dict = {'en', 'es','ar', 'pt', 'sw', 'fr', 'ha'}
         #token = request.headers['API-KEY']
-        #data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        #data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         #user = Users.query.filter_by(uuid=data['uuid']).first()
         next = "/api/v1/profile?"+start+"&limit="+limit+"&count="+count
         previous = "api/v1/profile?start="+start+"&limit"+limit+"&count="+count
