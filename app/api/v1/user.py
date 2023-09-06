@@ -527,7 +527,42 @@ def unfollow_event(message):
     emit('my_response',
          {'data':"unfollowed"})'''
 
-
+@user.doc(
+    security='KEY',
+    params={ 'author': 'Specify the uuid associated with the person',
+     },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@user.route('/user/get/following')
+class get_following(Resource):
+    @token_required
+    #@cache.cached(300, key_prefix='all_followers&following')
+    def get(self):  
+        
+        author=request.args.get('author')
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        user= Users.query.filter_by(uuid=data['uuid']).first() 
+        author=Users.query.filter_by(uuid=author).first()
+        if user.is_following(author): 
+            return {
+                "status":1
+            }, 200
+        else:
+            return {
+                "status":0
+            }, 200
+        
 @user.doc(
     security='KEY',
     params={ 'user_id': 'Specify the user_id associated with the person',
@@ -557,7 +592,7 @@ class User_following(Resource):
             fan_base =  request.args.get('fan_base')
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
-        user= Users.query.filter_by(uuid=data['uuid']).first()
+        user= Users.query.filter_by(uuid=data['uuid']).first() 
         if fan_base == 'post':
             posts=user.followed_posts() 
             return {
