@@ -641,7 +641,7 @@ class User_following(Resource):
                             'follower_profile':user_to_follow.picture,
                             'message': user_to_follow.username+' has just followed you',
                             })
-                mail.subscription_message(user_to_follow.picture,user_to_follow.username)
+                mail.subscription_message(user_to_follow.email,user_to_follow.picture,user_to_follow.username)
                 return{'status': 1, 'res':'success'},200
         else:
             return {'status': 0, 'res':'fail'},200

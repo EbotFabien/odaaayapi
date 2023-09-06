@@ -122,6 +122,7 @@ def account_deleted(email):
 def subscription_message(email,image,subscribed_to):
     if image[0]!='h':
         image='https://odaaay.com/api/static/files/'+image
+    
     skelet_email('Thanks for subscribing',
                sender='hello@odaaay.com',
                recipients=[email], 
