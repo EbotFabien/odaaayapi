@@ -457,7 +457,7 @@ class Data(Resource):
     def put(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if req_data['username']  is None:
             return {'res':'fail'}, 404  
@@ -476,7 +476,7 @@ class Data(Resource):
     def patch(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if req_data['username']  is None:
             return {'res':'fail'}, 404  
@@ -494,7 +494,7 @@ class Data(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         if req_data['user_id'] == user.id:
             db.session.delete(user)
@@ -507,7 +507,7 @@ class Data(Resource):
 '''@socketio.event
 def follow_event(message):
     token = message['API-KEY']
-    data = jwt.decode(token,app.config.get('SECRET_KEY'))
+    data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
     user = Users.query.filter_by(uuid=data['uuid']).first()
     user_to_follow =Users.query.filter_by(uuid=message['uuid']).first()
     user.follow(user_to_follow)# here   
@@ -519,7 +519,7 @@ def follow_event(message):
 @socketio.event
 def unfollow_event(message):
     token = message['API-KEY']
-    data = jwt.decode(token,app.config.get('SECRET_KEY'))
+    data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
     user = Users.query.filter_by(uuid=data['uuid']).first()
     user_to_unfollow =Users.query.filter_by(uuid=message['uuid']).first()
     user.unfollow(user_to_unfollow)   
@@ -615,7 +615,7 @@ class User_following(Resource):
     def post(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_follow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_follow is None :
@@ -650,7 +650,7 @@ class User_following(Resource):
     def delete(self):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_unfollow =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unfollow is None :
@@ -706,7 +706,7 @@ class User_Block(Resource):
     def post(self, username):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_block =Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_block is None:
@@ -720,7 +720,7 @@ class User_Block(Resource):
     def delete(self, username):
         req_data = request.get_json()
         token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'))
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         user_to_unblock = Users.query.filter_by(uuid=req_data['uuid']).first()
         if user_to_unblock is None:
