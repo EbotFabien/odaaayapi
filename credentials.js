@@ -51,7 +51,7 @@
        "data  nltk_data  odaaayapi  odaaayapp\n",
        "\n",
        "# To go back to desktop\n",
-       "\n",
+       "\n",sudo systemctl restart socket.service
        "cd ~\n",
        "\n",
        "# -- data | useless directory but don't delete\n",

@@ -859,13 +859,22 @@ class Post(Resource):
                         db.session.commit()
 
                 
+                sio.emit('post', {'post_id':newPost.id,
+                            'content':newPost.text_content,
+                            'author': newPost.author,
+                            'title': newPost.title,
+                            'post_uuid': newPost.uuid,
+                            'image_url': newPost.picture_url,
+                            'tags':newPost.tags,
+                            'category':newPost.category_id,
+                            })
                 
                 for i in followers_:
                     notif_add = Notification(
                         "user" + user.username + "has made a post Titled"+title, i, newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
-                    newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
+                    #newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
 
                 db.session.commit()
                 return {
