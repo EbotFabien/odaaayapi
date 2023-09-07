@@ -637,7 +637,6 @@ class User_following(Resource):
                             'user':user.uuid,
                             'follower_name':user_to_follow.username,
                             'follower_uuid':user_to_follow.uuid,
-                            'key':'follow',
                             'follower_profile':user_to_follow.picture,
                             'message': user_to_follow.username+' has just followed you',
                             })

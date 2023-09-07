@@ -620,7 +620,7 @@ class Post(Resource):
         data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
         language = Language.query.filter_by(code=got_language).first()
-        followers_ = user.is_followers()
+        followers_ = user.is_followersp()
         post_done = Posts.query.filter(and_(Posts.title==title,Posts.visibility==True)).first()
         if language != None:
             lang = language.id
@@ -738,13 +738,21 @@ class Post(Resource):
                         db.session.add(new_row)
                         db.session.commit()
                 
-                
+                sio.emit('post', {'post_id':newPost.id,
+                            'content':newPost.text_content,
+                            'author': newPost.author,
+                            'title': newPost.title,
+                            'post_uuid': newPost.uuid,
+                            'image_url': newPost.picture_url,
+                            'tags':newPost.tags,
+                            'category':newPost.category_id,
+                            })
                 for i in followers_:
                     notif_add = Notification(
                         "user" + user.username + "has made a post Titled"+title, i, newPost.id)
                     db.session.add(notif_add)
                     db.session.commit()
-                    newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
+                    #newPost.launch_notif_task('post_notify_users',i,notif_add,user,'broadcasting  post ...')
                     
                     
                 return {
@@ -1209,12 +1217,13 @@ class ShoutPost(Resource):
             else:
                 post.add_clap(user.id)
                 sio.emit('clap', {
-                        'user':author.uuid,
-                        'follower_name':user.username,
-                        'follower_uuid':user.uuid,
-                        'key':'post',
-                        'message': user.username+' has just liked your post',
-                        'post_uuid':req_data['Post_id'],
+                        'post_author_uuid':author.uuid,
+                        'clap_author':user.username,
+                        'clap_author_uuid':user.uuid,
+                        'post_uuid':post.uuid,
+                        'post_id':post.id,
+                        'post_title':post.title,
+                        'total_clap':post.No__claps
                         })
                 return{
                     "status": 1,
