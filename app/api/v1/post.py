@@ -743,7 +743,7 @@ class Post(Resource):
                             'author': newPost.author,
                             'title': newPost.title,
                             'post_uuid': newPost.uuid,
-                            'image_url': newPost.picture_url,
+                            'image_url': newPost.thumb_url,
                             'tags':newPost.tags,
                             'category':newPost.category_id,
                             'type':'post'
@@ -865,7 +865,7 @@ class Post(Resource):
                             'author': newPost.author,
                             'title': newPost.title,
                             'post_uuid': newPost.uuid,
-                            'image_url': newPost.picture_url,
+                            'image_url': newPost.thumb_url,
                             'tags':newPost.tags,
                             'category':newPost.category_id,
                             'type':'post'

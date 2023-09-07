@@ -634,11 +634,11 @@ class User_following(Resource):
                 user.follow(user_to_follow)# here   
                 db.session.commit()
                 sio.emit('my_event', {
-                            'user':user.uuid,
-                            'follower_name':user_to_follow.username,
-                            'follower_uuid':user_to_follow.uuid,
-                            'follower_profile':user_to_follow.picture,
-                            'message': user_to_follow.username+' has just followed you',
+                            'user':user_to_follow.uuid,
+                            'follower_name':user.username,
+                            'follower_uuid':user.uuid,
+                            'follower_profile':user.picture,
+                            'message': user.username+' has just followed you',
                             'type':'follow'
                             })
                 #mail.subscription_message(user_to_follow.email,user_to_follow.picture,user_to_follow.username)
