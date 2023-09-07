@@ -868,7 +868,7 @@ class Post(Resource):
                             'image_url': newPost.picture_url,
                             'tags':newPost.tags,
                             'category':newPost.category_id,
-                            'type':post
+                            'type':'post'
                             })
                 
                 for i in followers_:
