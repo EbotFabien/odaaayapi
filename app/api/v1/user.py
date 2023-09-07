@@ -633,7 +633,7 @@ class User_following(Resource):
             else:
                 user.follow(user_to_follow)# here   
                 db.session.commit()
-                sio.emit('post', {
+                sio.emit('my_event', {
                             'user':user.uuid,
                             'follower_name':user_to_follow.username,
                             'follower_uuid':user_to_follow.uuid,
