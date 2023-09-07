@@ -746,6 +746,7 @@ class Post(Resource):
                             'image_url': newPost.picture_url,
                             'tags':newPost.tags,
                             'category':newPost.category_id,
+                            'type':'post'
                             })
                 for i in followers_:
                     notif_add = Notification(
@@ -867,6 +868,7 @@ class Post(Resource):
                             'image_url': newPost.picture_url,
                             'tags':newPost.tags,
                             'category':newPost.category_id,
+                            'type':post
                             })
                 
                 for i in followers_:
@@ -1225,14 +1227,15 @@ class ShoutPost(Resource):
                 }, 200
             else:
                 post.add_clap(user.id)
-                sio.emit('clap', {
+                sio.emit('post', {
                         'post_author_uuid':author.uuid,
                         'clap_author':user.username,
                         'clap_author_uuid':user.uuid,
                         'post_uuid':post.uuid,
                         'post_id':post.id,
                         'post_title':post.title,
-                        'total_clap':post.No__claps
+                        'total_clap':post.No__claps,
+                        'type':'clap'
                         })
                 return{
                     "status": 1,

@@ -633,12 +633,13 @@ class User_following(Resource):
             else:
                 user.follow(user_to_follow)# here   
                 db.session.commit()
-                sio.emit('follow', {
+                sio.emit('post', {
                             'user':user.uuid,
                             'follower_name':user_to_follow.username,
                             'follower_uuid':user_to_follow.uuid,
                             'follower_profile':user_to_follow.picture,
                             'message': user_to_follow.username+' has just followed you',
+                            'type':'follow'
                             })
                 #mail.subscription_message(user_to_follow.email,user_to_follow.picture,user_to_follow.username)
                 return{'status': 1, 'res':'success'},200
