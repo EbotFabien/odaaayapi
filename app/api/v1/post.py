@@ -1227,16 +1227,16 @@ class ShoutPost(Resource):
                 }, 200
             else:
                 post.add_clap(user.id)
-                sio.emit('post', {
-                        'post_author_uuid':author.uuid,
+                sio.emit('post', {'post_author_uuid':author.uuid,
                         'clap_author':user.username,
                         'clap_author_uuid':user.uuid,
                         'post_uuid':post.uuid,
                         'post_id':post.id,
                         'post_title':post.title,
-                        'total_clap':post.No__claps,
+                        'total_clap':post.No__claps(),
                         'type':'clap'
                         })
+                
                 return{
                     "status": 1,
                     "res": "You have clapped on this post"
