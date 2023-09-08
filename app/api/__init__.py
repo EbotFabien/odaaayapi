@@ -898,6 +898,7 @@ class Article(Resource):
                 lang = request.args.get('lang', None)
                 current_lang = Language.query.filter_by(code=lang).first()
                 posts_feed = Posts.query.filter_by(uuid=id).first()
+                
                 if posts_feed == None:
                     return {
                     'status': 6,
@@ -1107,6 +1108,7 @@ class Article(Resource):
                                     "shouts": count_claps,
                                     "saves": saves,
                                     "report": report,
+                                    "user_bio":user1.bio,
                                     'translated_feed': marshal(translated_feed, schema.lang_post)
                                 }
                             }, 200
@@ -1123,6 +1125,7 @@ class Article(Resource):
                                     "shouts": count_claps,
                                     "saves": saves,
                                     "report": report,
+                                    "user_bio":user1.bio,
                                     'translated_feed': marshal(translated_feed, schema.lang_post),
                                     'res': "This post can't been translated"
                                 }
@@ -1185,6 +1188,7 @@ class Article(Resource):
                                 "shouts": count_claps,
                                 "saves": saves,
                                 "report": report,
+                                "user_bio":user1.bio,
                                 'translated_feed': marshal(translated_feed, schema.lang_post)
                             }
                         }, 200
@@ -1201,6 +1205,7 @@ class Article(Resource):
                                 "shouts": count_claps,
                                 "saves": saves,
                                 "report": report,
+                                "user_bio":user1.bio,
                                 'translated_feed': marshal(translated_feed, schema.lang_post),
                                 'res': "This post can't been translated"
                             }
