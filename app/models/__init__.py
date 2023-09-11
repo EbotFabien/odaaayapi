@@ -461,7 +461,7 @@ class Posts(db.Model):
             tags=allowed_tags, strip=True))
 
     def has_clapped(self, user):
-        clap=Clap.query.filter_by(user_id=user.id).first()
+        clap=Clap.query.filter(and_(Clap.user_id==user.id,Clap.post_id==self.id)).first()
         if clap :
             return True
         else:
