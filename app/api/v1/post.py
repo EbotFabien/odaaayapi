@@ -706,7 +706,7 @@ class Post(Resource):
                 if tags != []:
                     for tag in tags:
                         new_tag = Tags(post=newPost.id,
-                                       tags=tag, category=category)
+                                       tags=tag.lower(), category=category)
                         db.session.add(new_tag)
                         db.session.commit()
                 
