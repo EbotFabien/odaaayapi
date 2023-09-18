@@ -509,20 +509,20 @@ class Home(Resource):
                                 Posts,(Posts.id == Translated.post_id,Posts.nsfw == False)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None))
 
                         if tag != None and cat == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts,(Posts.nsfw == False)).join(
                                 Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url != None))
                         
                         if tag != None and cat == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
+                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts,(Posts.nsfw == False)).join(
                                 Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url == None))
 
                         if tag != None and cat != None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
-                                Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url != None))
+                                Posts,(Posts.nsfw == False)).join(Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url != None))
                         
                         if tag != None and cat != None and recent == 'thumb':
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
-                                Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None))
+                                Posts,(Posts.nsfw == False)).join(Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None))
                                 
                         posts_feed = posts_feeds.paginate(    
                             int(start), int(count), False)
