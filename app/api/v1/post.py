@@ -353,7 +353,7 @@ class ptag(Resource):
                         results1.append(tag)
             else:  
                 results = Tags.query.distinct(Tags.tags).join(Posts, (Posts.id == Tags.post)).filter(   #order_by(func.random())
-                    Posts.category_id == category).all()#.paginate(int(start), int(count), False).items
+                    Posts.category_id == int(category)).all()#.paginate(int(start), int(count), False).items
                 
                 results1=[]
                 for tag in results:
