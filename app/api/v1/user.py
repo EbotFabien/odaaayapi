@@ -161,6 +161,7 @@ notification_ =user.model('notification_',{
     'seen': fields.String(required=True),
     'timestamp': fields.String(required=True),
 })
+
 update_settings = user.model('Full_settings',{
     'type':  fields.String(required=True),
     'username':  fields.String(required=False),
@@ -172,7 +173,9 @@ update_settings = user.model('Full_settings',{
     'country':fields.String(required=False),
     'handle':fields.String(required=False),
     'code':fields.String(required=False),
-    'user_visibility': fields.Boolean(required=False)
+    'user_visibility': fields.Boolean(required=False),
+    'old':  fields.String(required=False),
+    'new':  fields.String(required=False),
     
 })
 user_prefs = user.model('Preference', {
@@ -788,15 +791,33 @@ class Userprefs(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
         
-
         
+        if req_data['type'] =='password':
+            user = Users.query.filter_by(uuid=data['uuid']).first()
+            old =req_data['old'] 
+            if user:
+                if user.verify_password(old):
+                    password_taken =req_data['old'] 
+                    user.passwordhash(password_taken)
+                    db.session.commit()
+                    return {
+                        "status":1,
+                        "res":"User_password updated"
+                    }, 200
+                else:
+                    return {
+                        "status":0,
+                        "res":"Password doesn't match"
+                    }, 404 
+
+    
         if req_data['type'] =='settings':
             lang=req_data['language_id'] 
             user = Users.query.filter_by(uuid=data['uuid']).first()
             user.username=req_data['username'] 
-            user.email=req_data['email'] 
+            #user.email=req_data['email'] 
             user.country=req_data['country'] 
-            user.handle=req_data['handle'] 
+            
             user.bio =req_data['bio'] 
             db.session.commit()
             language= Language.query.filter_by(code=lang).first()
@@ -804,6 +825,15 @@ class Userprefs(Resource):
             user.language_id=language.id
             db.session.commit()
 
+            user = Users.query.filter_by(handle=data['handle']).first()
+            if user:
+                return {
+                    "status":3,
+                    "res":"User_data updated but handle is taken"
+                }, 400
+            else:
+                user.handle=req_data['handle'] 
+                db.session.commit()
             return {
                     "status":1,
                     "res":"User_data updated"
@@ -1579,10 +1609,10 @@ class Data(Resource):
                         posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
                                         Posts,(Posts.id == Translated.post_id)).filter(
                                             Posts.author==user2.id)
-                        posts_feed =posts_feeds.order_by(func.random()).paginate(int(start), int(count), False)
+                        posts_feed =posts_feeds.paginate(int(start), int(count), False)
                         total = (posts_feed.total/int(count))
                         '''if user != user2:
-                            if user.is_following(user2) > 0:
+                            if user.is_following(user2) > 0:.order_by(func.random())
                                 follow=True
                             else:
                                 follow=False
