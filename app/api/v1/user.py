@@ -797,7 +797,7 @@ class Userprefs(Resource):
             old =req_data['old'] 
             if user:
                 if user.verify_password(old):
-                    password_taken =req_data['old'] 
+                    password_taken =req_data['new'] 
                     user.passwordhash(password_taken)
                     db.session.commit()
                     return {
