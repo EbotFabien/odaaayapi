@@ -825,8 +825,8 @@ class Userprefs(Resource):
             user.language_id=language.id
             db.session.commit()
 
-            user = Users.query.filter(and_(Users.handle==req_data['handle'],Users.uuid!=data['uuid'])).first()
-            if user:
+            user1 = Users.query.filter(and_(Users.handle==req_data['handle'],Users.uuid!=data['uuid'])).first()
+            if user1:
                 return {
                     "status":3,
                     "res":"User_data updated but handle is taken"
