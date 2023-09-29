@@ -825,7 +825,7 @@ class Userprefs(Resource):
             user.language_id=language.id
             db.session.commit()
 
-            user = Users.query.filter_by(handle=data['handle']).first()
+            user = Users.query.filter(and_(Users.handle==req_data['handle'],Users.uuid!=data['uuid'])).first()
             if user:
                 return {
                     "status":3,
