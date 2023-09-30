@@ -550,7 +550,7 @@ class Post(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        post_id = Posts.query.get(req_data['id'])
+        post_id = Posts.query.filter_by(id=req_data['id']).first()
         trans = Translated.query.filter_by(post_id=post_id.id).all()
         if user.id == post_id.author:
             if post_id.paid == False:
