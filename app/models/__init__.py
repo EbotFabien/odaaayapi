@@ -103,7 +103,7 @@ class Category(db.Model):
 
 
 class Users(db.Model):
-    #__searchable__ = ['username', 'handle', 'country']
+    __searchable__ = ['username', 'handle', 'country']
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), nullable=False)  # unique True
     email = db.Column(db.String(120), nullable=True)
@@ -379,8 +379,8 @@ class Rating(db.Model):
 
 
 class Posts(db.Model):
-    #__searchable__ = ['title', 'text_content',
-    #                  'created_on', 'user_name', 'price', 'tags']
+    __searchable__ = ['title', 'text_content',
+                      'created_on', 'user_name', 'price', 'tags']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(10000))
     uuid = db.Column(db.String(1000000))  # check

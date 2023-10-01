@@ -103,7 +103,7 @@ apisec.add_namespace(info)
 apisec.add_namespace(user)
 apisec.add_namespace(token)
 apisec.add_namespace(post)
-#apisec.add_namespace(search)
+apisec.add_namespace(search)
 apisec.add_namespace(payment)
 
 
