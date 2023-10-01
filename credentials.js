@@ -32,7 +32,7 @@
       "source": [
        "# connect to odaaay server\n",
        "# IP: 104.238.191.159\n",
-       "# user: odaaaynuxt, 9|!e!R.{S4^8ttt"
+       "# user: odaaaynuxt, f"
       ]
      },
      {

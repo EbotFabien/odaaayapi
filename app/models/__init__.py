@@ -1,5 +1,5 @@
 # This file contains the models of the code. The database in use doesn't matter
-# just insert the new model and properly link the model as on the ERD then you will be good to go.
+# just insert the new modesl and properly link the model as on the ERD then you will be good to go.
 # After linking, * Run flask Migrate to use Alembic module to migrate the data without destroying your
 # Data in the Database. This file should not be messed with if you donno know what you are doing.
 
@@ -103,7 +103,7 @@ class Category(db.Model):
 
 
 class Users(db.Model):
-    __searchable__ = ['username', 'handle', 'country']
+    #__searchable__ = ['username', 'handle', 'country']
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), nullable=False)  # unique True
     email = db.Column(db.String(120), nullable=True)
@@ -379,8 +379,8 @@ class Rating(db.Model):
 
 
 class Posts(db.Model):
-    __searchable__ = ['title', 'text_content',
-                      'created_on', 'user_name', 'price', 'tags']
+    #__searchable__ = ['title', 'text_content',
+    #                  'created_on', 'user_name', 'price', 'tags']
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(10000))
     uuid = db.Column(db.String(1000000))  # check
