@@ -478,7 +478,7 @@ class Home(Resource):
             post_type = request.args.get('ptype', '1')
             recent = request.args.get('recent', None)
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha','yo'}
 
             for i in language_dict:
                 if i == lang: 
@@ -697,7 +697,7 @@ class Videos(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha','yo'}
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
@@ -740,7 +740,7 @@ class Discover(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha','yo'}
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
@@ -783,7 +783,7 @@ class Related(Resource):
             lang = request.args.get('lang', None)
             post_type = request.args.get('ptype', '1')
             # Still to fix the next and previous WRT Sqlalchemy
-            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+            language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha','yo'}
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
@@ -834,7 +834,7 @@ class Related(Resource):
 @home.route('/homearticle/<id>')
 class homeArticle(Resource):
     def get(self, id):
-        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha','yo'}
         try:
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
@@ -888,7 +888,7 @@ class homeArticle(Resource):
 @home.route('/article/<id>')
 class Article(Resource):
     def get(self, id):
-        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha'}
+        language_dict = {'en', 'es', 'ar', 'pt', 'sw', 'fr', 'ha','yo'}
         try:
             token = request.headers['API-KEY']
             data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
