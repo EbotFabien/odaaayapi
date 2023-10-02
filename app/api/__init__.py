@@ -485,19 +485,19 @@ class Home(Resource):
                     current_lang = Language.query.filter_by(code=i).first()
                     if pay == None:
                         if recent == 'recent':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None,Posts.nsfw == False))
 
                         if recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if cat == None and tag == None and recent == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None,Posts.nsfw == False))#.order_by(func.random())
                         
                         if cat == None and tag == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if cat != None and tag == None:
@@ -509,11 +509,11 @@ class Home(Resource):
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if tag != None and cat == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).join(
                                 Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url != None))
                         
                         if tag != None and cat == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).join(
                                 Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if tag != None and cat != None:
@@ -585,16 +585,16 @@ class Home(Resource):
                             }, 200
                     if pay == 'paid':#Posts.paid == True
                         if recent == 'recent':
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(Posts.thumb_url != None)
                         if cat == None and tag == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(Posts.thumb_url != None)
                         if cat != None and tag == None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(Posts.thumb_url != None)
                         if tag != None and cat == None:
-                            posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(Posts).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).join(
                                 Tags, (Tags.post == Translated.post_id)).order_by(desc(Posts.created_on)).filter(and_(Posts.thumb_url != None, Tags.tags == tag))
                         if tag != None and cat != None:
                             posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
@@ -701,7 +701,7 @@ class Videos(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(
+                    posts_feed = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).order_by(
                         func.random()).filter(Posts.post_type == 2).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
@@ -744,7 +744,7 @@ class Discover(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).order_by(desc(Posts.id)).filter(
+                    posts_feed = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).order_by(desc(Posts.id)).filter(
                         and_(Posts.thumb_url != None, Posts.paid == False)).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
@@ -787,7 +787,7 @@ class Related(Resource):
             for i in language_dict:
                 if i == lang:
                     current_lang = Language.query.filter_by(code=i).first()
-                    posts_feed = Translated.query.filter_by(language_id=current_lang.id).join(Posts).filter(
+                    posts_feed = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).filter(
                         Posts.post_type == 2).order_by(func.random()).paginate(int(start), int(count), False)
                     total = (posts_feed.total/int(count))
                     next_url = url_for('api./api/home_home', start=posts_feed.next_num, limit=int(
