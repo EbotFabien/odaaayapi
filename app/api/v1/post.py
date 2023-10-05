@@ -1091,7 +1091,7 @@ class UsersPost(Resource):
             posts1 = Posts.query.filter_by(uploader_id=user.id).first()
             if posts1 is not None:
                 if user.id == posts1.uploader_id:
-                    pgPosts = Posts.query.filter_by(uploader_id=posts1.uploader_id).order_by(
+                    pgPosts = Posts.query.filter(and_(Posts.uploader_id==posts1.uploader_id,Posts.visibility==True)).order_by(
                         Posts.uploader_date.desc()).paginate(int(start), int(count), False)
                     posts = pgPosts.items
                     total = pgPosts.total
@@ -1462,7 +1462,7 @@ class views_post(Resource):
                     "res": "user is not found"
                 }
             if user_actual:
-                _user_post = Posts.query.filter_by(uploader_id=user_actual.id).order_by(
+                _user_post = Posts.query.filter(and_(Posts.uploader_id==user_actual.id,Posts.visibility==True)).order_by(
                     Posts.uploader_date.desc()).paginate(int(start), int(count), False).items
                 return {
                     "start": start,

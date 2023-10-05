@@ -501,11 +501,11 @@ class Home(Resource):
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if cat != None and tag == None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id,Translated.visibility==True, Translated.category_id == cat)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None,Posts.nsfw == False))
                         
                         if cat != None and tag == None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id,Translated.visibility==True, Translated.category_id == cat)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if tag != None and cat == None:
@@ -517,11 +517,11 @@ class Home(Resource):
                                 Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if tag != None and cat != None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id,Translated.visibility==True, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url != None,Posts.nsfw == False))
                         
                         if tag != None and cat != None and recent == 'thumb':
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id,Translated.visibility==True, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False, Tags.tags == tag ,Posts.thumb_url == None,Posts.nsfw == False))
                                 
                         posts_feed = posts_feeds.paginate(    
@@ -597,7 +597,7 @@ class Home(Resource):
                             posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(Posts).join(
                                 Tags, (Tags.post == Translated.post_id)).order_by(desc(Posts.created_on)).filter(and_(Posts.thumb_url != None, Tags.tags == tag))
                         if tag != None and cat != None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id, Translated.category_id == cat)).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id == current_lang.id,Translated.visibility==True, Translated.category_id == cat)).join(
                                 Posts).join(Tags, (Tags.post == Translated.post_id)).order_by(desc(Posts.created_on)).filter(and_(Posts.thumb_url != None, Tags.tags == tag))
                         posts_feed = posts_feeds.paginate(
                             int(start), int(count), False)
@@ -910,7 +910,7 @@ class Article(Resource):
                 saves = Save.query.filter_by(post_id=posts_feed.id).count()
                 report = Report.query.filter_by(post_id=posts_feed.id).count()
                 translated_feed = Translated.query.filter(and_(
-                    Translated.post_id == posts_feed.id, Translated.language_id == current_lang.id)).first()
+                    Translated.post_id == posts_feed.id,Translated.visibility==True, Translated.language_id == current_lang.id)).first()
                 count_claps = posts_feed.No__claps()
                 if user is not None:
                     dona = Post_Access.query.filter(
@@ -1118,7 +1118,7 @@ class Article(Resource):
                             current_lang = Language.query.filter_by(
                                 id=posts_feed.orig_lang).first()
                             translated_feed = Translated.query.filter(and_(
-                                Translated.post_id == posts_feed.id, Translated.language_id == current_lang.id)).first()
+                                Translated.post_id == posts_feed.id,Translated.visibility==True, Translated.language_id == current_lang.id)).first()
                             return {
                                 "results": {
                                     "status": 0,
@@ -1198,7 +1198,7 @@ class Article(Resource):
                         current_lang = Language.query.filter_by(
                             id=posts_feed.orig_lang).first()
                         translated_feed = Translated.query.filter(and_(
-                            Translated.post_id == posts_feed.id, Translated.language_id == current_lang.id)).first()
+                            Translated.post_id == posts_feed.id,Translated.visibility==True, Translated.language_id == current_lang.id)).first()
                         return {
                             "results": {
                                 "status": 0,
@@ -1261,7 +1261,7 @@ class Report_post_(Resource):
         db.session.add(lan2)
         db.session.add(lan3)
         db.session.add(lan4)
-        db.session.commit()
+        #db.session.commit()
         typo = [1, 2, 3, 4]
         rep = req_data['type']
         Length = len(req_data['type'])
