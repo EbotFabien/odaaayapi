@@ -493,7 +493,7 @@ class Home(Resource):
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url == None,Posts.nsfw == False))
 
                         if cat == None and tag == None and recent == None:
-                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
+                            posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id)).join(
                                 Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None,Posts.nsfw == False))#.order_by(func.random())
                         
                         if cat == None and tag == None and recent == 'thumb':
@@ -546,8 +546,8 @@ class Home(Resource):
                                     if i.post_id == j.post_id:
                                         saved.append(j.post_id)
                             feed = posts_feed.items
-                            if cat == None and tag == None and recent == None:
-                                random.shuffle(feed)
+                            #if cat == None and tag == None and recent == None:
+                                #random.shuffle(feed)
                             inte=[]
                             for i in feed:
                                 post = Posts.query.filter_by(
