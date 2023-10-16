@@ -546,8 +546,8 @@ class Home(Resource):
                                     if i.post_id == j.post_id:
                                         saved.append(j.post_id)
                             feed = posts_feed.items
-                            if cat == None and tag == None and recent == None:
-                                random.shuffle(feed)
+                            #if cat == None and tag == None and recent == None:
+                                #random.shuffle(feed)
                             inte=[]
                             for i in feed:
                                 post = Posts.query.filter_by(
