@@ -207,12 +207,12 @@ class Login_email(Resource):
                         db.session.commit()
                         return {'res': 'Your account is blocked,contact service'}, 401
             else:
-                '''user1.code=int(random.randrange(100000, 999999))
+                user1.code=int(random.randrange(100000, 999999))
                 db.session.commit()
-                mail.verify_email(email,user1.code)'''
+                mail.verify_email(email,user1.code)
                 return {
                     'status': 6,
-                    'res': 'User account deactivated'#account_deleted
+                    'res': 'User account deactivated,a mail has been sent to verify your account'
                 }, 200
         else:
             return {

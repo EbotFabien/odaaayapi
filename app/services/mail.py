@@ -72,7 +72,7 @@ def invitation_email(token,email,sender,r):
     mail.send(msg)
 
 def verify_email(email,r):
-    skelet_email('Verify your  odaaay account',
+    skelet_email('Verify your  odaaay account['+str(r)+']',
                sender='noreply@odaaay.com',
                recipients=[email],
                text_body=f''' To reset your odaaay account password,Input the code below back in the app,
