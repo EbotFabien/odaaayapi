@@ -207,12 +207,12 @@ class Login_email(Resource):
                         db.session.commit()
                         return {'res': 'Your account is blocked,contact service'}, 401
             else:
-                user1.code=int(random.randrange(100000, 999999))
+                '''user1.code=int(random.randrange(100000, 999999))
                 db.session.commit()
-                mail.verify_email(email,user1.code)
+                mail.verify_email(email,user1.code)'''
                 return {
                     'status': 6,
-                    'res': 'User account deactivated,a mail has been sent to verify your account'
+                    'res': 'User account deactivated'#account_deleted
                 }, 200
         else:
             return {
@@ -494,7 +494,7 @@ class Home(Resource):
 
                         if cat == None and tag == None and recent == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None,Posts.nsfw == False))#.order_by(func.random())
+                                Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None))#.order_by(func.random()),Posts.nsfw == False
                         
                         if cat == None and tag == None and recent == 'thumb':
                             posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(

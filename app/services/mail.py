@@ -92,7 +92,7 @@ def welcome_email(email,N):
                html_body=render_template('welcome.html',name=N))
 
 def reset_password(email,r):
-    skelet_email('Reset your  odaaay account Password',
+    skelet_email('Reset your  odaaay account password',
                sender='hello@odaaay.com',
                recipients=[email],
                text_body=f''' To reset your odaaay account password,visit the following link:  
