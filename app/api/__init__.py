@@ -212,6 +212,7 @@ class Login_email(Resource):
                 mail.verify_email(email,user1.code)
                 return {
                     'status': 6,
+                    'username':user1.username,
                     'res': 'User account deactivated,a mail has been sent to verify your account'
                 }, 200
         else:
