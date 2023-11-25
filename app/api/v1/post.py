@@ -459,6 +459,49 @@ class botPost(Resource):
                         'status': 1,
                         'res': 'Post were made',
                     }, 200
+        
+
+@post.doc(
+    security='KEY',
+    params={
+             'type': 'type of data',
+             'lang': 'Language'
+            },
+    responses={
+        200: 'ok',
+        201: 'created',
+        204: 'No Content',
+        301: 'Resource was moved',
+        304: 'Resource was not Modified',
+        400: 'Bad Request to server',
+        401: 'Unauthorized request from client to server',
+        403: 'Forbidden request from client to server',
+        404: 'Resource Not found',
+        500: 'internal server error, please contact admin and report issue'
+    })
+@post.route('/post/article/latest')
+class article(Resource):
+    @token_required
+    def get(self):
+
+        lang = request.args.get('lang', None)
+        token = request.headers['API-KEY']
+        data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
+        user = Users.query.filter_by(uuid=data['uuid']).first()
+        post_id = Posts.query.filter_by(author=user.id).order_by(desc(Posts.created_on)).first()
+        current_lang = Language.query.filter_by(code=lang).first()
+
+        if post_id:
+            trans=Translated.query.filter(and_(Translated.post_id==post_id.id,Translated.language_id==current_lang.id,Translated.visibility==True)).first()
+            if trans:
+                return {
+                        'status': 1,
+                        "results": marshal(trans,langpostdata),
+                    }, 200
+
+
+        
+        
             
     
 @post.doc(

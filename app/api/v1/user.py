@@ -588,14 +588,19 @@ class get_following(Resource):
     })
 @user.route('/user/following')
 class User_following(Resource):
-    @token_required
+    #@token_required
     #@cache.cached(300, key_prefix='all_followers&following')
     def get(self):  
         if request.args:
             fan_base =  request.args.get('fan_base')
-        token = request.headers['API-KEY']
-        data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
-        user= Users.query.filter_by(uuid=data['uuid']).first() 
+            uuid =  request.args.get('uuid')
+        if uuid:
+            user= Users.query.filter_by(uuid=uuid).first()
+        else:
+            token = request.headers['API-KEY']
+            data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
+            user= Users.query.filter_by(uuid=data['uuid']).first() 
+
         if fan_base == 'post':
             posts=user.followed_posts() 
             return {
@@ -758,6 +763,7 @@ class Userprefs(Resource):
         if token:
             data = jwt.decode(token,app.config.get('SECRET_KEY'),algorithms='HS256')
             user = Users.query.filter_by(uuid=data['uuid']).first()
+            total = Posts.query.filter_by(author=user.id).count()
             user_settings = Setting.query.filter_by(users_id=user.id).first()
             acc_=Account.query.filter_by(user=user.id).first()
             if acc_ == None:
@@ -777,6 +783,7 @@ class Userprefs(Resource):
             return {
                 "post_payment":status,
                 "account_payment":status_,
+                "post_total":total,
                 "user": marshal(user, userdata)
                 }, 200
         else:

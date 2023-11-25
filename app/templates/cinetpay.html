@@ -18,10 +18,10 @@
     <script>
         function checkout() {
                 var data = JSON.stringify({
-                "apikey": "125109660063bf19422dc3a1.69792967",
-                "site_id": "617412",
+                "apikey": "175333332365213dfa95b795.33311477",
+                "site_id": "424502",
                 "transaction_id":  Math.floor(Math.random() * 100000000).toString(), //
-                "amount": 100000,
+                "amount": 500,
                 "currency": "XAF",
                 "alternative_currency": "",
                 "description": " TEST INTEGRATION ",
@@ -37,7 +37,7 @@
                 "customer_zip_code": "CM",
                 "notify_url": "https://webhook.site/d1dbbb89-52c7-49af-a689-b3c412df820d",
                 "return_url": "https://webhook.site/d1dbbb89-52c7-49af-a689-b3c412df820d",
-                "channels": "Mobile Money",
+                "channels": "ALL",
                 "metadata": "ODAAAY",
                 "lang": "FR",
                 "invoice_data": {
@@ -71,7 +71,7 @@
     </head>
     <body>
         <div class="sdk">
-            <h1>Odaaay pay</h1>
+            <h1>Yusme pay</h1>
             <button onclick="checkout()">Checkout</button>
         </div>
     </body>
