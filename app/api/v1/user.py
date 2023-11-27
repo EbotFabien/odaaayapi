@@ -1639,7 +1639,7 @@ class Data(Resource):
                                     "post_payment": 0,
                                     "account_payment": 0,
                                     "post_total":total2,
-                                    "user_data":marshal(user2,userdata),
+                                    "user":marshal(user2,userdata),
                                     "results":marshal(posts_feed.items,lang_post)
                                 },200
 
