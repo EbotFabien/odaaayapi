@@ -1609,7 +1609,9 @@ class Data(Resource):
         next = "/api/v1/profile?"+start+"&limit="+limit+"&count="+count
         previous = "api/v1/profile?start="+start+"&limit"+limit+"&count="+count
         user2 = Users.query.filter_by(uuid=user_id).first()
+        
         if user2:
+            total2 = Posts.query.filter_by(author=user2.id).count()
             for i in language_dict:
                     if i == lang:
                         current_lang = Language.query.filter_by(code=i).first()
@@ -1634,6 +1636,9 @@ class Data(Resource):
                                     "total":total,
                                     "previous":previous,
                                     "follow":False,
+                                    "post_payment": 0,
+                                    "account_payment": 0,
+                                    "post_total":total2,
                                     "user_data":marshal(user2,userdata),
                                     "results":marshal(posts_feed.items,lang_post)
                                 },200
