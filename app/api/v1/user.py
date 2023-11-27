@@ -1636,10 +1636,12 @@ class Data(Resource):
                                     "total":total,
                                     "previous":previous,
                                     "follow":False,
-                                    "post_payment": 0,
-                                    "account_payment": 0,
-                                    "post_total":total2,
-                                    "user":marshal(user2,userdata),
+                                    "user_data":{
+                                        "post_payment": 0,
+                                        "account_payment": 0,
+                                        "post_total":total2,
+                                        "user":marshal(user2,userdata),
+                                    },
                                     "results":marshal(posts_feed.items,lang_post)
                                 },200
 
@@ -1647,7 +1649,7 @@ class Data(Resource):
                             return{
                                     "status":0,
                                     "res":"Fail"
-                                },400
+                                },404
 
         else: 
             return{
