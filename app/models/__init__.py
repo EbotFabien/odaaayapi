@@ -210,15 +210,16 @@ class Users(db.Model):
         own = Posts.query.filter_by(uploader_id=self.id)
         return followed.union(own).order_by(Posts.uploader_date.desc())
 
-    def has_followed(self):
+    def has_followed(self,page):
         return Users.query.join(
             followers, (followers.c.followed_id == Users.id)).filter(
-                followers.c.follower_id == self.id).all()
+                followers.c.follower_id == self.id).paginate(page=page,per_page=10)
+    
 
-    def is_followers(self):
+    def is_followers(self,page):
         use = Users.query.join(
             followers, (followers.c.follower_id == Users.id)).filter(
-                followers.c.followed_id == self.id).all()
+                followers.c.followed_id == self.id).paginate(page=page,per_page=10)
         follow = list()
         '''for i in use:
             follow.append(i.id)'''

@@ -572,7 +572,8 @@ class get_following(Resource):
              'fan_base':'Specify if you need followers,followed or post',
              'start': 'Value to start from ',
              'limit': 'Total limit of the query',
-             'count': 'Number results per page'
+             'count': 'Number results per page',
+             'page':'Page number'
      },
     responses={
         200: 'ok',
@@ -594,6 +595,7 @@ class User_following(Resource):
         if request.args:
             fan_base =  request.args.get('fan_base')
             uuid =  request.args.get('uuid')
+            page = request.args.get('page')
         if uuid:
             user= Users.query.filter_by(uuid=uuid).first()
         else:
@@ -608,12 +610,12 @@ class User_following(Resource):
             }, 200
     
         if fan_base == 'following':
-            following=user.has_followed()
+            following=user.has_followed(page)
             return {
                 "results":marshal(following,following_followers)
             }, 200
         if fan_base == 'followers':
-            followers=user.is_followers()
+            followers=user.is_followers(page)
             return {
                 "results":marshal(followers,following_followers)
             }, 200
@@ -1655,4 +1657,4 @@ class Data(Resource):
             return{
                     "status":0,
                     "res":"User doesn't exist"
-                }, 200
+                }, 404
