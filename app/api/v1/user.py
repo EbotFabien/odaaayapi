@@ -595,7 +595,7 @@ class User_following(Resource):
         if request.args:
             fan_base =  request.args.get('fan_base')
             uuid =  request.args.get('uuid')
-            page = request.args.get('page')
+            page = int(request.args.get('page'))
         if uuid:
             user= Users.query.filter_by(uuid=uuid).first()
         else:
