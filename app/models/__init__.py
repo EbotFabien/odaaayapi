@@ -213,13 +213,13 @@ class Users(db.Model):
     def has_followed(self,page):
         return Users.query.join(
             followers, (followers.c.followed_id == Users.id)).filter(
-                followers.c.follower_id == self.id).paginate(page=page,per_page=10).items()
+                followers.c.follower_id == self.id).paginate(page=page,per_page=10).items
     
 
     def is_followers(self,page):
         use = Users.query.join(
             followers, (followers.c.follower_id == Users.id)).filter(
-                followers.c.followed_id == self.id).paginate(page=page,per_page=10).items()
+                followers.c.followed_id == self.id).paginate(page=page,per_page=10).items
         follow = list()
         '''for i in use:
             follow.append(i.id)'''
