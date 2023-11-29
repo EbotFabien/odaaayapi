@@ -612,12 +612,16 @@ class User_following(Resource):
         if fan_base == 'following':
             following=user.has_followed(page)
             return {
-                "results":marshal(following,following_followers)
+                'page':page,
+                'Total':following.total,
+                "results":marshal(following.items,following_followers)
             }, 200
         if fan_base == 'followers':
             followers=user.is_followers(page)
             return {
-                "results":marshal(followers,following_followers)
+                'page':page,
+                'Total':followers.total,
+                "results":marshal(followers.items,following_followers)
             }, 200
 
     @token_required
