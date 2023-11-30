@@ -303,6 +303,7 @@ class backdrop(Resource):
             return {
                     "status":1,
                     "res":"back drop was uploaded",
+                    'url':user.background
                     }, 200
                     
         if File.mimetype == "image/jpg" :
@@ -319,6 +320,7 @@ class backdrop(Resource):
             return {
                     "status":1,
                     "res":"back drop was uploaded",
+                    'url':user.background
                     }, 200
         else:
             return {
@@ -378,7 +380,8 @@ class Uplu(Resource):
                 
                 return {
                     'status':1,
-                    'res':'picture uploaded'
+                    'res':'picture uploaded',
+                    'url':user.picture
                 }
             
             if File.mimetype == 'image/png':
@@ -398,7 +401,8 @@ class Uplu(Resource):
                 
                 return {
                     'status':1,
-                    'res':'picture uploaded'
+                    'res':'picture uploaded',
+                    'url':user.picture
                 }
             
         else:
