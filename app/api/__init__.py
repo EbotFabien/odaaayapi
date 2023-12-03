@@ -354,9 +354,9 @@ class Reset(Resource):
                 verification_code = phone.generate_code()
                 token = check.get_reset_token()
                 if lang=='en':
-                    link='https://odaaay.com/app/reset-password/?token='+token
+                    link='https://odaaay.com/reset-password/?token='+token
                 else:
-                    link='https://odaaay.com/'+lang+'/app/reset-password/?token='+token
+                    link='https://odaaay.com/'+lang+'/reset-password/?token='+token
                 
                 mail.reset_password(email, link)
                 return {
