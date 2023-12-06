@@ -532,7 +532,7 @@ class article(Resource):
         token = request.headers['API-KEY']
         data = jwt.decode(token, app.config.get('SECRET_KEY'),algorithms='HS256')
         user = Users.query.filter_by(uuid=data['uuid']).first()
-        post_id = Posts.query.filter_by(author=user.id).order_by(desc(Posts.created_on)).first()
+        post_id = Posts.query.filter_by(author=user.id).order_by(asc(Posts.created_on)).first()
         current_lang = Language.query.filter_by(code=lang).first()
 
         if post_id:
