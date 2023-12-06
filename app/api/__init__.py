@@ -495,7 +495,7 @@ class Home(Resource):
 
                         if cat == None and tag == None and recent == None:
                             posts_feeds = Translated.query.filter_by(language_id=current_lang.id).join(
-                                Posts,(Posts.id == Translated.post_id)).order_by(asc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None))#.order_by(func.random()),Posts.nsfw == False
+                                Posts,(Posts.id == Translated.post_id)).order_by(desc(Posts.created_on)).filter(and_(Posts.paid == False,Posts.thumb_url != None))#.order_by(func.random()),Posts.nsfw == False
                         
                         if cat == None and tag == None and recent == 'thumb':
                             posts_feeds = Translated.query.filter(and_(Translated.language_id==current_lang.id,Translated.visibility==True)).join(
