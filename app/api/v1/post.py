@@ -256,6 +256,50 @@ langpostdata = post.model('langpostreturndata', {
     'text_content': fields.String(required=True),
 })
 
+
+
+trans = post.model('trans', {
+    'id': fields.Integer(required=True),
+    'language_id': fields.Integer(required=True),
+    'post_id': fields.Integer(required=True),
+
+})
+
+post_latest_data=post.model('post_latest_data',{
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'uuid': fields.String(required=True),
+    'author': fields.Integer(required=True),
+    'user_name': fields.String(required=True),
+    'post_type': fields.Integer(required=True),
+    'text_content': fields.String(required=True),
+    'post_url': fields.String(required=True),
+    'audio_url': fields.String(required=True),
+    'video_url': fields.String(required=True),
+    'created_on': fields.DateTime(required=True),
+    'thumb_url': fields.String(required=False),
+    'tags': fields.String(required=True),
+    'price': fields.Float(required=True),
+    'mini': fields.Float(required=True),
+    'maxi': fields.Float(required=True),
+    'paid': fields.Boolean(required=True),
+    'transl': fields.List(fields.Nested(trans)),
+    'clap': fields.List(fields.Nested(element)),
+    'uploader_data': fields.List(fields.Nested(users_dat)),
+})
+
+latest = post.model('latest',{
+    'id': fields.Integer(required=True),
+    'title': fields.String(required=True),
+    'content': fields.String(required=True),
+    'fullcontent': fields.String(required=True),
+    'language_id': fields.Integer(required=True),
+    'tags': fields.String(required=True),
+    'posts': fields.List(fields.Nested(post_latest_data)),
+})
+
+
+
 multiplepost = post.model('multiple', {  # check this
     "start": fields.Integer(required=True),
     "limit": fields.Integer(required=True),
@@ -496,7 +540,7 @@ class article(Resource):
             if trans:
                 return {
                         'status': 1,
-                        "results": marshal(trans,langpostdata),
+                        "results": marshal(trans,latest)
                     }, 200
 
 
