@@ -1784,7 +1784,7 @@ class ModifyPost(Resource):
             lang = language.id
         else:
             lang =1
-        followers_ = user.is_followers()
+        
         newPost=Posts.query.filter_by(uuid=post).first()
 
         if post:
