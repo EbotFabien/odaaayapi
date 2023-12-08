@@ -1759,14 +1759,11 @@ class ModifyPost(Resource):
             }, 400
         post_auto_lang = translator.detect(title)
         lang = str(post_auto_lang.lang)
-        #translated = req_data['translate']
-        #summarized = req_data['summarize']
+       
         category = req_data['category']
-        #subs = req_data['subscribers']
-        #donation = req_data['donation']
-        #payment = req_data['payment']
+        
         thumb_url_ = req_data['thumb'] or None
-        #nsf = req_data['nsfw']
+       
         tags = req_data['Tags']
         s = str(tags)
         got_language = req_data['lang']
@@ -1789,21 +1786,15 @@ class ModifyPost(Resource):
 
         if post:
             sum_content=''
-            #newPost.title = title
-            #newPost.text_content = content
+           
             newPost.orig_lang = lang
-            #newPost.summarize = summarized
-            #newPost.translate = translated
-           # newPost.subs_only = subs
+           
             newPost.category_id = category
             newPost.thumb_url = thumb_url_
-            #newPost.nsfw = nsf
+           
             newPost.tags = s[1:-1]
             db.session.commit()
 
-            '''dele=Translated.__table__.delete().where(Translated.post_id == newPost.id)
-            db.session.execute(dele)
-            db.session.commit()'''
             dele=Tags.__table__.delete().where(Tags.post == newPost.id)
             db.session.execute(dele)
             db.session.commit()
@@ -1815,17 +1806,6 @@ class ModifyPost(Resource):
                         db.session.add(new_tag)
                         db.session.commit()
 
-            '''if summarized == True and translated == True:
-                    newPost.launch_translation_task(
-                        'translate_posts', user.id, 'Translating  post ...')
-
-            if translated == True and summarized == False:
-                newPost.launch_translation_task(
-                    'translate_posts', user.id, 'Translating  post ...')
-            if summarized == True and translated == False:
-                newPost.launch_summary_task(
-                    'summarize_posts', user.id, 'summarizing  post ...')'''
-            #if summarized == False and translated == False:
             parser = HtmlParser.from_string(
                 content, '', Tokenizer(language.name))
             stemmer = Stemmer(language.name)
@@ -1835,9 +1815,7 @@ class ModifyPost(Resource):
             for sentence in summarizer(parser.document, 2):
                 sum_content += '\n'+str(sentence)
 
-            '''new_check = Translated.query.filter(
-                and_(Translated.title == newPost.title, Translated.language_id == lang)).first()
-            if new_check is None:'''
+            
             new_row = Translated(post_id=newPost.id, title=title, content=sum_content,
                                     language_id=lang, fullcontent=content, tags=newPost.tags)
             db.session.add(new_row)
