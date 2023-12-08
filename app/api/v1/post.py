@@ -1815,16 +1815,23 @@ class ModifyPost(Resource):
             for sentence in summarizer(parser.document, 2):
                 sum_content += '\n'+str(sentence)
 
-            
-            new_row = Translated(post_id=newPost.id, title=title, content=sum_content,
-                                    language_id=lang, fullcontent=content, tags=newPost.tags)
-            db.session.add(new_row)
-            db.session.commit()
+            row=Translated.query.filter(and_(Translated.post_id==newPost.id,Translated.language_id==lang)).first()
+            if row:
+                row.title=title
+                row.content=sum_content
+                row.fullcontent=content
+                row.tags=newPost.tags
+                db.session.commit()
+                db.session.commit()
+                return {
+                            'status': 1,
+                            "results": marshal(row,latest)
+                        }, 200
             db.session.commit()
             return {
-                        'status': 1,
-                        "results": marshal(new_row,latest)
-                    }, 200
+                'status': 0,
+                'res': 'Post does not exist'
+            }, 400
 
         else:
             return {
