@@ -91,10 +91,9 @@ After testing, submit a pull request to merge changes with **master**.
 
 Updates and alerts pushed via Zoom or gmail:
 
-- boogiedas (zoom)
-- leslie.etubo@gmail.com
-- bakariwarday@gmail.com
-- Join [SlackGroup](https://join.slack.com/t/newsapp-global/shared_invite/zt-fejgqdzk-5uOwp7cefQwGDOaUHCv9wg) 
+- fabienwork237 (zoom)
+- fabienwork237@gmail.com
+
 
 #upgrade db
 $ flask db stamp head

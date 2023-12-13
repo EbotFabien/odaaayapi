@@ -29,7 +29,7 @@ app = createapp(os.getenv('FLASK_CONFIG') or 'dev')
 manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
-name = '''(API) ~ By Leslie Etubo T, E. Fabien'''
+name = '''(API) ~ By  E. Fabien'''
 
 
 
